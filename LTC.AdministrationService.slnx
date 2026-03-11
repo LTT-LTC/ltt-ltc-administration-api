@@ -7,7 +7,6 @@
   <Folder Name="/src/">
     <Project Path="src/LTC.AdministrationService.Application.Contracts/LTC.AdministrationService.Application.Contracts.csproj" />
     <Project Path="src/LTC.AdministrationService.Application/LTC.AdministrationService.Application.csproj" />
-    <Project Path="src/LTC.AdministrationService.AuthServer/LTC.AdministrationService.AuthServer.csproj" />
     <Project Path="src/LTC.AdministrationService.DbMigrator/LTC.AdministrationService.DbMigrator.csproj" />
     <Project Path="src/LTC.AdministrationService.Domain.Shared/LTC.AdministrationService.Domain.Shared.csproj" />
     <Project Path="src/LTC.AdministrationService.Domain/LTC.AdministrationService.Domain.csproj" />

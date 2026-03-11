@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace LTC.Shared.CrossCuttingConcerns.Dtos.Pagination
+namespace LTC.Shared.CrossCuttingConcerns.Pagination
 {
     public class PaginationRequestDto : IPaginationRequestDto
     {

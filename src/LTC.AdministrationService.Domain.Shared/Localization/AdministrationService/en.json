@@ -1,9 +1,42 @@
 {
-  "culture": "en",
-  "texts": {
+  "Culture": "en",
+  "Texts": {
     "AppName": "AdministrationService",
     "Menu:Home": "Home",
+    "LongWelcomeMessage": "Welcome to the application. This is a startup project based on the ABP framework. For more information visit",
     "Welcome": "Welcome",
-    "LongWelcomeMessage": "Welcome to the application. This is a startup project based on the ABP framework. For more information, visit abp.io."
+
+    "User": "User",
+    "User:Name": "User name",
+    "User:Code": "User code",
+    "User:Email": "User email",
+    "User:OtherEmail": "User other email",
+    "User:PhoneNumber": "User phone number",
+
+    "AccountOrPassword": "Account or Password",
+    "EmailInfo": "Email Information",
+    "MailTemplate": "Email Template",
+    "Minutes": "minutes",
+    "Seconds": "seconds",
+    "Hours": "hours",
+
+    "InvalidValue": "{0} is invalid.",
+    "InvalidValuePlsReEnter": "{0} is invalid. Please re-enter.",
+    "NotFound": "{0} not found.",
+    "NotEmpty": "{0} is empty.",
+    "Duplicate": "{0} is exists.",
+    "MaxLength": "{0} cannot exceed {1} character.",
+    "TooManyRequest": "Too many requests. Please try again in {0}.",
+
+    "AccountIsBanned": "Account has been banned.",
+    "InvalidEmployeeStatus": "Employee status is invalid.",
+    "UserNotFound": "User not found.",
+    "InvalidToken": "Invalid token.",
+    "TokenAlreadyUsed": "Token has already been used.",
+    "TokenExpired": "Token has expired.",
+    "PasswordResetSuccess": "Password reset successful.",
+    "TryAgainLater": "Please try again in {0}.",
+    "PasswordResetFailed": "Password reset failed.",
+    "PasswordCannotBeSameAsOld": "New password cannot be the same as the old password."
   }
 }

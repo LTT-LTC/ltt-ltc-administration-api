@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+option csharp_namespace = "AdministrationService.Protos";
+import "Grpc/Protos/shared.proto";
+
+service AdministrationServiceMailTemplate{
+	rpc SendEmail(SendEmailRequest) returns (SendEmailResponse);  
+}
+
+message SendEmailRequest{
+	repeated string ToMail = 1;
+	repeated string CcMail = 2;
+	repeated string BccMail = 3;
+	EmailInfo EmailInfo = 4;
+}
+
+message EmailInfo {
+	map<string, string> MailData = 1;
+	string MailTemplateCode = 2;
+}
+
+message SendEmailResponse{
+	bool IsSuccess = 1;
+	string Error = 2;
+	optional bool Data = 3;
+}

@@ -1,9 +1,5 @@
-using Riok.Mapperly.Abstractions;
-using Volo.Abp.Mapperly;
-
 namespace LTC.AdministrationService;
 
-[Mapper]
 public partial class AdministrationServiceApplicationMappers
 {
     /* You can configure your Mapperly mapping configuration here.

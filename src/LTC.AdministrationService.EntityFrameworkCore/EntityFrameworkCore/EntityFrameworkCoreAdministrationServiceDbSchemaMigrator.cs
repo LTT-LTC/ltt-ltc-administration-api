@@ -12,15 +12,14 @@ public class EntityFrameworkCoreAdministrationServiceDbSchemaMigrator
 {
     private readonly IServiceProvider _serviceProvider;
 
-    public EntityFrameworkCoreAdministrationServiceDbSchemaMigrator(
-        IServiceProvider serviceProvider)
+    public EntityFrameworkCoreAdministrationServiceDbSchemaMigrator(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
     }
 
     public async Task MigrateAsync()
     {
-        /* We intentionally resolve the AdministrationServiceDbContext
+        /* We intentionally resolving the AdministrationServiceDbContext
          * from IServiceProvider (instead of directly injecting it)
          * to properly get the connection string of the current tenant in the
          * current scope.

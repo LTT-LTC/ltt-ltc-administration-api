@@ -8,14 +8,9 @@ namespace LTC.AdministrationService.DbMigrator;
 
 [DependsOn(
     typeof(AbpAutofacModule),
-    typeof(AbpCachingStackExchangeRedisModule),
     typeof(AdministrationServiceEntityFrameworkCoreModule),
     typeof(AdministrationServiceApplicationContractsModule)
-    )]
+)]
 public class AdministrationServiceDbMigratorModule : AbpModule
 {
-    public override void ConfigureServices(ServiceConfigurationContext context)
-    {
-        Configure<AbpDistributedCacheOptions>(options => { options.KeyPrefix = "AdministrationService:"; });
-    }
 }

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <Import Project="..\..\common.props" />
 
@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\LTC.AdministrationService.Application.Contracts\LTC.AdministrationService.Application.Contracts.csproj" />
     <ProjectReference Include="..\LTC.AdministrationService.Domain\LTC.AdministrationService.Domain.csproj" />
     <PackageReference Include="Volo.Abp.EntityFrameworkCore.SqlServer" Version="10.1.1" />
     <PackageReference Include="Volo.Abp.PermissionManagement.EntityFrameworkCore" Version="10.1.1" />
@@ -16,6 +17,9 @@
     <PackageReference Include="Volo.Abp.Identity.EntityFrameworkCore" Version="10.1.1" />
     <PackageReference Include="Volo.Abp.BackgroundJobs.EntityFrameworkCore" Version="10.1.1" />
     <PackageReference Include="Volo.Abp.AuditLogging.EntityFrameworkCore" Version="10.1.1" />
+    <PackageReference Include="Volo.Abp.AuditLogging.MongoDB" Version="10.1.1" />
+    <PackageReference Include="Volo.Abp.BlobStoring.Database.EntityFrameworkCore" Version="10.1.1" />
+    <PackageReference Include="Volo.Abp.MongoDB" Version="10.1.1" />
     <PackageReference Include="Volo.Abp.TenantManagement.EntityFrameworkCore" Version="10.1.1" />
     <PackageReference Include="Volo.Abp.FeatureManagement.EntityFrameworkCore" Version="10.1.1" />
     <PackageReference Include="Volo.Abp.OpenIddict.EntityFrameworkCore" Version="10.1.1" />

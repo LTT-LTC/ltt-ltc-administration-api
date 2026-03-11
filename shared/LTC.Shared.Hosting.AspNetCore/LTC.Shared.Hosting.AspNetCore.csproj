@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -9,9 +8,9 @@
 
   <ItemGroup>
     <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
-    <PackageReference Include="Volo.Abp.AspNetCore.Serilog" Version="10.2.0-rc.2" />
-    <PackageReference Include="Volo.Abp.MultiTenancy" Version="10.2.0-rc.2" />
-    <PackageReference Include="Volo.Abp.Swashbuckle" Version="10.2.0-rc.2" />
+    <PackageReference Include="Volo.Abp.AspNetCore.Serilog" Version="10.1.1" />
+    <PackageReference Include="Volo.Abp.MultiTenancy" Version="10.1.1" />
+    <PackageReference Include="Volo.Abp.Swashbuckle" Version="10.1.1" />
   </ItemGroup>
 
   <ItemGroup>

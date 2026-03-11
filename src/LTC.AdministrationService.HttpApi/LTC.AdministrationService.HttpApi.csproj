@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\shared\LTC.Shared.Hosting.Microservices\LTC.Shared.Hosting.Microservices.csproj" />
     <ProjectReference Include="..\LTC.AdministrationService.Application.Contracts\LTC.AdministrationService.Application.Contracts.csproj" />
   </ItemGroup>
 

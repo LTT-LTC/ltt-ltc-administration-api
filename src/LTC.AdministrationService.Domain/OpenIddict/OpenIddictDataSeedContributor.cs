@@ -38,7 +38,7 @@ public class OpenIddictDataSeedContributor : IDataSeedContributor, ITransientDep
         IOpenIddictScopeRepository openIddictScopeRepository,
         IOpenIddictScopeManager scopeManager,
         IPermissionDataSeeder permissionDataSeeder,
-        IStringLocalizer<OpenIddictResponse> l )
+        IStringLocalizer<OpenIddictResponse> l)
     {
         _configuration = configuration;
         _openIddictApplicationRepository = openIddictApplicationRepository;
@@ -80,6 +80,36 @@ public class OpenIddictDataSeedContributor : IDataSeedContributor, ITransientDep
         var configurationSection = _configuration.GetSection("OpenIddict:Applications");
 
 
+        //Console Test / Angular Client
+        var consoleAndAngularClientId = configurationSection["AdministrationService_App:ClientId"];
+        if (!consoleAndAngularClientId.IsNullOrWhiteSpace())
+        {
+            var consoleAndAngularClientRootUrl = configurationSection["AdministrationService_App:RootUrl"]?.TrimEnd('/');
+            await CreateApplicationAsync(
+                applicationType: OpenIddictConstants.ApplicationTypes.Web,
+                name: consoleAndAngularClientId!,
+                type: OpenIddictConstants.ClientTypes.Public,
+                consentType: OpenIddictConstants.ConsentTypes.Implicit,
+                displayName: "Console Test / Angular Application",
+                secret: null,
+                grantTypes: new List<string> {
+                    OpenIddictConstants.GrantTypes.AuthorizationCode,
+                    OpenIddictConstants.GrantTypes.Password,
+                    OpenIddictConstants.GrantTypes.ClientCredentials,
+                    OpenIddictConstants.GrantTypes.RefreshToken,
+                    "LinkLogin",
+                    "Impersonation"
+                },
+                scopes: commonScopes,
+                redirectUris: new List<string> { consoleAndAngularClientRootUrl },
+                postLogoutRedirectUris: new List<string> { consoleAndAngularClientRootUrl },
+                clientUri: consoleAndAngularClientRootUrl,
+                logoUri: "/images/clients/angular.svg"
+            );
+        }
+
+        
+        
 
 
 
@@ -91,6 +121,7 @@ public class OpenIddictDataSeedContributor : IDataSeedContributor, ITransientDep
             var swaggerRootUrl = configurationSection["AdministrationService_Swagger:RootUrl"]?.TrimEnd('/');
 
             await CreateApplicationAsync(
+                applicationType: OpenIddictConstants.ApplicationTypes.Web,
                 name: swaggerClientId!,
                 type: OpenIddictConstants.ClientTypes.Public,
                 consentType: OpenIddictConstants.ConsentTypes.Implicit,
@@ -98,13 +129,17 @@ public class OpenIddictDataSeedContributor : IDataSeedContributor, ITransientDep
                 secret: null,
                 grantTypes: new List<string> { OpenIddictConstants.GrantTypes.AuthorizationCode, },
                 scopes: commonScopes,
-                redirectUri: $"{swaggerRootUrl}/swagger/oauth2-redirect.html",
-                clientUri: swaggerRootUrl
+                redirectUris: new List<string> { $"{swaggerRootUrl}/swagger/oauth2-redirect.html" },
+                clientUri: swaggerRootUrl.EnsureEndsWith('/') + "swagger",
+                logoUri: "/images/clients/swagger.svg"
             );
         }
+
+
     }
 
     private async Task CreateApplicationAsync(
+        [NotNull] string applicationType,
         [NotNull] string name,
         [NotNull] string type,
         [NotNull] string consentType,
@@ -112,10 +147,11 @@ public class OpenIddictDataSeedContributor : IDataSeedContributor, ITransientDep
         string? secret,
         List<string> grantTypes,
         List<string> scopes,
+        List<string>? redirectUris = null,
+        List<string>? postLogoutRedirectUris = null,
+        List<string>? permissions = null,
         string? clientUri = null,
-        string? redirectUri = null,
-        string? postLogoutRedirectUri = null,
-        List<string>? permissions = null)
+        string? logoUri = null)
     {
         if (!string.IsNullOrEmpty(secret) && string.Equals(type, OpenIddictConstants.ClientTypes.Public,
                 StringComparison.OrdinalIgnoreCase))
@@ -132,12 +168,14 @@ public class OpenIddictDataSeedContributor : IDataSeedContributor, ITransientDep
         var client = await _openIddictApplicationRepository.FindByClientIdAsync(name);
 
         var application = new AbpApplicationDescriptor {
+            ApplicationType = applicationType,
             ClientId = name,
             ClientType = type,
             ClientSecret = secret,
             ConsentType = consentType,
             DisplayName = displayName,
             ClientUri = clientUri,
+            LogoUri = logoUri,
         };
 
         Check.NotNullOrEmpty(grantTypes, nameof(grantTypes));
@@ -155,7 +193,7 @@ public class OpenIddictDataSeedContributor : IDataSeedContributor, ITransientDep
             }
         }
 
-        if (!redirectUri.IsNullOrWhiteSpace() || !postLogoutRedirectUri.IsNullOrWhiteSpace())
+        if (!redirectUris.IsNullOrEmpty() || !postLogoutRedirectUris.IsNullOrEmpty())
         {
             application.Permissions.Add(OpenIddictConstants.Permissions.Endpoints.EndSession);
         }
@@ -251,9 +289,9 @@ public class OpenIddictDataSeedContributor : IDataSeedContributor, ITransientDep
             }
         }
 
-        if (redirectUri != null)
+        if (!redirectUris.IsNullOrEmpty())
         {
-            if (!redirectUri.IsNullOrEmpty())
+            foreach (var redirectUri in redirectUris!.Where(redirectUri => !redirectUri.IsNullOrWhiteSpace()))
             {
                 if (!Uri.TryCreate(redirectUri, UriKind.Absolute, out var uri) || !uri.IsWellFormedOriginalString())
                 {
@@ -265,11 +303,12 @@ public class OpenIddictDataSeedContributor : IDataSeedContributor, ITransientDep
                     application.RedirectUris.Add(uri);
                 }
             }
+            
         }
-
-        if (postLogoutRedirectUri != null)
+        
+        if (!postLogoutRedirectUris.IsNullOrEmpty())
         {
-            if (!postLogoutRedirectUri.IsNullOrEmpty())
+            foreach (var postLogoutRedirectUri in postLogoutRedirectUris!.Where(postLogoutRedirectUri => !postLogoutRedirectUri.IsNullOrWhiteSpace()))
             {
                 if (!Uri.TryCreate(postLogoutRedirectUri, UriKind.Absolute, out var uri) ||
                     !uri.IsWellFormedOriginalString())
@@ -302,8 +341,8 @@ public class OpenIddictDataSeedContributor : IDataSeedContributor, ITransientDep
 
         if (!HasSameRedirectUris(client, application))
         {
-            client.RedirectUris = JsonSerializer.Serialize(application.RedirectUris.Select(q => q.ToString().TrimEnd('/')));
-            client.PostLogoutRedirectUris = JsonSerializer.Serialize(application.PostLogoutRedirectUris.Select(q => q.ToString().TrimEnd('/')));
+            client.RedirectUris = JsonSerializer.Serialize(application.RedirectUris.Select(q => q.ToString().RemovePostFix("/")));
+            client.PostLogoutRedirectUris = JsonSerializer.Serialize(application.PostLogoutRedirectUris.Select(q => q.ToString().RemovePostFix("/")));
 
             await _applicationManager.UpdateAsync(client.ToModel());
         }
@@ -317,7 +356,7 @@ public class OpenIddictDataSeedContributor : IDataSeedContributor, ITransientDep
 
     private bool HasSameRedirectUris(OpenIddictApplication existingClient, AbpApplicationDescriptor application)
     {
-        return existingClient.RedirectUris == JsonSerializer.Serialize(application.RedirectUris.Select(q => q.ToString().TrimEnd('/')));
+        return existingClient.RedirectUris == JsonSerializer.Serialize(application.RedirectUris.Select(q => q.ToString().RemovePostFix("/")));
     }
 
     private bool HasSameScopes(OpenIddictApplication existingClient, AbpApplicationDescriptor application)

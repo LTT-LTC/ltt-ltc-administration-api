@@ -12,13 +12,13 @@ public class AdministrationServiceDbContextFactory : IDesignTimeDbContextFactory
 {
     public AdministrationServiceDbContext CreateDbContext(string[] args)
     {
-        AdministrationServiceEfCoreEntityExtensionMappings.Configure();
-
         var configuration = BuildConfiguration();
+        
+        AdministrationServiceEfCoreEntityExtensionMappings.Configure();
 
         var builder = new DbContextOptionsBuilder<AdministrationServiceDbContext>()
             .UseSqlServer(configuration.GetConnectionString("Default"));
-
+        
         return new AdministrationServiceDbContext(builder.Options);
     }
 

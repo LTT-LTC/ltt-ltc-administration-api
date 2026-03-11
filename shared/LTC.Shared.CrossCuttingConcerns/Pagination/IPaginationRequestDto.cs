@@ -1,4 +1,4 @@
-﻿namespace LTC.Shared.CrossCuttingConcerns.Dtos.Pagination
+﻿namespace LTC.Shared.CrossCuttingConcerns.Pagination
 {
     public interface IPaginationRequestDto
     {

@@ -1,9 +1,47 @@
 {
-  "culture": "vi",
-  "texts": {
+  "Culture": "vi",
+  "Texts": {
     "AppName": "AdministrationService",
-    "Menu:Home": "Trang chủ",
-    "Welcome": "Chào mừng bạn",
-    "LongWelcomeMessage": "Chào mừng bạn đến ứng dụng. Đây là một dự án khởi nghiệp dựa trên khung ABP. Để biết thêm thông tin, hãy truy cập abp.io."
+    "Menu:Home": "Home",
+    "LongWelcomeMessage": "Welcome to the application. This is a startup project based on the ABP framework. For more information visit",
+    "Welcome": "Welcome",
+
+    "User": "Người dùng",
+    "User:Name": "Tên người dùng",
+    "User:Code": "Mã người dùng",
+    "User:Email": "Email người dùng",
+    "User:OtherEmail": "Email khác của người dùng",
+    "User:PhoneNumber": "Số điện thoại người dùng",
+
+    "File": "Tệp",
+
+    "AccountOrPassword": "Tài khoản hoặc mật khẩu",
+    "EmailInfo": "Thông tin Email",
+    "MailTemplate": "Template email",
+    "Minutes": "phút",
+    "Seconds": "giây",
+    "Hours": "giờ",
+
+    "InvalidValue": "{0} không hợp lệ.",
+    "InvalidValuePlsReEnter": "{0} không hợp lệ. Vui lòng nhập lại.",
+    "NotFound": "{0} không tồn tại.",
+    "NotEmpty": "{0} không được để trống.",
+    "Duplicate": "{0} đã tồn tại.",
+    "MaxLength": "{0} không được vượt quá {1} ký tự.",
+    "TooManyRequest": "Quá nhiều yêu cầu. Vui lòng thử lại sau {0}.",
+
+    "AccountIsBanned": "Tài khoản đã bị khóa.",
+    "InvalidEmployeeStatus": "Trạng thái thành viên không hợp lệ.",
+    "UserNotFound": "Người dùng không tồn tại.",
+    "InvalidToken": "Token không hợp lệ.",
+    "TokenAlreadyUsed": "Token đã được sử dụng.",
+    "TokenExpired": "Token đã hết hạn.",
+    "PasswordResetSuccess": "Khôi phục mật khẩu thành công.",
+    "TryAgainLater": "Vui lòng thử lại sau {0}.",
+    "PasswordResetFailed": "Khôi phục mật khẩu thất bại.",
+    "PasswordCannotBeSameAsOld": "Mật khẩu mới không được trùng với mật khẩu cũ.",
+    "UploadFailed": "Tải dữ liệu không thành công.",
+    "DeletedFailed": "Xóa dữ liệu không thành công.",
+    "OutOfSize": "Tổng dung lượng không được vượt quá {0}."
   }
 }

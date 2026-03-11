@@ -11,6 +11,7 @@ using Volo.Abp.Data;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Identity;
 using Volo.Abp.MultiTenancy;
+using LTC.AdministrationService.MultiTenancy;
 using Volo.Abp.TenantManagement;
 
 namespace LTC.AdministrationService.Data;
@@ -26,14 +27,14 @@ public class AdministrationServiceDbMigrationService : ITransientDependency
 
     public AdministrationServiceDbMigrationService(
         IDataSeeder dataSeeder,
-        IEnumerable<IAdministrationServiceDbSchemaMigrator> dbSchemaMigrators,
         ITenantRepository tenantRepository,
-        ICurrentTenant currentTenant)
+        ICurrentTenant currentTenant,
+        IEnumerable<IAdministrationServiceDbSchemaMigrator> dbSchemaMigrators)
     {
         _dataSeeder = dataSeeder;
-        _dbSchemaMigrators = dbSchemaMigrators;
         _tenantRepository = tenantRepository;
         _currentTenant = currentTenant;
+        _dbSchemaMigrators = dbSchemaMigrators;
 
         Logger = NullLogger<AdministrationServiceDbMigrationService>.Instance;
     }
@@ -54,34 +55,38 @@ public class AdministrationServiceDbMigrationService : ITransientDependency
 
         Logger.LogInformation($"Successfully completed host database migrations.");
 
-        var tenants = await _tenantRepository.GetListAsync(includeDetails: true);
-
-        var migratedDatabaseSchemas = new HashSet<string>();
-        foreach (var tenant in tenants)
+        if (MultiTenancyConsts.IsEnabled)
         {
-            using (_currentTenant.Change(tenant.Id))
+            
+            var tenants = await _tenantRepository.GetListAsync(includeDetails: true);
+
+            var migratedDatabaseSchemas = new HashSet<string>();
+            foreach (var tenant in tenants)
             {
-                if (tenant.ConnectionStrings.Any())
+                using (_currentTenant.Change(tenant.Id))
                 {
-                    var tenantConnectionStrings = tenant.ConnectionStrings
-                        .Select(x => x.Value)
-                        .ToList();
-
-                    if (!migratedDatabaseSchemas.IsSupersetOf(tenantConnectionStrings))
+                    if (tenant.ConnectionStrings.Any())
                     {
-                        await MigrateDatabaseSchemaAsync(tenant);
+                        var tenantConnectionStrings = tenant.ConnectionStrings
+                            .Select(x => x.Value)
+                            .ToList();
 
-                        migratedDatabaseSchemas.AddIfNotContains(tenantConnectionStrings);
+                        if (!migratedDatabaseSchemas.IsSupersetOf(tenantConnectionStrings))
+                        {
+                            await MigrateDatabaseSchemaAsync(tenant);
+
+                            migratedDatabaseSchemas.AddIfNotContains(tenantConnectionStrings);
+                        }
                     }
+
+                    await SeedDataAsync(tenant);
                 }
 
-                await SeedDataAsync(tenant);
+                Logger.LogInformation($"Successfully completed {tenant.Name} tenant database migrations.");
             }
 
-            Logger.LogInformation($"Successfully completed {tenant.Name} tenant database migrations.");
+            Logger.LogInformation("Successfully completed all database migrations.");
         }
-
-        Logger.LogInformation("Successfully completed all database migrations.");
         Logger.LogInformation("You can safely end this process...");
     }
 
@@ -89,7 +94,7 @@ public class AdministrationServiceDbMigrationService : ITransientDependency
     {
         Logger.LogInformation(
             $"Migrating schema for {(tenant == null ? "host" : tenant.Name + " tenant")} database...");
-
+        
         foreach (var migrator in _dbSchemaMigrators)
         {
             await migrator.MigrateAsync();
@@ -98,12 +103,14 @@ public class AdministrationServiceDbMigrationService : ITransientDependency
 
     private async Task SeedDataAsync(Tenant? tenant = null)
     {
-        Logger.LogInformation($"Executing {(tenant == null ? "host" : tenant.Name + " tenant")} database seed...");
-
-        await _dataSeeder.SeedAsync(new DataSeedContext(tenant?.Id)
-            .WithProperty(IdentityDataSeedContributor.AdminEmailPropertyName, IdentityDataSeedContributor.AdminEmailDefaultValue)
-            .WithProperty(IdentityDataSeedContributor.AdminPasswordPropertyName, IdentityDataSeedContributor.AdminPasswordDefaultValue)
-        );
+        //Logger.LogInformation($"Executing {(tenant == null ? "host" : tenant.Name + " tenant")} database seed...");
+        
+        //await _dataSeeder.SeedAsync(new DataSeedContext(tenant?.Id)
+        //    .WithProperty(IdentityDataSeedContributor.AdminEmailPropertyName,
+        //        AdministrationServiceConsts.AdminEmailDefaultValue)
+        //    .WithProperty(IdentityDataSeedContributor.AdminPasswordPropertyName,
+        //        AdministrationServiceConsts.AdminPasswordDefaultValue)
+        //);
     }
 
     private bool AddInitialMigrationIfNotExist()
@@ -149,6 +156,7 @@ public class AdministrationServiceDbMigrationService : ITransientDependency
     private bool MigrationsFolderExists()
     {
         var dbMigrationsProjectFolder = GetEntityFrameworkCoreProjectFolderPath();
+
         return dbMigrationsProjectFolder != null && Directory.Exists(Path.Combine(dbMigrationsProjectFolder, "Migrations"));
     }
 

@@ -1,4 +1,6 @@
-﻿using Localization.Resources.AbpUi;
+﻿using LTC.AdministrationService.Localization;
+using Localization.Resources.AbpUi;
+using LTC.AdministrationService;
 using LTC.AdministrationService.Localization;
 using Volo.Abp.Account;
 using Volo.Abp.FeatureManagement;
@@ -12,14 +14,14 @@ using Volo.Abp.TenantManagement;
 namespace LTC.AdministrationService;
 
 [DependsOn(
-    typeof(AdministrationServiceApplicationContractsModule),
-    typeof(AbpAccountHttpApiModule),
-    typeof(AbpIdentityHttpApiModule),
-    typeof(AbpPermissionManagementHttpApiModule),
-    typeof(AbpTenantManagementHttpApiModule),
-    typeof(AbpFeatureManagementHttpApiModule),
-    typeof(AbpSettingManagementHttpApiModule)
-    )]
+   typeof(AdministrationServiceApplicationContractsModule),
+   typeof(AbpPermissionManagementHttpApiModule),
+   typeof(AbpSettingManagementHttpApiModule),
+   typeof(AbpAccountHttpApiModule),
+   typeof(AbpIdentityHttpApiModule),
+   typeof(AbpTenantManagementHttpApiModule),
+   typeof(AbpFeatureManagementHttpApiModule)
+   )]
 public class AdministrationServiceHttpApiModule : AbpModule
 {
     public override void ConfigureServices(ServiceConfigurationContext context)

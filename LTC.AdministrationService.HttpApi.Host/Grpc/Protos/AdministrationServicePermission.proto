@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+option csharp_namespace = "AdministrationService.Protos";
+import "Grpc/Protos/shared.proto";
+
+service AdministrationServicePermission{
+  rpc IsGrantedPermission(IsGrantedPermissionRequest) returns (IsGrantedPermissionResponse);  
+  rpc IsGrantedPermissions(IsGrantedPermissionsRequest) returns (IsGrantedPermissionsResponse);  
+  rpc TestPermission(TestPermissionRequest) returns (TestPermissionResponse);
+}
+
+message TestPermissionRequest{
+	string PermissionName = 1;
+}
+
+message TestPermissionResponse{
+	bool IsGranted = 1;
+}
+
+message IsGrantedPermissionRequest {
+	 string PermissionName = 1;	
+}
+
+message IsGrantedPermissionResponse {
+	bool IsGranted = 1;
+}
+
+message IsGrantedPermissionsRequest {
+	 repeated string PermissionNames = 1;	
+}
+
+message IsGrantedPermissionsResponse {
+	bool IsGranted = 1;
+}
