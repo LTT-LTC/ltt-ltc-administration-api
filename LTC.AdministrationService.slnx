@@ -1,0 +1,19 @@
+<Solution>
+  <Folder Name="/shared/">
+    <Project Path="shared/LTC.Shared.CrossCuttingConcerns/LTC.Shared.CrossCuttingConcerns.csproj" Id="7cdc4808-3dae-48d8-9414-939c0e49c92c" />
+    <Project Path="shared/LTC.Shared.Hosting.AspNetCore/LTC.Shared.Hosting.AspNetCore.csproj" Id="bbd4ce40-9145-449b-99e1-a5cfaff937dc" />
+    <Project Path="shared/LTC.Shared.Hosting.Microservices/LTC.Shared.Hosting.Microservices.csproj" Id="ffb4b248-32c7-40c4-bc22-7d6b23e516f1" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/LTC.AdministrationService.Application.Contracts/LTC.AdministrationService.Application.Contracts.csproj" />
+    <Project Path="src/LTC.AdministrationService.Application/LTC.AdministrationService.Application.csproj" />
+    <Project Path="src/LTC.AdministrationService.AuthServer/LTC.AdministrationService.AuthServer.csproj" />
+    <Project Path="src/LTC.AdministrationService.DbMigrator/LTC.AdministrationService.DbMigrator.csproj" />
+    <Project Path="src/LTC.AdministrationService.Domain.Shared/LTC.AdministrationService.Domain.Shared.csproj" />
+    <Project Path="src/LTC.AdministrationService.Domain/LTC.AdministrationService.Domain.csproj" />
+    <Project Path="src/LTC.AdministrationService.EntityFrameworkCore/LTC.AdministrationService.EntityFrameworkCore.csproj" />
+    <Project Path="src/LTC.AdministrationService.HttpApi.Client/LTC.AdministrationService.HttpApi.Client.csproj" />
+    <Project Path="src/LTC.AdministrationService.HttpApi/LTC.AdministrationService.HttpApi.csproj" />
+  </Folder>
+  <Project Path="src/LTC.AdministrationService.HttpApi.Host/LTC.AdministrationService.HttpApi.Host.csproj" />
+</Solution>
