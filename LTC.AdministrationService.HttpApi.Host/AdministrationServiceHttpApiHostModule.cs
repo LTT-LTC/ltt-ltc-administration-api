@@ -124,7 +124,7 @@ public class AdministrationServiceHttpApiHostModule : AbpModule
             ConfigureForwardedHeader(context);
         }
 
-        context.ConfigureSwaggerServices("LTC Administration Management", "v1");
+        context.ConfigureSwaggerServices("LTC Administration Service API Endpoint", "v1");
         ConfigureVirtualFileSystem(context);
         context.Services.AddAdministrationServiceHealthChecks();
         ConfigureCors(context, configuration);
@@ -259,7 +259,7 @@ public class AdministrationServiceHttpApiHostModule : AbpModule
                 null,
                 options =>
                 {
-                    options.SwaggerDoc("v1", new OpenApiInfo { Title = "AdministrationService API", Version = "v1" });
+                    options.SwaggerDoc("v1", new OpenApiInfo { Title = "LTC Administration Service API Endpoint", Version = "v1" });
                     options.DocInclusionPredicate((docName, description) => true);
                     options.CustomSchemaIds(type => type.FullName);
                 });

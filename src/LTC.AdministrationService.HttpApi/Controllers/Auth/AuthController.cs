@@ -1,6 +1,7 @@
 ﻿using LTC.AdministrationService.Auth;
 using LTC.AdministrationService.Auth.Dtos.Input;
 using LTC.Shared.Hosting.Microservices.HttpApi;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
@@ -9,9 +10,22 @@ namespace LTC.AdministrationService.Controllers.Auth
 {
     [Route($"{AdministrationServiceSettingNames.DefaultRoute}/auth")]
     public class AuthController(
-        IAuthAppService authAppService
+        IAuthAppService authAppService,
+        IAntiforgery antiforgery
         ) : AppControllerBase
     {
+        [HttpGet("antiforgery-token")]
+        [AllowAnonymous]
+        public IActionResult GetAntiforgeryToken()
+        {
+            var tokens = antiforgery.GetAndStoreTokens(HttpContext);
+            return Ok(new
+            {
+                token = tokens.RequestToken,
+                headerName = tokens.HeaderName
+            });
+        }
+
         [HttpPost("request-password-recovery")]
         [AllowAnonymous]
         public async Task<IActionResult> RequestPasswordRecoveryAsync(RequestPasswordRecoveryInputDto input)

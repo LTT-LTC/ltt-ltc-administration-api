@@ -94,7 +94,60 @@ dotnet ef migrations add <MigrationName> --project src/LTC.AdministrationService
 8. Apply migration via DbMigrator.
 9. Run host and test via Swagger.
 
-## 6) Data stores currently used
+## 6) How to add a new table
+
+Always use EF Core migrations — **never add tables directly via raw SQL**. If you create a table manually, EF's model snapshot won't know about it and the next migration will attempt to drop it.
+
+### Step 1 — Define the entity
+
+In `src/LTC.AdministrationService.Domain/`, create your entity class:
+
+```csharp
+public class YourEntity : Entity<Guid>
+{
+    public string Name { get; set; }
+    // add other properties...
+}
+```
+
+### Step 2 — Add a DbSet to the DbContext
+
+In `src/LTC.AdministrationService.EntityFrameworkCore/EntityFrameworkCore/AdministrationServiceDbContext.cs`:
+
+```csharp
+public DbSet<YourEntity> YourEntities { get; set; }
+```
+
+### Step 3 — Configure the table mapping
+
+Inside `OnModelCreating` in the same file:
+
+```csharp
+builder.Entity<YourEntity>(b =>
+{
+    b.ToTable("YourEntities", AdministrationServiceConsts.DbSchema); // schema = "ADM"
+    b.ConfigureByConvention();
+    b.Property(x => x.Name).HasMaxLength(256).IsRequired();
+});
+```
+
+### Step 4 — Generate the migration
+
+```powershell
+cd src/LTC.AdministrationService.EntityFrameworkCore
+dotnet ef migrations add Add_YourEntity --no-build
+```
+
+### Step 5 — Apply the migration
+
+```powershell
+cd src/LTC.AdministrationService.DbMigrator
+dotnet run
+```
+
+> **Seed data**: If the new table needs initial data, add INSERT statements to `LTTLTC.sql` **after** the migration has been applied. Schema changes always go through migrations; only row-level seed data belongs in SQL scripts.
+
+## 7) Data stores currently used
 
 - SQL Server schema: `ADM` (ABP/OpenIddict tables).
 - Mongo collection for mail template: `adm.mail_template`.
