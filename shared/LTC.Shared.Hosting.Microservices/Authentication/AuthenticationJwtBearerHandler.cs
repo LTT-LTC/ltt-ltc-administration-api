@@ -47,8 +47,23 @@ namespace LTC.Shared.Hosting.Microservices.Authentication
                 options.Issuer = issuer;
                 options.Audience = audience;
                 options.SigningCredentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256);
-                options.Expiration = configuration.GetValue<int>("AuthenticationJwtBearer:Expiration");
-                options.RefreshExpiration = configuration.GetValue<int>("AuthenticationJwtBearer:RefreshExpiration");
+
+                // Keep sane defaults when config keys are missing or invalid.
+                var expiration = configuration.GetValue<int?>("AuthenticationJwtBearer:Expiration");
+                var refreshExpiration = configuration.GetValue<int?>("AuthenticationJwtBearer:RefreshExpiration");
+
+                options.Expiration = expiration.GetValueOrDefault(options.Expiration);
+                options.RefreshExpiration = refreshExpiration.GetValueOrDefault(options.RefreshExpiration);
+
+                if (options.Expiration <= 0)
+                {
+                    options.Expiration = 1;
+                }
+
+                if (options.RefreshExpiration <= 0)
+                {
+                    options.RefreshExpiration = 24 * 365;
+                }
             });
 
             context.Services.AddAuthentication(options =>
