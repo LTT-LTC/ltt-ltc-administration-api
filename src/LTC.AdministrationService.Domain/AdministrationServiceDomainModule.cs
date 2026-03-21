@@ -1,4 +1,4 @@
-﻿using LTC.AdministrationService.MultiTenancy;
+using LTC.AdministrationService.MultiTenancy;
 using LTC.AdministrationService;
 using LTC.AdministrationService.MultiTenancy;
 using Microsoft.Extensions.DependencyInjection;

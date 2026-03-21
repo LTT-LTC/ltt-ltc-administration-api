@@ -1,4 +1,4 @@
-﻿using LTC.AdministrationService.Auth;
+using LTC.AdministrationService.Auth;
 using LTC.AdministrationService.Auth.Dtos.Input;
 using LTC.Shared.Hosting.Microservices.HttpApi;
 using Microsoft.AspNetCore.Antiforgery;

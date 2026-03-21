@@ -98,6 +98,7 @@ public class AdministrationServiceHttpApiHostModule : AbpModule
 
         // config chia tenant = header
         Configure<AbpAspNetCoreMultiTenancyOptions>(o => { o.TenantKey = "X-Tenant"; });
+        Configure<Volo.Abp.AspNetCore.Mvc.AntiForgery.AbpAntiForgeryOptions>(options => { options.AutoValidate = false; });
         context.Services.AddGrpc();
         context.Services.AddGrpcReflection();
         Configure<AbpAuditingOptions>(options => { options.IsEnabled = false; });

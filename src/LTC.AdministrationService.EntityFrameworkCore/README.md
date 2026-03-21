@@ -30,6 +30,10 @@ Apply migration:
 dotnet run --project src/LTC.AdministrationService.DbMigrator/LTC.AdministrationService.DbMigrator.csproj
 ```
 
+```bash
+dotnet ef database update -c AdministrationServiceDbContext -p src\LTC.AdministrationService.EntityFrameworkCore -s src\LTC.AdministrationService.EntityFrameworkCore
+```
+
 ## Notes
 
 Current SQL schema default is `ADM` from `AdministrationServiceConsts`.
