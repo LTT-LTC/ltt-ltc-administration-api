@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -103,14 +103,24 @@ public class AdministrationServiceDbMigrationService : ITransientDependency
 
     private async Task SeedDataAsync(Tenant? tenant = null)
     {
-        //Logger.LogInformation($"Executing {(tenant == null ? "host" : tenant.Name + " tenant")} database seed...");
-        
-        //await _dataSeeder.SeedAsync(new DataSeedContext(tenant?.Id)
-        //    .WithProperty(IdentityDataSeedContributor.AdminEmailPropertyName,
-        //        AdministrationServiceConsts.AdminEmailDefaultValue)
-        //    .WithProperty(IdentityDataSeedContributor.AdminPasswordPropertyName,
-        //        AdministrationServiceConsts.AdminPasswordDefaultValue)
-        //);
+        var email = Environment.GetEnvironmentVariable("ADMIN_SEED_EMAIL");
+        var password = Environment.GetEnvironmentVariable("ADMIN_SEED_PASSWORD");
+
+        // Fallback to ABP defaults to keep migrations working even if env vars are not set.
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            email = IdentityDataSeedContributor.AdminEmailDefaultValue;
+        }
+
+        if (string.IsNullOrWhiteSpace(password))
+        {
+            password = IdentityDataSeedContributor.AdminPasswordDefaultValue;
+        }
+
+        await _dataSeeder.SeedAsync(new DataSeedContext(tenant?.Id)
+            .WithProperty(IdentityDataSeedContributor.AdminEmailPropertyName, email)
+            .WithProperty(IdentityDataSeedContributor.AdminPasswordPropertyName, password)
+        );
     }
 
     private bool AddInitialMigrationIfNotExist()

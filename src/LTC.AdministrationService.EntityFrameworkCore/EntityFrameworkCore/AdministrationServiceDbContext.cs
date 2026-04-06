@@ -1,4 +1,5 @@
 using LTC.AdministrationService.Entities;
+using Volo.Abp.EntityFrameworkCore.Modeling;
 using Microsoft.EntityFrameworkCore;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
@@ -9,6 +10,7 @@ using Volo.Abp.EntityFrameworkCore;
 using Volo.Abp.FeatureManagement.EntityFrameworkCore;
 using Volo.Abp.Identity;
 using Volo.Abp.Identity.EntityFrameworkCore;
+using Volo.Abp.OpenIddict.EntityFrameworkCore;
 using Volo.Abp.PermissionManagement.EntityFrameworkCore;
 using Volo.Abp.SettingManagement.EntityFrameworkCore;
 using Volo.Abp.TenantManagement;
@@ -16,13 +18,11 @@ using Volo.Abp.TenantManagement.EntityFrameworkCore;
 
 namespace LTC.AdministrationService.EntityFrameworkCore;
 
-[ReplaceDbContext(typeof(IIdentityDbContext))]
-[ReplaceDbContext(typeof(ITenantManagementDbContext))]
+// [ReplaceDbContext(typeof(IIdentityDbContext))]
+// [ReplaceDbContext(typeof(ITenantManagementDbContext))]
 [ConnectionStringName(AdministrationServiceConsts.ConnectionStringName)]
 public class AdministrationServiceDbContext :
-    AbpDbContext<AdministrationServiceDbContext>,
-    ITenantManagementDbContext,
-    IIdentityDbContext
+    AbpDbContext<AdministrationServiceDbContext>
 {
     public AdministrationServiceDbContext(DbContextOptions<AdministrationServiceDbContext> options)
     : base(options)
@@ -48,22 +48,15 @@ public class AdministrationServiceDbContext :
     // Identity
     public DbSet<IdentityUser> Users { get; set; }
     public DbSet<IdentityRole> Roles { get; set; }
-    public DbSet<IdentityClaimType> ClaimTypes { get; set; }
-    public DbSet<Volo.Abp.Identity.OrganizationUnit> OrganizationUnits { get; set; }
-    public DbSet<IdentitySecurityLog> SecurityLogs { get; set; }
-    public DbSet<IdentityLinkUser> LinkUsers { get; set; }
-    public DbSet<IdentityUserDelegation> UserDelegations { get; set; }
-    public DbSet<IdentitySession> Sessions { get; set; }
 
     // Tenant Management
     public DbSet<Tenant> Tenants { get; set; }
-    public DbSet<TenantConnectionString> TenantConnectionStrings { get; set; }
 
     #endregion
-
-    public DbSet<Entities.Employee> Employee { get; set; }
-    public DbSet<MediaFile> MediaFile { get; set; }
-    public DbSet<Entities.OrganizationUnit> OrganizationUnit { get; set; }
+    public DbSet<LTC.AdministrationService.Entities.Employee> Employees { get; set; }
+    public DbSet<LTC.AdministrationService.Entities.Positions> Positions { get; set; }
+    public DbSet<LTC.AdministrationService.Entities.MediaFile> MediaFiles { get; set; }
+    public DbSet<LTC.AdministrationService.Entities.OrganizationUnit> CustomOrganizationUnits { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -73,22 +66,55 @@ public class AdministrationServiceDbContext :
         /* Include modules to your migration db context */
 
         builder.ConfigurePermissionManagement();
-        builder.ConfigureSettingManagement();
-        builder.ConfigureBackgroundJobs();
-        builder.ConfigureAuditLogging();
-        builder.ConfigureFeatureManagement();
         builder.ConfigureIdentity();
-        //builder.ConfigureOpenIddict();
+        // builder.ConfigureOpenIddict(); // Excluded as it's not needed
         builder.ConfigureTenantManagement();
-        builder.ConfigureBlobStoring();
+        builder.ConfigureFeatureManagement();
+        builder.ConfigureSettingManagement();
         
-        /* Configure your own tables/entities inside here */
+        // Remove unused Identity tables
+        builder.Ignore<IdentityUserClaim>();
+        builder.Ignore<IdentityRoleClaim>();
+        builder.Ignore<IdentityUserLogin>();
+        builder.Ignore<IdentityUserToken>();
+        builder.Ignore<IdentitySecurityLog>();
+        builder.Ignore<IdentityLinkUser>();
+        builder.Ignore<OrganizationUnitRole>();
+        builder.Ignore<IdentitySession>();
+        // builder.Ignore<IdentityUserDelegation>(); // Keeping it out for now if unused.
 
-        //builder.Entity<YourEntity>(b =>
-        //{
-        //    b.ToTable(AdministrationServiceConsts.DbTablePrefix + "YourEntities", AdministrationServiceConsts.DbSchema);
-        //    b.ConfigureByConvention(); //auto configure for the base class props
-        //    //...
-        //});
+        // Remove unused TenantManagement tables
+        builder.Ignore<TenantConnectionString>();
+
+        /* Configure your own tables/entities inside here */
+        // [New table configurations go here]
+
+        builder.Entity<LTC.AdministrationService.Entities.Employee>(b =>
+        {
+            b.ToTable("Employees", AdministrationServiceConsts.DbSchema);
+            b.ConfigureByConvention(); 
+        });
+
+        builder.Entity<LTC.AdministrationService.Entities.Positions>(b =>
+        {
+            b.ToTable("Positions", AdministrationServiceConsts.DbSchema);
+            b.ConfigureByConvention(); 
+        });
+
+        builder.Entity<LTC.AdministrationService.Entities.MediaFile>(b =>
+        {
+            b.ToTable("MediaFiles", AdministrationServiceConsts.DbSchema);
+            b.ConfigureByConvention(); 
+        });
+
+        builder.Entity<LTC.AdministrationService.Entities.OrganizationUnit>(b =>
+        {
+            b.ToTable("OrganizationUnits", AdministrationServiceConsts.DbSchema);
+            b.ConfigureByConvention(); 
+        });
+        
+        #region Preset Data (Data Seeding)
+        // [Insert your preset data/seeding logic here]
+        #endregion
     }
 }

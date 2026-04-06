@@ -1,0 +1,56 @@
+name: Deploy Dev - Administration API
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      IMAGE_NAME: dranov220805/ltt-ltc-administration-api
+      SERVICE_NAME: ltt-ltc-administration-api
+
+    steps:
+      # Checkout
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Docker login
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # Build & push
+      - name: Build and Push Docker Image
+        run: |
+          docker build -t $IMAGE_NAME:latest .
+          docker push $IMAGE_NAME:latest
+
+      # Tailscale
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v2
+        with:
+          authkey: ${{ secrets.TS_AUTHKEY }}
+
+      # SSH setup
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H 100.109.240.84 >> ~/.ssh/known_hosts
+
+      # Deploy
+      - name: SSH Deploy
+        run: |
+          ssh dranov@100.109.240.84 << 'EOF'
+            cd /home/dranov/Desktop/ltt-ltc
+
+            docker compose pull ltt-ltc-administration-api
+            docker compose up -d --no-deps ltt-ltc-administration-api
+          EOF

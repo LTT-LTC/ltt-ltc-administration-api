@@ -15,6 +15,7 @@ using Volo.Abp.Identity;
 using Volo.Abp.Identity.EntityFrameworkCore;
 using Volo.Abp.Modularity;
 using Volo.Abp.OpenIddict;
+using Volo.Abp.OpenIddict.EntityFrameworkCore;
 using Volo.Abp.PermissionManagement;
 using Volo.Abp.PermissionManagement.EntityFrameworkCore;
 using Volo.Abp.SettingManagement;
@@ -35,6 +36,7 @@ namespace LTC.AdministrationService.EntityFrameworkCore;
     typeof(AbpAuditLoggingEntityFrameworkCoreModule),
     typeof(AbpFeatureManagementEntityFrameworkCoreModule),
     typeof(AbpIdentityEntityFrameworkCoreModule),
+    typeof(AbpOpenIddictEntityFrameworkCoreModule),
     typeof(AbpTenantManagementEntityFrameworkCoreModule),
     typeof(BlobStoringDatabaseEntityFrameworkCoreModule)
     )]
