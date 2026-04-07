@@ -5,7 +5,7 @@ namespace LTC.AdministrationService;
 public static class AdministrationServiceConsts
 {
     //public const string DbTablePrefix = "App";
-    public const string DbSchema = "LTC";
+    public const string DbSchema = null;
     public const string ConnectionStringName = "Default";
     public const string MongoDbConnectionStringName = "MongoDb";
     public const string MongoDbCollectionPrefix = "adm";

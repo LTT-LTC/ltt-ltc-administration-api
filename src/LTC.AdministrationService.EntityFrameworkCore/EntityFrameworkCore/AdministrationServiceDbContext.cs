@@ -18,8 +18,6 @@ using Volo.Abp.TenantManagement.EntityFrameworkCore;
 
 namespace LTC.AdministrationService.EntityFrameworkCore;
 
-// [ReplaceDbContext(typeof(IIdentityDbContext))]
-// [ReplaceDbContext(typeof(ITenantManagementDbContext))]
 [ConnectionStringName(AdministrationServiceConsts.ConnectionStringName)]
 public class AdministrationServiceDbContext :
     AbpDbContext<AdministrationServiceDbContext>
@@ -29,21 +27,8 @@ public class AdministrationServiceDbContext :
     {
 
     }
-    /* Add DbSet properties for your Aggregate Roots / Entities here. */
-
 
     #region Entities from the modules
-
-    /* Notice: We only implemented IIdentityProDbContext and ISaasDbContext
-     * and replaced them for this DbContext. This allows you to perform JOIN
-     * queries for the entities of these modules over the repositories easily. You
-     * typically don't need that for other modules. But, if you need, you can
-     * implement the DbContext interface of the needed module and use ReplaceDbContext
-     * attribute just like IIdentityProDbContext and ISaasDbContext.
-     *
-     * More info: Replacing a DbContext of a module ensures that the related module
-     * uses this DbContext on runtime. Otherwise, it will use its own DbContext class.
-     */
 
     // Identity
     public DbSet<IdentityUser> Users { get; set; }
@@ -53,10 +38,22 @@ public class AdministrationServiceDbContext :
     public DbSet<Tenant> Tenants { get; set; }
 
     #endregion
-    public DbSet<LTC.AdministrationService.Entities.Employee> Employees { get; set; }
-    public DbSet<LTC.AdministrationService.Entities.Positions> Positions { get; set; }
-    public DbSet<LTC.AdministrationService.Entities.MediaFile> MediaFiles { get; set; }
-    public DbSet<LTC.AdministrationService.Entities.OrganizationUnit> CustomOrganizationUnits { get; set; }
+
+    #region Administration Entities
+
+    public DbSet<Entities.Employee> Employees { get; set; }
+    public DbSet<MediaFile> MediaFiles { get; set; }
+    public DbSet<Cinema> Cinemas { get; set; }
+    public DbSet<Screen> Screens { get; set; }
+    public DbSet<SeatType> SeatTypes { get; set; }
+    public DbSet<Showtime> Showtimes { get; set; }
+    public DbSet<PricingRule> PricingRules { get; set; }
+    public DbSet<CinemaAmenity> CinemaAmenities { get; set; }
+    public DbSet<CinemaAmenityType> CinemaAmenityTypes { get; set; }
+    public DbSet<GiftCode> GiftCodes { get; set; }
+    public DbSet<RevenueSnapshot> RevenueSnapshots { get; set; }
+
+    #endregion
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -67,7 +64,6 @@ public class AdministrationServiceDbContext :
 
         builder.ConfigurePermissionManagement();
         builder.ConfigureIdentity();
-        // builder.ConfigureOpenIddict(); // Excluded as it's not needed
         builder.ConfigureTenantManagement();
         builder.ConfigureFeatureManagement();
         builder.ConfigureSettingManagement();
@@ -81,38 +77,78 @@ public class AdministrationServiceDbContext :
         builder.Ignore<IdentityLinkUser>();
         builder.Ignore<OrganizationUnitRole>();
         builder.Ignore<IdentitySession>();
-        // builder.Ignore<IdentityUserDelegation>(); // Keeping it out for now if unused.
 
         // Remove unused TenantManagement tables
         builder.Ignore<TenantConnectionString>();
 
-        /* Configure your own tables/entities inside here */
-        // [New table configurations go here]
+        /* Configure custom entities */
 
-        builder.Entity<LTC.AdministrationService.Entities.Employee>(b =>
+        builder.Entity<Entities.Employee>(b =>
         {
             b.ToTable("Employees", AdministrationServiceConsts.DbSchema);
             b.ConfigureByConvention(); 
         });
 
-        builder.Entity<LTC.AdministrationService.Entities.Positions>(b =>
-        {
-            b.ToTable("Positions", AdministrationServiceConsts.DbSchema);
-            b.ConfigureByConvention(); 
-        });
-
-        builder.Entity<LTC.AdministrationService.Entities.MediaFile>(b =>
+        builder.Entity<MediaFile>(b =>
         {
             b.ToTable("MediaFiles", AdministrationServiceConsts.DbSchema);
             b.ConfigureByConvention(); 
         });
 
-        builder.Entity<LTC.AdministrationService.Entities.OrganizationUnit>(b =>
+        builder.Entity<Cinema>(b =>
         {
-            b.ToTable("OrganizationUnits", AdministrationServiceConsts.DbSchema);
-            b.ConfigureByConvention(); 
+            b.ToTable("Cinemas", AdministrationServiceConsts.DbSchema);
+            b.ConfigureByConvention();
         });
-        
+
+        builder.Entity<Screen>(b =>
+        {
+            b.ToTable("Screens", AdministrationServiceConsts.DbSchema);
+            b.ConfigureByConvention();
+        });
+
+        builder.Entity<SeatType>(b =>
+        {
+            b.ToTable("SeatTypes", AdministrationServiceConsts.DbSchema);
+            b.ConfigureByConvention();
+        });
+
+        builder.Entity<Showtime>(b =>
+        {
+            b.ToTable("Showtimes", AdministrationServiceConsts.DbSchema);
+            b.ConfigureByConvention();
+        });
+
+        builder.Entity<PricingRule>(b =>
+        {
+            b.ToTable("PricingRules", AdministrationServiceConsts.DbSchema);
+            b.ConfigureByConvention();
+        });
+
+        builder.Entity<CinemaAmenity>(b =>
+        {
+            b.ToTable("CinemaAmenities", AdministrationServiceConsts.DbSchema);
+            b.ConfigureByConvention();
+        });
+
+        builder.Entity<CinemaAmenityType>(b =>
+        {
+            b.ToTable("CinemaAmenityTypes", AdministrationServiceConsts.DbSchema);
+            b.ConfigureByConvention();
+        });
+
+        builder.Entity<GiftCode>(b =>
+        {
+            b.ToTable("GiftCodes", AdministrationServiceConsts.DbSchema);
+            b.ConfigureByConvention();
+        });
+
+        builder.Entity<RevenueSnapshot>(b =>
+        {
+            b.ToTable("RevenueSnapshots", AdministrationServiceConsts.DbSchema);
+            b.ConfigureByConvention();
+        });
+
         #region Preset Data (Data Seeding)
         // [Insert your preset data/seeding logic here]
         #endregion

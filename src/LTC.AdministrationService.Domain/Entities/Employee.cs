@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations.Schema;
+using System;
 using Volo.Abp.Domain.Entities.Auditing;
 using Volo.Abp.MultiTenancy;
 
@@ -7,28 +6,28 @@ namespace LTC.AdministrationService.Entities
 {
     public class Employee : FullAuditedEntity<Guid>, IMultiTenant
     {
-        // IsDeleted => Default value (0) / convertbit(0)
-        public string Name { get; set; } // Họ và tên
-        public string Code { get; set; }
-        public string Email { get; set; } // Email cá nhân
-        public string? OtherEmail { get; set; } // Email khác
-        public Guid? OrganizationUnitId { get; set; } // Phòng ban
-        public Guid? PositionId { get; set; } // Chức vụ trong phòng ban
-        public Guid? AvatarFileId { get; set; } // Ảnh đại diện
-        public string PhoneNumber { get; set; } // Số điện thoại cá nhân
-        public DateTime? JoinedDate { get; set; } // Ngày vào
-        public DateTime? DateOfBirth { get; set; } // Ngày sinh
-        public int NumberOfLogin { get; set; } // Số lần đăng nhập
-        public DateTime? LastLoginTime { get; set; } // Thời gian đăng nhập cuối cùng
-        public DateTime? NextLoginTime { get; set; } // Thời gian đăng nhập tiếp theo
+        public string? EmployeeId { get; set; }
         public Guid? TenantId { get; private set; }
-        public Guid? UserId { get; set; } // Id của user trong IdentityUser
-        public bool IsFirstLogin { get; set; } // Lần đầu đăng nhập ?
+        public Guid? UserId { get; set; }
+        public Guid? CinemaId { get; set; }
+        public string? Scope { get; set; }
+        public string? Position { get; set; }
+        public DateTime? HireDate { get; set; }
+        public string? Status { get; set; }
+        public Guid? ManagedByEmployeeId { get; set; }
+        public Guid? CreatedByUserId { get; set; }
 
-        [ForeignKey(nameof(OrganizationUnitId))]
-        public OrganizationUnit OrganizationUnit { get; set; }
-
-        [ForeignKey(nameof(PositionId))]
-        public Positions Position { get; set; }
+        // Restored fields for compatibility with existing AppServices
+        public string? Name { get; set; }
+        public string? Code { get; set; }
+        public string? Email { get; set; }
+        public string? OtherEmail { get; set; }
+        public string? PhoneNumber { get; set; }
+        public Guid? OrganizationUnitId { get; set; }
+        public Guid? PositionId { get; set; }
+        public Guid? AvatarFileId { get; set; }
+        public DateTime? JoinedDate { get; set; }
+        public DateTime? DateOfBirth { get; set; }
+        public bool IsFirstLogin { get; set; } = true;
     }
 }
