@@ -1,4 +1,4 @@
-﻿using LTC.AdministrationService.Auth.Dtos.Input;
+using LTC.AdministrationService.Auth.Dtos.Input;
 using LTC.AdministrationService.Auth.Dtos.Output;
 using LTC.AdministrationService.Entities.CacheKeys;
 using LTC.AdministrationService.Events;
@@ -97,7 +97,7 @@ namespace LTC.AdministrationService.Auth
                 var employeeQueryable = await _employeeRepository.GetQueryableAsync();
                 var userQueryable = await _userRepository.GetQueryableAsync();
                 //Console.WriteLine(">>>>>>>>> CurrentUICulture: " + CultureInfo.CurrentUICulture.Name);
-                var employee = await employeeQueryable.Where(x => x.Code == input.UserName.Trim()).FirstOrDefaultAsync()
+                var employee = await employeeQueryable.Where(x => x.EmployeeId == input.UserName.Trim()).FirstOrDefaultAsync()
                     ?? throw new UserFriendlyException(L["UserNotFound"]);
 
                 var identityUser = await _identityUserManager.FindByIdAsync(employee.UserId.Value.ToString())
@@ -198,7 +198,7 @@ namespace LTC.AdministrationService.Auth
         public async Task<bool> RequestPasswordRecoveryAsync(RequestPasswordRecoveryInputDto input)
         {
             var employeeQueryable = await _employeeRepository.GetQueryableAsync();
-            var employee = await employeeQueryable.Where(x => x.Code == input.UserName.Trim()).FirstOrDefaultAsync()
+            var employee = await employeeQueryable.Where(x => x.EmployeeId == input.UserName.Trim()).FirstOrDefaultAsync()
                 ?? throw new UserFriendlyException(L["UserNotFound"]);
 
             var user = await _identityUserManager.FindByIdAsync(employee.UserId.Value.ToString())

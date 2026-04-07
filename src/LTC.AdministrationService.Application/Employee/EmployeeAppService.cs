@@ -1,4 +1,4 @@
-﻿using LTC.AdministrationService.Employee;
+using LTC.AdministrationService.Employee;
 using LTC.AdministrationService.Identity;
 using LTC.AdministrationService.Employee.Dtos.Input;
 using LTC.AdministrationService.Employee.Dtos.Output;
@@ -16,8 +16,8 @@ namespace LTC.AdministrationService
 {
     public class EmployeeAppService(
         IRepository<Entities.Employee, Guid> employeeRepository,
-        IRepository<IdentityUser, Guid> identityUserRepository,
-        IUnitOfWorkManager unitOfWorkManager,
+        IRepository<IdentityUser, Guid> _identityUserRepository,
+        IUnitOfWorkManager _unitOfWorkManager,
         IIdentityUserAppService identityUserAppService
         ) : AdministrationServiceAppService, IEmployeeAppService
     {
@@ -30,7 +30,7 @@ namespace LTC.AdministrationService
             var keyword = input.Keyword?.Trim();
 
             var employeesQueryable = await employeeRepository.GetQueryableAsync();
-            var identityUsersQueryable = await identityUserRepository.GetQueryableAsync();
+            var identityUsersQueryable = await _identityUserRepository.GetQueryableAsync();
 
             // TODO: query theo phòng ban và vai trò
             var query = from employee in employeesQueryable
@@ -79,7 +79,7 @@ namespace LTC.AdministrationService
         /// <returns></returns>
         public async Task<Guid> CreateAsync(CreateEmployeeInputDto input)
         {
-            using (var uow = unitOfWorkManager.Begin())
+            using (var uow = _unitOfWorkManager.Begin())
             {
                 // tạo user
                 var userId = await identityUserAppService.CreateAsync(new CreateUserInputDto
