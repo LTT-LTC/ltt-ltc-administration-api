@@ -28,7 +28,7 @@ jobs:
       # Build & push
       - name: Build and Push Docker Image
         run: |
-          docker build -t $IMAGE_NAME:latest .
+          docker build -f LTC.AdministrationService.HttpApi.Host/Dockerfile -t $IMAGE_NAME:latest .
           docker push $IMAGE_NAME:latest
 
       # Tailscale
