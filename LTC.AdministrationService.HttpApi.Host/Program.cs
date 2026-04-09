@@ -15,6 +15,7 @@ public class Program
 {
     public async static Task<int> Main(string[] args)
     {
+        AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
         Log.Logger = new LoggerConfiguration()
             //.WriteTo.Async(c => c.File("Logs/logs.txt"))
             .WriteTo.Async(c => c.Console())
