@@ -155,5 +155,5 @@ dotnet run
 ## 7) Troubleshooting
 
 - Error: `Invalid column name 'ManagementPermissionName'`.
-  - Cause: DB schema is behind current ABP version/migrations.
+  - Cause: DB schema is behind current ABP version/migrations
   - Fix: run DbMigrator against the same DB used by HttpApi.Host.
