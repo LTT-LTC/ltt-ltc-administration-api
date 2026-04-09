@@ -330,21 +330,21 @@ public class AdministrationServiceHttpApiHostModule : AbpModule
         {
             app.UseCors("CorsPolicyFree");
             app.UseDeveloperExceptionPage();
-            string swaggerRoutePrefix = "LTC/administration-service/swagger";
-            app.UseSwaggerUI("LTC Administration Service", swaggerRoutePrefix);
-            app.UseSwagger();
-            app.UseAbpSwaggerUI(options =>
-            {
-                options.SwaggerEndpoint("/swagger/v1/swagger.json", "Administration Service API");
-                var configuration = context.ServiceProvider.GetRequiredService<IConfiguration>();
-                options.OAuthClientId(configuration["AuthServer:SwaggerClientId"]);
-            });
         }
         else
         {
             app.UseCors();
         }
 
+        string swaggerRoutePrefix = "ltc/administration-service/swagger";
+        app.UseSwaggerUI("LTC Administration Service", swaggerRoutePrefix);
+        app.UseSwagger();
+        app.UseAbpSwaggerUI(options =>
+        {
+            options.SwaggerEndpoint("/ltc/administration-service/swagger/v1/swagger.json", "Administration Service API");
+            var configuration = context.ServiceProvider.GetRequiredService<IConfiguration>();
+            options.OAuthClientId(configuration["AuthServer:SwaggerClientId"]);
+        });
 
         app.UseRouting();
         app.UseRequestLocalization();
