@@ -7,6 +7,8 @@ namespace LTC.AdministrationService.Entities
     {
         public string Name { get; set; }
         public string? Description { get; set; }
+        public int NumberOfSeat { get; set; }
+        public string? DisplayDirection { get; set; }
         public decimal PriceMultiplier { get; set; }
         public DateTime? UpdatedAt { get; set; }
     }

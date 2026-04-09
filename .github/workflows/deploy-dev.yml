@@ -28,7 +28,7 @@ jobs:
       # Build & push
       - name: Build and Push Docker Image
         run: |
-          docker build -t $IMAGE_NAME:latest .
+          docker build -f LTC.AdministrationService.HttpApi.Host/Dockerfile -t $IMAGE_NAME:latest .
           docker push $IMAGE_NAME:latest
 
       # Tailscale
@@ -41,7 +41,9 @@ jobs:
       - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          cat << 'EOF' > ~/.ssh/id_ed25519
+          ${{ secrets.SSH_PRIVATE_KEY }}
+          EOF
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H 100.109.240.84 >> ~/.ssh/known_hosts
 

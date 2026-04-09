@@ -1,4 +1,4 @@
-﻿using LTC.AdministrationService;
+using LTC.AdministrationService;
 using LTC.AdministrationService.Entities.Mongo;
 using System;
 using Volo.Abp;
@@ -10,7 +10,7 @@ namespace LTC.CustomerManagement.MongoDb
     {
         public static void ConfigureCollections(
             this IMongoModelBuilder builder,
-            Action<AbpMongoModelBuilderConfigurationOptions> optionsAction = null
+            Action<AbpMongoModelBuilderConfigurationOptions>? optionsAction = null
             )
         {
             var options = new AppMongoModelBuilderConfigurationOptions(AdministrationServiceConsts.MongoDbCollectionPrefix);

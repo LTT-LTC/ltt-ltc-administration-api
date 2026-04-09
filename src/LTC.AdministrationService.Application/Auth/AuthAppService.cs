@@ -17,6 +17,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Volo.Abp;
 using Volo.Abp.Caching;
+using Volo.Abp.Data;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.EventBus.Local;
 using Volo.Abp.Identity;
@@ -46,6 +47,7 @@ namespace LTC.AdministrationService.Auth
         private readonly IConnectionMultiplexer _redis;
         private readonly IRepository<IdentityUser, Guid> _userRepository;
         private readonly ICurrentUser _currentUser;
+        private readonly IDataFilter _dataFilter;
 
         public AuthAppService(
             IIdentityUserRepository identityUserRepository,
@@ -63,7 +65,8 @@ namespace LTC.AdministrationService.Auth
             IHttpContextAccessor httpContextAccessor,
             IConnectionMultiplexer redis,
             IRepository<IdentityUser, Guid> userRepository,
-            ICurrentUser currentUser
+            ICurrentUser currentUser,
+            IDataFilter dataFilter
             )
         {
             _identityUserRepository = identityUserRepository;
@@ -82,6 +85,7 @@ namespace LTC.AdministrationService.Auth
             _redis = redis;
             _userRepository = userRepository;
             _currentUser = currentUser;
+            _dataFilter = dataFilter;
         }
 
         /// <summary>
@@ -94,20 +98,31 @@ namespace LTC.AdministrationService.Auth
         {
             using (var uow = _unitOfWorkManager.Begin())
             {
-                var employeeQueryable = await _employeeRepository.GetQueryableAsync();
-                var userQueryable = await _userRepository.GetQueryableAsync();
-                //Console.WriteLine(">>>>>>>>> CurrentUICulture: " + CultureInfo.CurrentUICulture.Name);
-                var employee = await employeeQueryable.Where(x => x.EmployeeId == input.UserName.Trim()).FirstOrDefaultAsync()
-                    ?? throw new UserFriendlyException(L["UserNotFound"]);
-
-                var identityUser = await _identityUserManager.FindByIdAsync(employee.UserId.Value.ToString())
-                    ?? throw new UserFriendlyException(L["UserNotFound"]);
-
-                if (employee == null)
+                var loginIdentifier = input.UserName?.Trim();
+                if (string.IsNullOrWhiteSpace(loginIdentifier))
                 {
-                    //await BlockIpAddressAsync();
+                    throw new UserFriendlyException(CommonExtensions.GetValidateMessage(L["InvalidValuePlsReEnter"], L["AccountOrPassword"]));
+                }
+
+                var employeeQueryable = await _employeeRepository.GetQueryableAsync();
+                var employee = await employeeQueryable.FirstOrDefaultAsync(x => x.EmployeeId == loginIdentifier);
+
+                IdentityUser? identityUser = null;
+                if (employee?.UserId.HasValue == true)
+                {
+                    identityUser = await _identityUserManager.FindByIdAsync(employee.UserId.Value.ToString());
+                }
+
+                identityUser ??= await _identityUserManager.FindByNameAsync(loginIdentifier);
+                identityUser ??= await _identityUserManager.FindByEmailAsync(loginIdentifier);
+                identityUser ??= await FindUserAcrossTenantsAsync(loginIdentifier);
+
+                if (identityUser == null)
+                {
                     throw new UserFriendlyException(L["UserNotFound"]);
                 }
+
+                employee ??= await employeeQueryable.FirstOrDefaultAsync(x => x.UserId == identityUser.Id);
 
                 var authorizationResult = await _signInManager.CheckPasswordSignInAsync(identityUser, input.Password, true);
                 if (!authorizationResult.Succeeded)
@@ -128,7 +143,7 @@ namespace LTC.AdministrationService.Auth
                 var loginResult = await CreateAccessTokenAsync(identityUser);
 
                 // kiểm tra lần đầu đăng nhập
-                if (employee.IsFirstLogin)
+                if (employee?.IsFirstLogin == true)
                 {
                     return new LoginOutputDto
                     {
@@ -142,6 +157,22 @@ namespace LTC.AdministrationService.Auth
 
                 await uow.CompleteAsync();
                 return loginResult;
+            }
+        }
+
+        private async Task<IdentityUser?> FindUserAcrossTenantsAsync(string loginIdentifier)
+        {
+            var normalizedLogin = loginIdentifier.Trim().ToUpperInvariant();
+
+            using (_dataFilter.Disable<IMultiTenant>())
+            {
+                var usersQueryable = await _userRepository.GetQueryableAsync();
+
+                return await usersQueryable.FirstOrDefaultAsync(x =>
+                    x.NormalizedUserName == normalizedLogin ||
+                    x.NormalizedEmail == normalizedLogin ||
+                    x.UserName == loginIdentifier ||
+                    x.Email == loginIdentifier);
             }
         }
 
@@ -319,6 +350,15 @@ namespace LTC.AdministrationService.Auth
         {
             var claimsPrincipal = await _signInManager.CreateUserPrincipalAsync(user);
             var claims = claimsPrincipal.Claims.ToList();
+
+            var roles = await _identityUserManager.GetRolesAsync(user);
+            foreach (var role in roles)
+            {
+                if (!claims.Any(c => c.Type == ClaimTypes.Role && c.Value == role))
+                {
+                    claims.Add(new Claim(ClaimTypes.Role, role));
+                }
+            }
 
             string sessionId = Guid.CreateVersion7().ToString();
             claims.Add(new Claim("sessionId", sessionId));

@@ -9,6 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.5" />
+    <PackageReference Include="Volo.Abp.MultiTenancy" Version="10.2.0" />
     <ProjectReference Include="..\LTC.AdministrationService.Application.Contracts\LTC.AdministrationService.Application.Contracts.csproj" />
     <ProjectReference Include="..\LTC.AdministrationService.Domain\LTC.AdministrationService.Domain.csproj" />
     <PackageReference Include="Volo.Abp.EntityFrameworkCore.SqlServer" Version="10.1.1" />

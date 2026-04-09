@@ -13,7 +13,7 @@ It includes:
 - `src/LTC.AdministrationService.DbMigrator`: migration/seeding console app.
 - `shared/*`: shared hosting/auth/openapi utilities.
 
-Current permission model is ABP Permission Management (permission-based), with data in `ADM.AbpPermissions` and `ADM.AbpPermissionGrants`.
+Current permission model is ABP Permission Management (permission-based), with data in `AbpPermissions` and `AbpPermissionGrants`.
 
 ## 2) Prerequisites
 
@@ -125,7 +125,7 @@ Inside `OnModelCreating` in the same file:
 ```csharp
 builder.Entity<YourEntity>(b =>
 {
-    b.ToTable("YourEntities", AdministrationServiceConsts.DbSchema); // schema = "ADM"
+    b.ToTable("YourEntities", AdministrationServiceConsts.DbSchema); // schema = null (default)
     b.ConfigureByConvention();
     b.Property(x => x.Name).HasMaxLength(256).IsRequired();
 });
@@ -149,7 +149,7 @@ dotnet run
 
 ## 7) Data stores currently used
 
-- SQL Server schema: `ADM` (ABP/OpenIddict tables).
+- SQL Server schema: default (`dbo`).
 - Mongo collection for mail template: `adm.mail_template`.
 
 ## 7) Troubleshooting

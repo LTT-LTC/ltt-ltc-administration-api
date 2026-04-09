@@ -68,19 +68,6 @@ public class AdministrationServiceDbContext :
         builder.ConfigureFeatureManagement();
         builder.ConfigureSettingManagement();
         
-        // Remove unused Identity tables
-        builder.Ignore<IdentityUserClaim>();
-        builder.Ignore<IdentityRoleClaim>();
-        builder.Ignore<IdentityUserLogin>();
-        builder.Ignore<IdentityUserToken>();
-        builder.Ignore<IdentitySecurityLog>();
-        builder.Ignore<IdentityLinkUser>();
-        builder.Ignore<OrganizationUnitRole>();
-        builder.Ignore<IdentitySession>();
-
-        // Remove unused TenantManagement tables
-        builder.Ignore<TenantConnectionString>();
-
         /* Configure custom entities */
 
         builder.Entity<Entities.Employee>(b =>
