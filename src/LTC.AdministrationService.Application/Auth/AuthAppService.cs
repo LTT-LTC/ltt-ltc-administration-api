@@ -351,6 +351,15 @@ namespace LTC.AdministrationService.Auth
             var claimsPrincipal = await _signInManager.CreateUserPrincipalAsync(user);
             var claims = claimsPrincipal.Claims.ToList();
 
+            var roles = await _identityUserManager.GetRolesAsync(user);
+            foreach (var role in roles)
+            {
+                if (!claims.Any(c => c.Type == ClaimTypes.Role && c.Value == role))
+                {
+                    claims.Add(new Claim(ClaimTypes.Role, role));
+                }
+            }
+
             string sessionId = Guid.CreateVersion7().ToString();
             claims.Add(new Claim("sessionId", sessionId));
 

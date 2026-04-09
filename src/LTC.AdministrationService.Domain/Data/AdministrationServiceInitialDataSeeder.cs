@@ -90,7 +90,14 @@ public class AdministrationServiceInitialDataSeeder : IDataSeedContributor, ITra
         
         foreach (var permission in permissions.Where(p => p.MultiTenancySide.HasFlag(multiTenancySide)))
         {
-            await _permissionManager.SetForRoleAsync("Admin", permission.Name, true);
+            try
+            {
+                await _permissionManager.SetForRoleAsync("Admin", permission.Name, true);
+            }
+            catch (ApplicationException)
+            {
+                // Some permission definitions are incompatible with role grants or currently disabled.
+            }
         }
 
         // User Setup
