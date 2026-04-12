@@ -470,6 +470,7 @@ namespace LTC.AdministrationService.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     Code = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     DiscountType = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -570,6 +571,7 @@ namespace LTC.AdministrationService.Migrations
                     ScreenType = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     SeatLayout = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     SeatCount = table.Column<int>(type: "int", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },

@@ -236,6 +236,10 @@ namespace LTC.AdministrationService.Migrations
                     b.Property<string>("Status")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("TenantId");
+
                     b.Property<int>("UsageCount")
                         .HasColumnType("int");
 

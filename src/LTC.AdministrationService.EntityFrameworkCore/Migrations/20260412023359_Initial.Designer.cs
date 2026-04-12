@@ -13,8 +13,8 @@ using Volo.Abp.EntityFrameworkCore;
 namespace LTC.AdministrationService.Migrations
 {
     [DbContext(typeof(AdministrationServiceDbContext))]
-    [Migration("20260410105555_AddStatusToScreen")]
-    partial class AddStatusToScreen
+    [Migration("20260412023359_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -238,6 +238,10 @@ namespace LTC.AdministrationService.Migrations
 
                     b.Property<string>("Status")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("TenantId");
 
                     b.Property<int>("UsageCount")
                         .HasColumnType("int");

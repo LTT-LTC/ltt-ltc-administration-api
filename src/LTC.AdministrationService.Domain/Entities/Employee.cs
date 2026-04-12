@@ -7,7 +7,7 @@ namespace LTC.AdministrationService.Entities
     public class Employee : FullAuditedEntity<Guid>, IMultiTenant
     {
         public string? EmployeeId { get; set; }
-        public Guid? TenantId { get; private set; }
+        public Guid? TenantId { get; set; }
         public Guid? UserId { get; set; }
         public Guid? CinemaId { get; set; }
         public string? Scope { get; set; }
