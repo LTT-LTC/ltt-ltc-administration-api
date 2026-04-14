@@ -1,0 +1,142 @@
+using Riok.Mapperly.Abstractions;
+using Volo.Abp.ObjectMapping;
+using Volo.Abp.DependencyInjection;
+using LTC.AdministrationService.Entities;
+using LTC.AdministrationService.Admin.Cinema.Dtos.Input;
+using LTC.AdministrationService.Admin.Cinema.Dtos.Output;
+using LTC.AdministrationService.Admin.Screen.Dtos.Input;
+using LTC.AdministrationService.Admin.Screen.Dtos.Output;
+using LTC.AdministrationService.Admin.SeatType.Dtos.Input;
+using LTC.AdministrationService.Admin.SeatType.Dtos.Output;
+using LTC.AdministrationService.PricingRules.Dtos;
+using LTC.AdministrationService.Employee.Dtos.Output;
+using LTC.AdministrationService.Employee.Dtos.Input;
+
+namespace LTC.AdministrationService;
+
+[Mapper]
+public partial class CinemaOutputMapper : IObjectMapper<Entities.Cinema, CinemaOutputDto>, ITransientDependency
+{
+    public partial CinemaOutputDto Map(Entities.Cinema source);
+    public CinemaOutputDto Map(Entities.Cinema source, CinemaOutputDto destination) => Map(source);
+}
+
+[Mapper]
+public partial class CreateCinemaInputMapper : IObjectMapper<CreateCinemaInputDto, Entities.Cinema>, ITransientDependency
+{
+    public partial Entities.Cinema Map(CreateCinemaInputDto source);
+    public Entities.Cinema Map(CreateCinemaInputDto source, Entities.Cinema destination) => null;
+}
+
+[Mapper]
+public partial class UpdateCinemaInputMapper : IObjectMapper<UpdateCinemaInputDto, Entities.Cinema>, ITransientDependency
+{
+    public partial Entities.Cinema Map(UpdateCinemaInputDto source);
+    public Entities.Cinema Map(UpdateCinemaInputDto source, Entities.Cinema destination) { MapUpdate(source, destination); return destination; }
+    [MapperIgnoreTarget(nameof(Entities.Cinema.Id))]
+    [MapperIgnoreTarget(nameof(Entities.Cinema.TenantId))]
+    public partial void MapUpdate(UpdateCinemaInputDto source, Entities.Cinema target);
+}
+
+[Mapper]
+public partial class ScreenOutputMapper : IObjectMapper<Entities.Screen, ScreenOutputDto>, ITransientDependency
+{
+    public partial ScreenOutputDto Map(Entities.Screen source);
+    public ScreenOutputDto Map(Entities.Screen source, ScreenOutputDto destination) => Map(source);
+}
+
+[Mapper]
+public partial class CreateScreenInputMapper : IObjectMapper<CreateScreenInputDto, Entities.Screen>, ITransientDependency
+{
+    public partial Entities.Screen Map(CreateScreenInputDto source);
+    public Entities.Screen Map(CreateScreenInputDto source, Entities.Screen destination) => null;
+}
+
+[Mapper]
+public partial class UpdateScreenInputMapper : IObjectMapper<UpdateScreenInputDto, Entities.Screen>, ITransientDependency
+{
+    public partial Entities.Screen Map(UpdateScreenInputDto source);
+    public Entities.Screen Map(UpdateScreenInputDto source, Entities.Screen destination) { MapUpdate(source, destination); return destination; }
+    [MapperIgnoreTarget(nameof(Entities.Screen.Id))]
+    [MapperIgnoreTarget(nameof(Entities.Screen.TenantId))]
+    public partial void MapUpdate(UpdateScreenInputDto source, Entities.Screen target);
+}
+
+[Mapper]
+public partial class SeatTypeOutputMapper : IObjectMapper<Entities.SeatType, SeatTypeOutputDto>, ITransientDependency
+{
+    public partial SeatTypeOutputDto Map(Entities.SeatType source);
+    public SeatTypeOutputDto Map(Entities.SeatType source, SeatTypeOutputDto destination) => Map(source);
+}
+
+[Mapper]
+public partial class CreateSeatTypeInputMapper : IObjectMapper<CreateSeatTypeInputDto, Entities.SeatType>, ITransientDependency
+{
+    public partial Entities.SeatType Map(CreateSeatTypeInputDto source);
+    public Entities.SeatType Map(CreateSeatTypeInputDto source, Entities.SeatType destination) => null;
+}
+
+[Mapper]
+public partial class UpdateSeatTypeInputMapper : IObjectMapper<UpdateSeatTypeInputDto, Entities.SeatType>, ITransientDependency
+{
+    public partial Entities.SeatType Map(UpdateSeatTypeInputDto source);
+    public Entities.SeatType Map(UpdateSeatTypeInputDto source, Entities.SeatType destination) { MapUpdate(source, destination); return destination; }
+    [MapperIgnoreTarget(nameof(Entities.SeatType.Id))]
+    public partial void MapUpdate(UpdateSeatTypeInputDto source, Entities.SeatType target);
+}
+
+[Mapper]
+public partial class PricingRuleOutputMapper : IObjectMapper<Entities.PricingRule, PricingRuleOutputDto>, ITransientDependency
+{
+    public partial PricingRuleOutputDto Map(Entities.PricingRule source);
+    public PricingRuleOutputDto Map(Entities.PricingRule source, PricingRuleOutputDto destination) => Map(source);
+}
+
+[Mapper]
+public partial class CreatePricingRuleMapper : IObjectMapper<CreatePricingRuleDto, Entities.PricingRule>, ITransientDependency
+{
+    public partial Entities.PricingRule Map(CreatePricingRuleDto source);
+    public Entities.PricingRule Map(CreatePricingRuleDto source, Entities.PricingRule destination) => null;
+}
+
+[Mapper]
+public partial class EmployeeOutputMapper : IObjectMapper<Entities.Employee, EmployeeOutputDto>, ITransientDependency
+{
+    public partial EmployeeOutputDto Map(Entities.Employee source);
+    public EmployeeOutputDto Map(Entities.Employee source, EmployeeOutputDto destination) => Map(source);
+}
+
+[Mapper]
+public partial class CreateEmployeeInputMapper : IObjectMapper<CreateEmployeeInputDto, Entities.Employee>, ITransientDependency
+{
+    public partial Entities.Employee Map(CreateEmployeeInputDto source);
+    public Entities.Employee Map(CreateEmployeeInputDto source, Entities.Employee destination) => null;
+}
+
+[Mapper]
+public partial class GiftCodeOutputMapper : IObjectMapper<Entities.GiftCode, GiftCodes.Dtos.GiftCodeOutputDto>, ITransientDependency
+{
+    public partial GiftCodes.Dtos.GiftCodeOutputDto Map(Entities.GiftCode source);
+    public GiftCodes.Dtos.GiftCodeOutputDto Map(Entities.GiftCode source, GiftCodes.Dtos.GiftCodeOutputDto destination) => Map(source);
+}
+
+[Mapper]
+public partial class CreateGiftCodeMapper : IObjectMapper<GiftCodes.Dtos.CreateGiftCodeDto, Entities.GiftCode>, ITransientDependency
+{
+    public partial Entities.GiftCode Map(GiftCodes.Dtos.CreateGiftCodeDto source);
+    public Entities.GiftCode Map(GiftCodes.Dtos.CreateGiftCodeDto source, Entities.GiftCode destination) => null;
+}
+
+[Mapper]
+public partial class ShowtimeOutputMapper : IObjectMapper<Entities.Showtime, Showtimes.Dtos.ShowtimeOutputDto>, ITransientDependency
+{
+    public partial Showtimes.Dtos.ShowtimeOutputDto Map(Entities.Showtime source);
+    public Showtimes.Dtos.ShowtimeOutputDto Map(Entities.Showtime source, Showtimes.Dtos.ShowtimeOutputDto destination) => Map(source);
+}
+
+[Mapper]
+public partial class CreateShowtimeMapper : IObjectMapper<Showtimes.Dtos.CreateShowtimeDto, Entities.Showtime>, ITransientDependency
+{
+    public partial Entities.Showtime Map(Showtimes.Dtos.CreateShowtimeDto source);
+    public Entities.Showtime Map(Showtimes.Dtos.CreateShowtimeDto source, Entities.Showtime destination) => null;
+}

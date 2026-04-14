@@ -6,6 +6,14 @@ namespace LTC.AdministrationService.Entities
 {
     public class PricingRule : Entity<Guid>, IMultiTenant
     {
+        public PricingRule()
+        {
+        }
+
+        public PricingRule(Guid id) : base(id)
+        {
+        }
+
         public Guid? TenantId { get; set; }
         public Guid CinemaId { get; set; }
         public Guid? SeatTypeId { get; set; }

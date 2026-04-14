@@ -45,6 +45,7 @@ namespace LTC.AdministrationService;
 
 [DependsOn(
     typeof(AdministrationServiceHttpApiModule),
+    typeof(Volo.Abp.Mapperly.AbpMapperlyModule),
     typeof(AbpAspNetCoreMvcModule),
     typeof(AbpAutofacModule),
     typeof(AbpAspNetCoreMultiTenancyModule),
@@ -261,7 +262,8 @@ public class AdministrationServiceHttpApiHostModule : AbpModule
                 options =>
                 {
                     options.SwaggerDoc("v1", new OpenApiInfo { Title = "LTC Administration Service API Endpoint", Version = "v1" });
-                    options.DocInclusionPredicate((docName, description) => description.RelativePath != null && description.RelativePath.StartsWith("ltc/administration-service", StringComparison.OrdinalIgnoreCase));
+                    options.DocInclusionPredicate((docName, description) => description.RelativePath != null && 
+                        description.RelativePath.StartsWith("ltc/administration-service", StringComparison.OrdinalIgnoreCase));
                     options.CustomSchemaIds(type => type.FullName);
                 });
         }

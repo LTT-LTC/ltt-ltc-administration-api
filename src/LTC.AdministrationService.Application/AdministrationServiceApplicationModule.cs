@@ -1,5 +1,5 @@
 ﻿using Volo.Abp.Account;
-using Volo.Abp.AutoMapper;
+using Volo.Abp.Mapperly;
 using Volo.Abp.FeatureManagement;
 using Volo.Abp.Identity;
 using Volo.Abp.Identity.AspNetCore;
@@ -11,6 +11,7 @@ using Volo.Abp.TenantManagement;
 namespace LTC.AdministrationService;
 
 [DependsOn(
+    typeof(AbpMapperlyModule),
     typeof(AdministrationServiceDomainModule),
     typeof(AdministrationServiceApplicationContractsModule),
     typeof(AbpPermissionManagementApplicationModule),
@@ -25,9 +26,5 @@ public class AdministrationServiceApplicationModule : AbpModule
 {
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
-        Configure<AbpAutoMapperOptions>(options =>
-        {
-            options.AddMaps<AdministrationServiceApplicationModule>();
-        });
     }
 }
