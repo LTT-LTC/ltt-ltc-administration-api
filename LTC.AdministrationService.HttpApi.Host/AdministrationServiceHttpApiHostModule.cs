@@ -261,7 +261,7 @@ public class AdministrationServiceHttpApiHostModule : AbpModule
                 options =>
                 {
                     options.SwaggerDoc("v1", new OpenApiInfo { Title = "LTC Administration Service API Endpoint", Version = "v1" });
-                    options.DocInclusionPredicate((docName, description) => true);
+                    options.DocInclusionPredicate((docName, description) => description.RelativePath != null && description.RelativePath.StartsWith("ltc/administration-service", StringComparison.OrdinalIgnoreCase));
                     options.CustomSchemaIds(type => type.FullName);
                 });
         }
@@ -381,3 +381,6 @@ public class AdministrationServiceHttpApiHostModule : AbpModule
         });
     }
 }
+
+
+
