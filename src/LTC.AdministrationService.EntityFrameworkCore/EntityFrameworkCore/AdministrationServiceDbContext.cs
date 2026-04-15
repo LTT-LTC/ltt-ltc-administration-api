@@ -52,6 +52,7 @@ public class AdministrationServiceDbContext :
     public DbSet<CinemaAmenityType> CinemaAmenityTypes { get; set; }
     public DbSet<GiftCode> GiftCodes { get; set; }
     public DbSet<RevenueSnapshot> RevenueSnapshots { get; set; }
+    public DbSet<Entities.NewsAndOffers> NewsAndOffers { get; set; }
 
     #endregion
 
@@ -116,6 +117,23 @@ public class AdministrationServiceDbContext :
         {
             b.ToTable("CinemaAmenities", AdministrationServiceConsts.DbSchema);
             b.ConfigureByConvention();
+        });
+
+        builder.Entity<Entities.NewsAndOffers>(b =>
+        {
+            b.ToTable("NewsAndOffers", AdministrationServiceConsts.DbSchema);
+            b.HasKey(x => x.Id);
+            b.Property(x => x.Id).HasColumnName("Id").IsRequired();
+            b.Property(x => x.CinemaId).HasColumnName("CinemaId");
+            b.Property(x => x.Title).HasColumnName("Title").HasMaxLength(256).IsRequired();
+            b.Property(x => x.Content).HasColumnName("Content").IsRequired();
+            b.Property(x => x.StartDate).HasColumnName("StartDate");
+            b.Property(x => x.EndDate).HasColumnName("EndDate");
+            b.Property(x => x.IsActive).HasColumnName("IsActive").IsRequired();
+            b.Property(x => x.PosterUrl).HasColumnName("PosterUrl");
+            b.Property(x => x.IsDeleted).HasColumnName("IsDeleted").IsRequired();
+            b.Property(x => x.CreatedAt).HasColumnName("CreatedAt");
+            b.Property(x => x.UpdatedAt).HasColumnName("UpdatedAt");
         });
 
         builder.Entity<CinemaAmenityType>(b =>

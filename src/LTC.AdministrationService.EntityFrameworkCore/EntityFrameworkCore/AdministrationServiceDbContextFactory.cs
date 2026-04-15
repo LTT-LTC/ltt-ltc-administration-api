@@ -24,8 +24,9 @@ public class AdministrationServiceDbContextFactory : IDesignTimeDbContextFactory
 
     private static IConfigurationRoot BuildConfiguration()
     {
+        var migratorPath = Path.Combine(Directory.GetCurrentDirectory(), "../LTC.AdministrationService.DbMigrator/");
         var builder = new ConfigurationBuilder()
-            .SetBasePath(Path.Combine(Directory.GetCurrentDirectory(), "../LTC.AdministrationService.HttpApi.Host/"))
+            .SetBasePath(migratorPath)
             .AddJsonFile("appsettings.json", optional: false);
 
         return builder.Build();

@@ -11,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
@@ -351,7 +352,12 @@ namespace LTC.AdministrationService.Auth
             var claimsPrincipal = await _signInManager.CreateUserPrincipalAsync(user);
             var claims = claimsPrincipal.Claims.ToList();
 
-            var roles = await _identityUserManager.GetRolesAsync(user);
+            IList<string> roles;
+            using (_dataFilter.Disable<IMultiTenant>())
+            {
+                roles = await _identityUserManager.GetRolesAsync(user);
+            }
+            
             foreach (var role in roles)
             {
                 if (!claims.Any(c => c.Type == ClaimTypes.Role && c.Value == role))

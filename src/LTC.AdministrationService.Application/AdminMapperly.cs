@@ -11,6 +11,8 @@ using LTC.AdministrationService.Admin.SeatType.Dtos.Output;
 using LTC.AdministrationService.PricingRules.Dtos;
 using LTC.AdministrationService.Employee.Dtos.Output;
 using LTC.AdministrationService.Employee.Dtos.Input;
+using LTC.AdministrationService.NewsAndOffers.Dtos.Input;
+using LTC.AdministrationService.NewsAndOffers.Dtos.Output;
 
 namespace LTC.AdministrationService;
 
@@ -139,4 +141,27 @@ public partial class CreateShowtimeMapper : IObjectMapper<Showtimes.Dtos.CreateS
 {
     public partial Entities.Showtime Map(Showtimes.Dtos.CreateShowtimeDto source);
     public Entities.Showtime Map(Showtimes.Dtos.CreateShowtimeDto source, Entities.Showtime destination) => null;
+}
+
+[Mapper]
+public partial class NewsAndOffersOutputMapper : IObjectMapper<Entities.NewsAndOffers, NewsAndOffersOutputDto>, ITransientDependency
+{
+    public partial NewsAndOffersOutputDto Map(Entities.NewsAndOffers source);
+    public NewsAndOffersOutputDto Map(Entities.NewsAndOffers source, NewsAndOffersOutputDto destination) => Map(source);
+}
+
+[Mapper]
+public partial class CreateNewsAndOffersMapper : IObjectMapper<CreateNewsAndOffersDto, Entities.NewsAndOffers>, ITransientDependency
+{
+    public partial Entities.NewsAndOffers Map(CreateNewsAndOffersDto source);
+    public Entities.NewsAndOffers Map(CreateNewsAndOffersDto source, Entities.NewsAndOffers destination) => null;
+}
+
+[Mapper]
+public partial class UpdateNewsAndOffersMapper : IObjectMapper<UpdateNewsAndOffersDto, Entities.NewsAndOffers>, ITransientDependency
+{
+    public partial Entities.NewsAndOffers Map(UpdateNewsAndOffersDto source);
+    public Entities.NewsAndOffers Map(UpdateNewsAndOffersDto source, Entities.NewsAndOffers destination) { MapUpdate(source, destination); return destination; }
+    [MapperIgnoreTarget(nameof(Entities.NewsAndOffers.Id))]
+    public partial void MapUpdate(UpdateNewsAndOffersDto source, Entities.NewsAndOffers target);
 }
