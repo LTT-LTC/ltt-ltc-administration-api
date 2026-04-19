@@ -380,8 +380,13 @@ IF NOT EXISTS (
 BEGIN
     CREATE TABLE [CinemaAmenities] (
         [Id] uniqueidentifier NOT NULL,
+        [TenantId] uniqueidentifier NULL,
         [CinemaId] uniqueidentifier NOT NULL,
         [AmenitiesTypeId] uniqueidentifier NOT NULL,
+        [ProductId] uniqueidentifier NULL,
+        [Name] nvarchar(max) NOT NULL,
+        [Description] nvarchar(max) NULL,
+        [Status] nvarchar(max) NOT NULL,
         CONSTRAINT [PK_CinemaAmenities] PRIMARY KEY ([Id])
     );
 END;
