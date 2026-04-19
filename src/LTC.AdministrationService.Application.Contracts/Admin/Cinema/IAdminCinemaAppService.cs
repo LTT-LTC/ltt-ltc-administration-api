@@ -2,18 +2,18 @@ using System;
 using System.Threading.Tasks;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Application.Dtos;
-using LTC.AdministrationService.Admin.Cinema.Dtos.Input;
-using LTC.AdministrationService.Admin.Cinema.Dtos.Output;
+using LTC.AdministrationService.Admin.Cinemas.Dtos.Input;
+using LTC.AdministrationService.Admin.Cinemas.Dtos.Output;
 using LTC.Shared.CrossCuttingConcerns.Pagination;
 
-namespace LTC.AdministrationService.Admin.Cinema
+namespace LTC.AdministrationService.Admin.Cinemas
 {
     public interface IAdminCinemaAppService : IApplicationService
     {
-        Task<PagedResultDto<CinemaOutputDto>> GetListAsync(GetCinemaListInputDto input);
-        Task<CinemaOutputDto> GetAsync(Guid id);
-        Task<CinemaOutputDto> CreateAsync(CreateCinemaInputDto input);
-        Task<CinemaOutputDto> UpdateAsync(Guid id, UpdateCinemaInputDto input);
+        Task<PagedResultDto<CinemasOutputDto>> GetListAsync(GetCinemasListInputDto input);
+        Task<CinemasOutputDto> GetAsync(Guid id);
+        Task<CinemasOutputDto> CreateAsync(CreateCinemasInputDto input);
+        Task<CinemasOutputDto> UpdateAsync(Guid id, UpdateCinemasInputDto input);
         Task DeleteAsync(Guid id);
     }
 }

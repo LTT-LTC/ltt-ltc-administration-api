@@ -7,6 +7,13 @@ using Volo.Abp.Modularity;
 using Volo.Abp.PermissionManagement;
 using Volo.Abp.SettingManagement;
 using Volo.Abp.TenantManagement;
+using Microsoft.Extensions.DependencyInjection;
+using LTC.AdministrationService.Admin.Cinemas;
+using LTC.AdministrationService.Admin.Screens;
+using LTC.AdministrationService.Admin.SeatTypes;
+using LTC.AdministrationService.Cinemas;
+using LTC.AdministrationService.Screens;
+using LTC.AdministrationService.SeatTypes;
 
 namespace LTC.AdministrationService;
 
@@ -26,5 +33,11 @@ public class AdministrationServiceApplicationModule : AbpModule
 {
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
+        // Keep explicit bindings for admin app services to avoid runtime activation issues
+        // when namespace refactors make convention-based resolution brittle.
+        context.Services.AddTransient<IAdminCinemaAppService, CinemaAppService>();
+        context.Services.AddTransient<IAdminCinemaAmenityAppService, CinemaAmenityAppService>();
+        context.Services.AddTransient<IAdminScreenAppService, ScreenAppService>();
+        context.Services.AddTransient<IAdminSeatTypeAppService, SeatTypeAppService>();
     }
 }

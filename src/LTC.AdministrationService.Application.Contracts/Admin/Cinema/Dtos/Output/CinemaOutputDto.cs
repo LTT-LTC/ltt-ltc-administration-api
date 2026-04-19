@@ -1,8 +1,8 @@
 using System;
 
-namespace LTC.AdministrationService.Admin.Cinema.Dtos.Output
+namespace LTC.AdministrationService.Admin.Cinemas.Dtos.Output
 {
-    public class CinemaOutputDto
+    public class CinemasOutputDto
     {
         public Guid Id { get; set; }
         public Guid? TenantId { get; set; }

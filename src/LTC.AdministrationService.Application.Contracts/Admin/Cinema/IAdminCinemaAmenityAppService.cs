@@ -2,10 +2,10 @@ using System;
 using System.Threading.Tasks;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
-using LTC.AdministrationService.Admin.Cinema.Dtos.Input;
-using LTC.AdministrationService.Admin.Cinema.Dtos.Output;
+using LTC.AdministrationService.Admin.Cinemas.Dtos.Input;
+using LTC.AdministrationService.Admin.Cinemas.Dtos.Output;
 
-namespace LTC.AdministrationService.Admin.Cinema
+namespace LTC.AdministrationService.Admin.Cinemas
 {
     public interface IAdminCinemaAmenityAppService : IApplicationService
     {

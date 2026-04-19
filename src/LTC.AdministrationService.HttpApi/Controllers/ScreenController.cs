@@ -5,9 +5,9 @@ using Volo.Abp;
 using Volo.Abp.AspNetCore.Mvc;
 using Volo.Abp.Application.Dtos;
 using Microsoft.AspNetCore.Authorization;
-using LTC.AdministrationService.Admin.Screen;
-using LTC.AdministrationService.Admin.Screen.Dtos.Input;
-using LTC.AdministrationService.Admin.Screen.Dtos.Output;
+using LTC.AdministrationService.Admin.Screens;
+using LTC.AdministrationService.Admin.Screens.Dtos.Input;
+using LTC.AdministrationService.Admin.Screens.Dtos.Output;
 using LTC.Shared.CrossCuttingConcerns.Pagination;
 using LTC.AdministrationService.Controllers;
 

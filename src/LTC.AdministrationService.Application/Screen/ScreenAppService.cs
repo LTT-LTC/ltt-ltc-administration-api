@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
-using LTC.AdministrationService.Admin.Screen;
-using LTC.AdministrationService.Admin.Screen.Dtos.Input;
-using LTC.AdministrationService.Admin.Screen.Dtos.Output;
+using LTC.AdministrationService.Admin.Screens;
+using LTC.AdministrationService.Admin.Screens.Dtos.Input;
+using LTC.AdministrationService.Admin.Screens.Dtos.Output;
 
-namespace LTC.AdministrationService.Screen
+namespace LTC.AdministrationService.Screens
 {
     public class ScreenAppService : ApplicationService, IAdminScreenAppService
     {

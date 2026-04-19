@@ -1,7 +1,7 @@
 using System;
 using Volo.Abp.Application.Dtos;
 
-namespace LTC.AdministrationService.Admin.Cinema.Dtos.Output
+namespace LTC.AdministrationService.Admin.Cinemas.Dtos.Output
 {
     public class CinemaAmenityOutputDto : EntityDto<Guid>
     {

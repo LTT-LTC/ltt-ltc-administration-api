@@ -6,9 +6,9 @@ using Volo.Abp.Application.Dtos;
 using Volo.Abp.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using LTC.AdministrationService.Controllers;
-using LTC.AdministrationService.Admin.Cinema;
-using LTC.AdministrationService.Admin.Cinema.Dtos.Input;
-using LTC.AdministrationService.Admin.Cinema.Dtos.Output;
+using LTC.AdministrationService.Admin.Cinemas;
+using LTC.AdministrationService.Admin.Cinemas.Dtos.Input;
+using LTC.AdministrationService.Admin.Cinemas.Dtos.Output;
 
 namespace LTC.AdministrationService.Controllers
 {
@@ -27,25 +27,25 @@ namespace LTC.AdministrationService.Controllers
         }
 
         [HttpGet]
-        public virtual async Task<PagedResultDto<CinemaOutputDto>> GetListAsync([FromQuery] GetCinemaListInputDto input)
+        public virtual async Task<PagedResultDto<CinemasOutputDto>> GetListAsync([FromQuery] GetCinemasListInputDto input)
         {
             return await _cinemaAppService.GetListAsync(input);
         }
 
         [HttpGet("{id}")]
-        public virtual async Task<CinemaOutputDto> GetAsync(Guid id)
+        public virtual async Task<CinemasOutputDto> GetAsync(Guid id)
         {
             return await _cinemaAppService.GetAsync(id);
         }
 
         [HttpPost]
-        public virtual async Task<CinemaOutputDto> CreateAsync(CreateCinemaInputDto input)
+        public virtual async Task<CinemasOutputDto> CreateAsync(CreateCinemasInputDto input)
         {
             return await _cinemaAppService.CreateAsync(input);
         }
 
         [HttpPut("{id}")]
-        public virtual async Task<CinemaOutputDto> UpdateAsync(Guid id, UpdateCinemaInputDto input)
+        public virtual async Task<CinemasOutputDto> UpdateAsync(Guid id, UpdateCinemasInputDto input)
         {
             return await _cinemaAppService.UpdateAsync(id, input);
         }

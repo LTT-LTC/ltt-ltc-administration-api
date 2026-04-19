@@ -11,14 +11,14 @@ namespace LTC.AdministrationService.Grpc;
 
 public class AdministrationGrpcService : AdministrationGrpc.AdministrationGrpcBase
 {
-    private readonly IRepository<Cinema, Guid> _cinemaRepository;
-    private readonly IRepository<Showtime, Guid> _showtimeRepository;
-    private readonly IRepository<GiftCode, Guid> _giftCodeRepository;
+    private readonly IRepository<Entities.Cinema, Guid> _cinemaRepository;
+    private readonly IRepository<Entities.Showtime, Guid> _showtimeRepository;
+    private readonly IRepository<Entities.GiftCode, Guid> _giftCodeRepository;
 
     public AdministrationGrpcService(
-        IRepository<Cinema, Guid> cinemaRepository,
-        IRepository<Showtime, Guid> showtimeRepository,
-        IRepository<GiftCode, Guid> giftCodeRepository)
+        IRepository<Entities.Cinema, Guid> cinemaRepository,
+        IRepository<Entities.Showtime, Guid> showtimeRepository,
+        IRepository<Entities.GiftCode, Guid> giftCodeRepository)
     {
         _cinemaRepository = cinemaRepository;
         _showtimeRepository = showtimeRepository;

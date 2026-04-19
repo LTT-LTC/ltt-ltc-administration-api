@@ -5,9 +5,9 @@ using Microsoft.AspNetCore.Authorization;
 using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.AspNetCore.Mvc;
-using LTC.AdministrationService.Admin.Cinema;
-using LTC.AdministrationService.Admin.Cinema.Dtos.Input;
-using LTC.AdministrationService.Admin.Cinema.Dtos.Output;
+using LTC.AdministrationService.Admin.Cinemas;
+using LTC.AdministrationService.Admin.Cinemas.Dtos.Input;
+using LTC.AdministrationService.Admin.Cinemas.Dtos.Output;
 
 namespace LTC.AdministrationService.Controllers
 {

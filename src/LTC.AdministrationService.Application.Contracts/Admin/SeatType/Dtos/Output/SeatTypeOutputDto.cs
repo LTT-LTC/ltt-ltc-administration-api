@@ -1,6 +1,6 @@
 using System;
 
-namespace LTC.AdministrationService.Admin.SeatType.Dtos.Output
+namespace LTC.AdministrationService.Admin.SeatTypes.Dtos.Output
 {
     public class SeatTypeOutputDto
     {

@@ -4,9 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Volo.Abp.AspNetCore.Mvc;
 using Volo.Abp.Application.Dtos;
-using LTC.AdministrationService.Admin.SeatType;
-using LTC.AdministrationService.Admin.SeatType.Dtos.Input;
-using LTC.AdministrationService.Admin.SeatType.Dtos.Output;
+using LTC.AdministrationService.Admin.SeatTypes;
+using LTC.AdministrationService.Admin.SeatTypes.Dtos.Input;
+using LTC.AdministrationService.Admin.SeatTypes.Dtos.Output;
 using LTC.Shared.CrossCuttingConcerns.Pagination;
 
 namespace LTC.AdministrationService.Controllers

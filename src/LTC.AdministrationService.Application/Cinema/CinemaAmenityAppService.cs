@@ -5,12 +5,12 @@ using Microsoft.EntityFrameworkCore;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
-using LTC.AdministrationService.Admin.Cinema;
-using LTC.AdministrationService.Admin.Cinema.Dtos.Input;
-using LTC.AdministrationService.Admin.Cinema.Dtos.Output;
+using LTC.AdministrationService.Admin.Cinemas;
+using LTC.AdministrationService.Admin.Cinemas.Dtos.Input;
+using LTC.AdministrationService.Admin.Cinemas.Dtos.Output;
 using LTC.AdministrationService.Entities;
 
-namespace LTC.AdministrationService.Cinema
+namespace LTC.AdministrationService.Cinemas
 {
     public class CinemaAmenityAppService : ApplicationService, IAdminCinemaAmenityAppService
     {

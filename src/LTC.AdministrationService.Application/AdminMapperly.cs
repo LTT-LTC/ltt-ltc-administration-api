@@ -2,12 +2,12 @@ using Riok.Mapperly.Abstractions;
 using Volo.Abp.ObjectMapping;
 using Volo.Abp.DependencyInjection;
 using LTC.AdministrationService.Entities;
-using LTC.AdministrationService.Admin.Cinema.Dtos.Input;
-using LTC.AdministrationService.Admin.Cinema.Dtos.Output;
-using LTC.AdministrationService.Admin.Screen.Dtos.Input;
-using LTC.AdministrationService.Admin.Screen.Dtos.Output;
-using LTC.AdministrationService.Admin.SeatType.Dtos.Input;
-using LTC.AdministrationService.Admin.SeatType.Dtos.Output;
+using LTC.AdministrationService.Admin.Cinemas.Dtos.Input;
+using LTC.AdministrationService.Admin.Cinemas.Dtos.Output;
+using LTC.AdministrationService.Admin.Screens.Dtos.Input;
+using LTC.AdministrationService.Admin.Screens.Dtos.Output;
+using LTC.AdministrationService.Admin.SeatTypes.Dtos.Input;
+using LTC.AdministrationService.Admin.SeatTypes.Dtos.Output;
 using LTC.AdministrationService.PricingRules.Dtos;
 using LTC.AdministrationService.Employee.Dtos.Output;
 using LTC.AdministrationService.Employee.Dtos.Input;
@@ -17,27 +17,27 @@ using LTC.AdministrationService.NewsAndOffers.Dtos.Output;
 namespace LTC.AdministrationService;
 
 [Mapper]
-public partial class CinemaOutputMapper : IObjectMapper<Entities.Cinema, CinemaOutputDto>, ITransientDependency
+public partial class CinemaOutputMapper : IObjectMapper<Entities.Cinema, CinemasOutputDto>, ITransientDependency
 {
-    public partial CinemaOutputDto Map(Entities.Cinema source);
-    public CinemaOutputDto Map(Entities.Cinema source, CinemaOutputDto destination) => Map(source);
+    public partial CinemasOutputDto Map(Entities.Cinema source);
+    public CinemasOutputDto Map(Entities.Cinema source, CinemasOutputDto destination) => Map(source);
 }
 
 [Mapper]
-public partial class CreateCinemaInputMapper : IObjectMapper<CreateCinemaInputDto, Entities.Cinema>, ITransientDependency
+public partial class CreateCinemaInputMapper : IObjectMapper<CreateCinemasInputDto, Entities.Cinema>, ITransientDependency
 {
-    public partial Entities.Cinema Map(CreateCinemaInputDto source);
-    public Entities.Cinema Map(CreateCinemaInputDto source, Entities.Cinema destination) => null;
+    public partial Entities.Cinema Map(CreateCinemasInputDto source);
+    public Entities.Cinema Map(CreateCinemasInputDto source, Entities.Cinema destination) => null;
 }
 
 [Mapper]
-public partial class UpdateCinemaInputMapper : IObjectMapper<UpdateCinemaInputDto, Entities.Cinema>, ITransientDependency
+public partial class UpdateCinemaInputMapper : IObjectMapper<UpdateCinemasInputDto, Entities.Cinema>, ITransientDependency
 {
-    public partial Entities.Cinema Map(UpdateCinemaInputDto source);
-    public Entities.Cinema Map(UpdateCinemaInputDto source, Entities.Cinema destination) { MapUpdate(source, destination); return destination; }
+    public partial Entities.Cinema Map(UpdateCinemasInputDto source);
+    public Entities.Cinema Map(UpdateCinemasInputDto source, Entities.Cinema destination) { MapUpdate(source, destination); return destination; }
     [MapperIgnoreTarget(nameof(Entities.Cinema.Id))]
     [MapperIgnoreTarget(nameof(Entities.Cinema.TenantId))]
-    public partial void MapUpdate(UpdateCinemaInputDto source, Entities.Cinema target);
+    public partial void MapUpdate(UpdateCinemasInputDto source, Entities.Cinema target);
 }
 
 [Mapper]

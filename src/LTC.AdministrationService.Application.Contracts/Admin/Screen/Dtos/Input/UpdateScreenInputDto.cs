@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace LTC.AdministrationService.Admin.Screen.Dtos.Input
+namespace LTC.AdministrationService.Admin.Screens.Dtos.Input
 {
     public class UpdateScreenInputDto
     {

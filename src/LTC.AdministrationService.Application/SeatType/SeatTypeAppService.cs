@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
-using LTC.AdministrationService.Admin.SeatType;
-using LTC.AdministrationService.Admin.SeatType.Dtos.Input;
-using LTC.AdministrationService.Admin.SeatType.Dtos.Output;
+using LTC.AdministrationService.Admin.SeatTypes;
+using LTC.AdministrationService.Admin.SeatTypes.Dtos.Input;
+using LTC.AdministrationService.Admin.SeatTypes.Dtos.Output;
 
-namespace LTC.AdministrationService.SeatType
+namespace LTC.AdministrationService.SeatTypes
 {
     public class SeatTypeAppService : ApplicationService, IAdminSeatTypeAppService
     {

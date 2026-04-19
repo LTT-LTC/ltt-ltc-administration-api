@@ -1,9 +1,9 @@
 using LTC.Shared.CrossCuttingConcerns.Pagination;
 using System.ComponentModel.DataAnnotations;
 
-namespace LTC.AdministrationService.Admin.Cinema.Dtos.Input
+namespace LTC.AdministrationService.Admin.Cinemas.Dtos.Input
 {
-    public class GetCinemaListInputDto : PaginationWithSearchRequestDto
+    public class GetCinemasListInputDto : PaginationWithSearchRequestDto
     {
         [MaxLength(64)]
         public string? Status { get; set; }
