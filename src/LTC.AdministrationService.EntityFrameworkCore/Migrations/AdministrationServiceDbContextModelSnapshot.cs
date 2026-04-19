@@ -18,6 +18,7 @@ namespace LTC.AdministrationService.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
+                .HasDefaultSchema("dbo")
                 .HasAnnotation("_Abp_DatabaseProvider", EfCoreDatabaseProvider.SqlServer)
                 .HasAnnotation("ProductVersion", "10.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
@@ -63,7 +64,7 @@ namespace LTC.AdministrationService.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Cinemas", (string)null);
+                    b.ToTable("Cinemas", "dbo");
                 });
 
             modelBuilder.Entity("LTC.AdministrationService.Entities.CinemaAmenity", b =>
@@ -77,9 +78,13 @@ namespace LTC.AdministrationService.Migrations
                     b.Property<Guid>("CinemaId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("TenantId");
+
                     b.HasKey("Id");
 
-                    b.ToTable("CinemaAmenities", (string)null);
+                    b.ToTable("CinemaAmenities", "dbo");
                 });
 
             modelBuilder.Entity("LTC.AdministrationService.Entities.CinemaAmenityType", b =>
@@ -94,9 +99,13 @@ namespace LTC.AdministrationService.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("TenantId");
+
                     b.HasKey("Id");
 
-                    b.ToTable("CinemaAmenityTypes", (string)null);
+                    b.ToTable("CinemaAmenityTypes", "dbo");
                 });
 
             modelBuilder.Entity("LTC.AdministrationService.Entities.Employee", b =>
@@ -200,7 +209,7 @@ namespace LTC.AdministrationService.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Employees", (string)null);
+                    b.ToTable("Employees", "dbo");
                 });
 
             modelBuilder.Entity("LTC.AdministrationService.Entities.GiftCode", b =>
@@ -248,7 +257,7 @@ namespace LTC.AdministrationService.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("GiftCodes", (string)null);
+                    b.ToTable("GiftCodes", "dbo");
                 });
 
             modelBuilder.Entity("LTC.AdministrationService.Entities.MediaFile", b =>
@@ -323,92 +332,65 @@ namespace LTC.AdministrationService.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("MediaFiles", (string)null);
+                    b.ToTable("MediaFiles", "dbo");
                 });
 
-            modelBuilder.Entity("LTC.AdministrationService.Entities.NewsAndOffer", b =>
+            modelBuilder.Entity("LTC.AdministrationService.Entities.NewsAndOffers", b =>
                 {
-                    b.Property<Guid>("NewsAndOfferId")
-                        .ValueGeneratedOnAdd()
+                    b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier")
-                        .HasColumnName("newsAndOfferId");
+                        .HasColumnName("Id");
 
-                    b.Property<Guid>("CinemaId")
+                    b.Property<Guid?>("CinemaId")
                         .HasColumnType("uniqueidentifier")
-                        .HasColumnName("cinemaId");
+                        .HasColumnName("CinemaId");
 
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)")
-                        .HasColumnName("content");
+                        .HasColumnName("Content");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("datetime2")
-                        .HasColumnName("createdAt");
+                        .HasColumnName("CreatedAt");
 
-                    b.Property<DateTime>("CreationTime")
+                    b.Property<DateTime?>("EndDate")
                         .HasColumnType("datetime2")
-                        .HasColumnName("CreationTime");
-
-                    b.Property<Guid?>("CreatorId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("CreatorId");
-
-                    b.Property<Guid?>("DeleterId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("DeleterId");
-
-                    b.Property<DateTime?>("DeletionTime")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("DeletionTime");
-
-                    b.Property<DateTime>("EndDate")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("endDate");
-
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnName("EndDate");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit")
-                        .HasColumnName("isActive");
+                        .HasColumnName("IsActive");
 
                     b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
-                        .HasDefaultValue(false)
-                        .HasColumnName("isDeleted");
-
-                    b.Property<DateTime?>("LastModificationTime")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("LastModificationTime");
-
-                    b.Property<Guid?>("LastModifierId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("LastModifierId");
+                        .HasColumnName("IsDeleted");
 
                     b.Property<string>("PosterUrl")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)")
-                        .HasColumnName("posterUrl");
+                        .HasColumnName("PosterUrl");
 
-                    b.Property<DateTime>("StartDate")
+                    b.Property<DateTime?>("StartDate")
                         .HasColumnType("datetime2")
-                        .HasColumnName("startDate");
+                        .HasColumnName("StartDate");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("TenantId");
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)")
-                        .HasColumnName("title");
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("Title");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2")
-                        .HasColumnName("updatedAt");
+                        .HasColumnName("UpdatedAt");
 
-                    b.HasKey("NewsAndOfferId");
+                    b.HasKey("Id");
 
-                    b.ToTable("NewsAndOffers", (string)null);
+                    b.ToTable("NewsAndOffers", "dbo");
                 });
 
             modelBuilder.Entity("LTC.AdministrationService.Entities.PricingRule", b =>
@@ -461,7 +443,7 @@ namespace LTC.AdministrationService.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("PricingRules", (string)null);
+                    b.ToTable("PricingRules", "dbo");
                 });
 
             modelBuilder.Entity("LTC.AdministrationService.Entities.RevenueSnapshot", b =>
@@ -499,7 +481,7 @@ namespace LTC.AdministrationService.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("RevenueSnapshots", (string)null);
+                    b.ToTable("RevenueSnapshots", "dbo");
                 });
 
             modelBuilder.Entity("LTC.AdministrationService.Entities.Screen", b =>
@@ -537,7 +519,7 @@ namespace LTC.AdministrationService.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Screens", (string)null);
+                    b.ToTable("Screens", "dbo");
                 });
 
             modelBuilder.Entity("LTC.AdministrationService.Entities.SeatType", b =>
@@ -561,12 +543,16 @@ namespace LTC.AdministrationService.Migrations
                     b.Property<decimal>("PriceMultiplier")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("TenantId");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
-                    b.ToTable("SeatTypes", (string)null);
+                    b.ToTable("SeatTypes", "dbo");
                 });
 
             modelBuilder.Entity("LTC.AdministrationService.Entities.Showtime", b =>
@@ -610,7 +596,7 @@ namespace LTC.AdministrationService.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Showtimes", (string)null);
+                    b.ToTable("Showtimes", "dbo");
                 });
 
             modelBuilder.Entity("Volo.Abp.FeatureManagement.FeatureDefinitionRecord", b =>
@@ -671,7 +657,7 @@ namespace LTC.AdministrationService.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("AbpFeatures", (string)null);
+                    b.ToTable("AbpFeatures", "dbo");
                 });
 
             modelBuilder.Entity("Volo.Abp.FeatureManagement.FeatureGroupDefinitionRecord", b =>
@@ -699,7 +685,7 @@ namespace LTC.AdministrationService.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("AbpFeatureGroups", (string)null);
+                    b.ToTable("AbpFeatureGroups", "dbo");
                 });
 
             modelBuilder.Entity("Volo.Abp.FeatureManagement.FeatureValue", b =>
@@ -732,7 +718,7 @@ namespace LTC.AdministrationService.Migrations
                         .IsUnique()
                         .HasFilter("[ProviderName] IS NOT NULL AND [ProviderKey] IS NOT NULL");
 
-                    b.ToTable("AbpFeatureValues", (string)null);
+                    b.ToTable("AbpFeatureValues", "dbo");
                 });
 
             modelBuilder.Entity("Volo.Abp.Identity.IdentityClaimType", b =>
@@ -785,7 +771,7 @@ namespace LTC.AdministrationService.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("AbpClaimTypes", (string)null);
+                    b.ToTable("AbpClaimTypes", "dbo");
                 });
 
             modelBuilder.Entity("Volo.Abp.Identity.IdentityLinkUser", b =>
@@ -812,7 +798,7 @@ namespace LTC.AdministrationService.Migrations
                         .IsUnique()
                         .HasFilter("[SourceTenantId] IS NOT NULL AND [TargetTenantId] IS NOT NULL");
 
-                    b.ToTable("AbpLinkUsers", (string)null);
+                    b.ToTable("AbpLinkUsers", "dbo");
                 });
 
             modelBuilder.Entity("Volo.Abp.Identity.IdentityRole", b =>
@@ -869,7 +855,7 @@ namespace LTC.AdministrationService.Migrations
 
                     b.HasIndex("NormalizedName");
 
-                    b.ToTable("AbpRoles", (string)null);
+                    b.ToTable("AbpRoles", "dbo");
                 });
 
             modelBuilder.Entity("Volo.Abp.Identity.IdentityRoleClaim", b =>
@@ -897,7 +883,7 @@ namespace LTC.AdministrationService.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("AbpRoleClaims", (string)null);
+                    b.ToTable("AbpRoleClaims", "dbo");
                 });
 
             modelBuilder.Entity("Volo.Abp.Identity.IdentitySecurityLog", b =>
@@ -974,7 +960,7 @@ namespace LTC.AdministrationService.Migrations
 
                     b.HasIndex("TenantId", "UserId");
 
-                    b.ToTable("AbpSecurityLogs", (string)null);
+                    b.ToTable("AbpSecurityLogs", "dbo");
                 });
 
             modelBuilder.Entity("Volo.Abp.Identity.IdentitySession", b =>
@@ -1030,7 +1016,7 @@ namespace LTC.AdministrationService.Migrations
 
                     b.HasIndex("TenantId", "UserId");
 
-                    b.ToTable("AbpSessions", (string)null);
+                    b.ToTable("AbpSessions", "dbo");
                 });
 
             modelBuilder.Entity("Volo.Abp.Identity.IdentityUser", b =>
@@ -1199,7 +1185,7 @@ namespace LTC.AdministrationService.Migrations
 
                     b.HasIndex("UserName");
 
-                    b.ToTable("AbpUsers", (string)null);
+                    b.ToTable("AbpUsers", "dbo");
                 });
 
             modelBuilder.Entity("Volo.Abp.Identity.IdentityUserClaim", b =>
@@ -1227,7 +1213,7 @@ namespace LTC.AdministrationService.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("AbpUserClaims", (string)null);
+                    b.ToTable("AbpUserClaims", "dbo");
                 });
 
             modelBuilder.Entity("Volo.Abp.Identity.IdentityUserDelegation", b =>
@@ -1254,7 +1240,7 @@ namespace LTC.AdministrationService.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("AbpUserDelegations", (string)null);
+                    b.ToTable("AbpUserDelegations", "dbo");
                 });
 
             modelBuilder.Entity("Volo.Abp.Identity.IdentityUserLogin", b =>
@@ -1283,7 +1269,7 @@ namespace LTC.AdministrationService.Migrations
 
                     b.HasIndex("LoginProvider", "ProviderKey");
 
-                    b.ToTable("AbpUserLogins", (string)null);
+                    b.ToTable("AbpUserLogins", "dbo");
                 });
 
             modelBuilder.Entity("Volo.Abp.Identity.IdentityUserOrganizationUnit", b =>
@@ -1310,7 +1296,7 @@ namespace LTC.AdministrationService.Migrations
 
                     b.HasIndex("UserId", "OrganizationUnitId");
 
-                    b.ToTable("AbpUserOrganizationUnits", (string)null);
+                    b.ToTable("AbpUserOrganizationUnits", "dbo");
                 });
 
             modelBuilder.Entity("Volo.Abp.Identity.IdentityUserPasskey", b =>
@@ -1330,7 +1316,7 @@ namespace LTC.AdministrationService.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("AbpUserPasskeys", (string)null);
+                    b.ToTable("AbpUserPasskeys", "dbo");
                 });
 
             modelBuilder.Entity("Volo.Abp.Identity.IdentityUserPasswordHistory", b =>
@@ -1351,7 +1337,7 @@ namespace LTC.AdministrationService.Migrations
 
                     b.HasKey("UserId", "Password");
 
-                    b.ToTable("AbpUserPasswordHistories", (string)null);
+                    b.ToTable("AbpUserPasswordHistories", "dbo");
                 });
 
             modelBuilder.Entity("Volo.Abp.Identity.IdentityUserRole", b =>
@@ -1370,7 +1356,7 @@ namespace LTC.AdministrationService.Migrations
 
                     b.HasIndex("RoleId", "UserId");
 
-                    b.ToTable("AbpUserRoles", (string)null);
+                    b.ToTable("AbpUserRoles", "dbo");
                 });
 
             modelBuilder.Entity("Volo.Abp.Identity.IdentityUserToken", b =>
@@ -1395,7 +1381,7 @@ namespace LTC.AdministrationService.Migrations
 
                     b.HasKey("UserId", "LoginProvider", "Name");
 
-                    b.ToTable("AbpUserTokens", (string)null);
+                    b.ToTable("AbpUserTokens", "dbo");
                 });
 
             modelBuilder.Entity("Volo.Abp.Identity.OrganizationUnit", b =>
@@ -1474,7 +1460,7 @@ namespace LTC.AdministrationService.Migrations
 
                     b.HasIndex("ParentId");
 
-                    b.ToTable("AbpOrganizationUnits", (string)null);
+                    b.ToTable("AbpOrganizationUnits", "dbo");
                 });
 
             modelBuilder.Entity("Volo.Abp.Identity.OrganizationUnitRole", b =>
@@ -1501,7 +1487,7 @@ namespace LTC.AdministrationService.Migrations
 
                     b.HasIndex("RoleId", "OrganizationUnitId");
 
-                    b.ToTable("AbpOrganizationUnitRoles", (string)null);
+                    b.ToTable("AbpOrganizationUnitRoles", "dbo");
                 });
 
             modelBuilder.Entity("Volo.Abp.PermissionManagement.PermissionDefinitionRecord", b =>
@@ -1562,7 +1548,7 @@ namespace LTC.AdministrationService.Migrations
                         .IsUnique()
                         .HasFilter("[ResourceName] IS NOT NULL");
 
-                    b.ToTable("AbpPermissions", (string)null);
+                    b.ToTable("AbpPermissions", "dbo");
                 });
 
             modelBuilder.Entity("Volo.Abp.PermissionManagement.PermissionGrant", b =>
@@ -1596,7 +1582,7 @@ namespace LTC.AdministrationService.Migrations
                         .IsUnique()
                         .HasFilter("[TenantId] IS NOT NULL");
 
-                    b.ToTable("AbpPermissionGrants", (string)null);
+                    b.ToTable("AbpPermissionGrants", "dbo");
                 });
 
             modelBuilder.Entity("Volo.Abp.PermissionManagement.PermissionGroupDefinitionRecord", b =>
@@ -1624,7 +1610,7 @@ namespace LTC.AdministrationService.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("AbpPermissionGroups", (string)null);
+                    b.ToTable("AbpPermissionGroups", "dbo");
                 });
 
             modelBuilder.Entity("Volo.Abp.PermissionManagement.ResourcePermissionGrant", b =>
@@ -1668,7 +1654,7 @@ namespace LTC.AdministrationService.Migrations
                         .IsUnique()
                         .HasFilter("[TenantId] IS NOT NULL");
 
-                    b.ToTable("AbpResourcePermissionGrants", (string)null);
+                    b.ToTable("AbpResourcePermissionGrants", "dbo");
                 });
 
             modelBuilder.Entity("Volo.Abp.SettingManagement.Setting", b =>
@@ -1701,7 +1687,7 @@ namespace LTC.AdministrationService.Migrations
                         .IsUnique()
                         .HasFilter("[ProviderName] IS NOT NULL AND [ProviderKey] IS NOT NULL");
 
-                    b.ToTable("AbpSettings", (string)null);
+                    b.ToTable("AbpSettings", "dbo");
                 });
 
             modelBuilder.Entity("Volo.Abp.SettingManagement.SettingDefinitionRecord", b =>
@@ -1750,7 +1736,7 @@ namespace LTC.AdministrationService.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("AbpSettingDefinitions", (string)null);
+                    b.ToTable("AbpSettingDefinitions", "dbo");
                 });
 
             modelBuilder.Entity("Volo.Abp.TenantManagement.Tenant", b =>
@@ -1819,7 +1805,7 @@ namespace LTC.AdministrationService.Migrations
 
                     b.HasIndex("NormalizedName");
 
-                    b.ToTable("AbpTenants", (string)null);
+                    b.ToTable("AbpTenants", "dbo");
                 });
 
             modelBuilder.Entity("Volo.Abp.TenantManagement.TenantConnectionString", b =>
@@ -1838,7 +1824,7 @@ namespace LTC.AdministrationService.Migrations
 
                     b.HasKey("TenantId", "Name");
 
-                    b.ToTable("AbpTenantConnectionStrings", (string)null);
+                    b.ToTable("AbpTenantConnectionStrings", "dbo");
                 });
 
             modelBuilder.Entity("Volo.Abp.Identity.IdentityRoleClaim", b =>
@@ -1917,7 +1903,7 @@ namespace LTC.AdministrationService.Migrations
 
                             b1.HasKey("IdentityUserPasskeyCredentialId");
 
-                            b1.ToTable("AbpUserPasskeys");
+                            b1.ToTable("AbpUserPasskeys", "dbo");
 
                             b1
                                 .ToJson("Data")

@@ -21,6 +21,9 @@ using Volo.Abp.DistributedLocking;
 using Volo.Abp.Guids;
 using Volo.Abp.Modularity;
 
+using LTC.Shared.Hosting.Microservices.MultiTenancy;
+using Microsoft.AspNetCore.Mvc;
+
 namespace LTC.Shared.Hosting.Microservices
 {
     [DependsOn(
@@ -88,3 +91,4 @@ namespace LTC.Shared.Hosting.Microservices
         }
     }
 }
+

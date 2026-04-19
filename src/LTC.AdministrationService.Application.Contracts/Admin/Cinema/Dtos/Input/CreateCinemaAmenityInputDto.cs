@@ -1,0 +1,17 @@
+using System;
+using System.ComponentModel.DataAnnotations;
+
+namespace LTC.AdministrationService.Admin.Cinema.Dtos.Input
+{
+    public class CreateCinemaAmenityInputDto
+    {
+        [Required]
+        public string Name { get; set; }
+        public string? Description { get; set; }
+        [Required]
+        public Guid AmenitiesTypeId { get; set; }
+        public Guid? ProductId { get; set; }
+        [Required]
+        public string Status { get; set; }
+    }
+}

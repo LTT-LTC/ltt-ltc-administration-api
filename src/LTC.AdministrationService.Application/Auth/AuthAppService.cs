@@ -141,6 +141,11 @@ namespace LTC.AdministrationService.Auth
                     throw new UserFriendlyException(CommonExtensions.GetValidateMessage(L["InvalidValuePlsReEnter"], L["AccountOrPassword"]));
                 }
 
+                if (identityUser.TenantId != _currentTenant.Id)
+                {
+                    throw new UserFriendlyException(L["InvalidTenantForUser"]);
+                }
+
                 var loginResult = await CreateAccessTokenAsync(identityUser);
 
                 // kiểm tra lần đầu đăng nhập
@@ -415,6 +420,11 @@ namespace LTC.AdministrationService.Auth
 
             if (!user.IsActive)
                 throw new UserFriendlyException(L["AccountIsBanned"]);
+
+            if (user.TenantId != _currentTenant.Id)
+            {
+                throw new UserFriendlyException(L["InvalidTenantForUser"]);
+            }
 
             var loginResult = await CreateAccessTokenAsync(user);
             return loginResult;

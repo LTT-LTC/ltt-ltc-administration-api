@@ -165,3 +165,27 @@ public partial class UpdateNewsAndOffersMapper : IObjectMapper<UpdateNewsAndOffe
     [MapperIgnoreTarget(nameof(Entities.NewsAndOffers.Id))]
     public partial void MapUpdate(UpdateNewsAndOffersDto source, Entities.NewsAndOffers target);
 }
+[Mapper]
+public partial class CinemaAmenityOutputMapper : IObjectMapper<Entities.CinemaAmenity, CinemaAmenityOutputDto>, ITransientDependency
+{
+    public partial CinemaAmenityOutputDto Map(Entities.CinemaAmenity source);
+    public CinemaAmenityOutputDto Map(Entities.CinemaAmenity source, CinemaAmenityOutputDto destination) => Map(source);
+}
+
+[Mapper]
+public partial class CreateCinemaAmenityInputMapper : IObjectMapper<CreateCinemaAmenityInputDto, Entities.CinemaAmenity>, ITransientDependency
+{
+    public partial Entities.CinemaAmenity Map(CreateCinemaAmenityInputDto source);
+    public Entities.CinemaAmenity Map(CreateCinemaAmenityInputDto source, Entities.CinemaAmenity destination) => null;
+}
+
+[Mapper]
+public partial class UpdateCinemaAmenityInputMapper : IObjectMapper<UpdateCinemaAmenityInputDto, Entities.CinemaAmenity>, ITransientDependency
+{
+    public partial Entities.CinemaAmenity Map(UpdateCinemaAmenityInputDto source);
+    public Entities.CinemaAmenity Map(UpdateCinemaAmenityInputDto source, Entities.CinemaAmenity destination) { MapUpdate(source, destination); return destination; }
+    [MapperIgnoreTarget(nameof(Entities.CinemaAmenity.Id))]
+    [MapperIgnoreTarget(nameof(Entities.CinemaAmenity.TenantId))]
+    [MapperIgnoreTarget(nameof(Entities.CinemaAmenity.CinemaId))]
+    public partial void MapUpdate(UpdateCinemaAmenityInputDto source, Entities.CinemaAmenity target);
+}

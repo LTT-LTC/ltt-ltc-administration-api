@@ -1,10 +1,10 @@
 {
   "Culture": "vi",
   "Texts": {
-    "AppName": "AdministrationService",
+    "AppName": "LTC",
     "Menu:Home": "Home",
-    "LongWelcomeMessage": "Welcome to the application. This is a startup project based on the ABP framework. For more information visit",
-    "Welcome": "Welcome",
+    "LongWelcomeMessage": "Chào mừng đến với LTC cinema. Đây là một dự án quản lí rạp phim dự trên kiến trúc ABP Frameửok. Để biết thêm chi tiết, vui lòng đọc tài liệu liên quan",
+    "Welcome": "Chào mừng",
 
     "User": "Người dùng",
     "User:Name": "Tên người dùng",
@@ -40,8 +40,10 @@
     "TryAgainLater": "Vui lòng thử lại sau {0}.",
     "PasswordResetFailed": "Khôi phục mật khẩu thất bại.",
     "PasswordCannotBeSameAsOld": "Mật khẩu mới không được trùng với mật khẩu cũ.",
-    "UploadFailed": "Tải dữ liệu không thành công.",
+    "UploadFailed": "Upload dữ liệu không thành công.",
     "DeletedFailed": "Xóa dữ liệu không thành công.",
-    "OutOfSize": "Tổng dung lượng không được vượt quá {0}."
+    "OutOfSize": "Kí tự không được vượt quá {0}.",
+    "InvalidTenantForUser": "Tài khoản không thuộc về hệ thống này.",
+    "TenantNotFound": "Hệ thống không tồn tại."
   }
 }

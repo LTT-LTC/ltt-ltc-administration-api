@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+option csharp_namespace = "LTC.AdministrationService.Grpc";
+
+package administration;
+
+service AdministrationGrpc {
+  rpc GetCinemas (Empty) returns (CinemasResponse);
+  rpc GetCinemaById (GetByIdRequest) returns (CinemaMessage);
+  rpc GetShowtimes (GetShowtimesRequest) returns (ShowtimesResponse);
+  rpc GetShowtimeById (GetByIdRequest) returns (ShowtimeMessage);
+  rpc ValidateGiftCode (ValidateGiftCodeRequest) returns (GiftCodeMessage);
+}
+
+message Empty {}
+
+message GetByIdRequest {
+  string id = 1;
+}
+
+message GetShowtimesRequest {
+  string movieId = 1;
+  string cinemaId = 2;
+  string date = 3;
+}
+
+message CinemaMessage {
+  string id = 1;
+  string name = 2;
+  string city = 3;
+  string address = 4;
+  string phoneNumber = 5;
+  string status = 6;
+}
+
+message CinemasResponse {
+  repeated CinemaMessage items = 1;
+}
+
+message ShowtimeMessage {
+  string id = 1;
+  string cinemaId = 2;
+  string movieId = 3;
+  string screenId = 4;
+  string startTime = 5;
+  string endTime = 6;
+  double ticketPrice = 7;
+  string formatId = 8;
+  string status = 9;
+}
+
+message ShowtimesResponse {
+  repeated ShowtimeMessage items = 1;
+}
+
+message ValidateGiftCodeRequest {
+  string code = 1;
+}
+
+message GiftCodeMessage {
+  string id = 1;
+  string code = 2;
+  double amount = 3;
+  string expiryDate = 4;
+  bool isUsed = 5;
+  string status = 6;
+}

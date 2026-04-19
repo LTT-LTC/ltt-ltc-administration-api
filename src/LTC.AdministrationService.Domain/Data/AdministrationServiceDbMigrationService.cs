@@ -65,20 +65,9 @@ public class AdministrationServiceDbMigrationService : ITransientDependency
             {
                 using (_currentTenant.Change(tenant.Id))
                 {
-                    if (tenant.ConnectionStrings.Any())
-                    {
-                        var tenantConnectionStrings = tenant.ConnectionStrings
-                            .Select(x => x.Value)
-                            .ToList();
-
-                        if (!migratedDatabaseSchemas.IsSupersetOf(tenantConnectionStrings))
-                        {
-                            await MigrateDatabaseSchemaAsync(tenant);
-
-                            migratedDatabaseSchemas.AddIfNotContains(tenantConnectionStrings);
-                        }
-                    }
-
+                    // In Schema-per-Tenant, we always want to migrate, 
+                    // as the schema name is dynamic based on the tenant.
+                    await MigrateDatabaseSchemaAsync(tenant);
                     await SeedDataAsync(tenant);
                 }
 

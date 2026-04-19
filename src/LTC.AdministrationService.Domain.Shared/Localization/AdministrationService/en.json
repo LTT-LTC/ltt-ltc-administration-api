@@ -1,9 +1,9 @@
 {
   "Culture": "en",
   "Texts": {
-    "AppName": "AdministrationService",
+    "AppName": "LTC",
     "Menu:Home": "Home",
-    "LongWelcomeMessage": "Welcome to the application. This is a startup project based on the ABP framework. For more information visit",
+    "LongWelcomeMessage": "Welcome to LTC cinema. This is a movie theater man   agement project based on the ABP Framework. For more information, please refer to the relevant documentation.",
     "Welcome": "Welcome",
 
     "User": "User",
@@ -37,6 +37,8 @@
     "PasswordResetSuccess": "Password reset successful.",
     "TryAgainLater": "Please try again in {0}.",
     "PasswordResetFailed": "Password reset failed.",
-    "PasswordCannotBeSameAsOld": "New password cannot be the same as the old password."
+    "PasswordCannotBeSameAsOld": "New password cannot be the same as the old password.",
+    "InvalidTenantForUser": "The account does not belong to this tenant.",
+    "TenantNotFound": "Tenant not found."
   }
 }

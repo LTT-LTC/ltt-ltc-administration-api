@@ -1,10 +1,10 @@
 using System;
-
 using Volo.Abp.Domain.Entities;
+using Volo.Abp.MultiTenancy;
 
 namespace LTC.AdministrationService.Entities
 {
-    public class NewsAndOffers : Entity<Guid>
+    public class NewsAndOffers : Entity<Guid>, IMultiTenant
     {
         public NewsAndOffers()
         {
@@ -14,6 +14,7 @@ namespace LTC.AdministrationService.Entities
         {
         }
 
+        public Guid? TenantId { get; set; }
         public Guid? CinemaId { get; set; }
         public string Title { get; set; }
         public string Content { get; set; }

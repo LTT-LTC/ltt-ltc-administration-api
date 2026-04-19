@@ -6,13 +6,9 @@ using LTC.CustomerManagement.HealthChecks;
 using LTC.CustomerManagement.MongoDb;
 using LTC.Shared.Hosting.Microservices;
 using LTC.Shared.Hosting.Microservices.Authentication;
+using LTC.Shared.Hosting.Microservices.MultiTenancy;
 using LTC.Shared.Hosting.Microservices.OpenApi.Swagger;
 using LTC.AdministrationService;
-using LTC.AdministrationService.EntityFrameworkCore;
-using LTC.AdministrationService.MultiTenancy;
-using LTC.Shared.Hosting.Microservices;
-using LTC.Shared.Hosting.Microservices.Authentication;
-using LTC.Shared.Hosting.Microservices.OpenApi.Swagger;
 using MailKit.Security;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors;
@@ -40,6 +36,7 @@ using Volo.Abp.Modularity;
 using Volo.Abp.Security.Claims;
 using Volo.Abp.Swashbuckle;
 using Volo.Abp.VirtualFileSystem;
+using Serilog;
 
 namespace LTC.AdministrationService;
 
@@ -110,6 +107,7 @@ public class AdministrationServiceHttpApiHostModule : AbpModule
         context.Services.AddControllers(options =>
         {
             options.Filters.Add(typeof(ApplicationExceptionFilterAttribute));
+            options.Filters.Add(typeof(TenantValidationFilter));
         });
 
         ConfigureCloudinary(context);
@@ -143,7 +141,7 @@ public class AdministrationServiceHttpApiHostModule : AbpModule
 
         context.Services.Configure<AbpClaimsPrincipalFactoryOptions>(options =>
         {
-            options.IsDynamicClaimsEnabled = true;
+            options.IsDynamicClaimsEnabled = false;
         });
     }
 
@@ -216,15 +214,15 @@ public class AdministrationServiceHttpApiHostModule : AbpModule
                 ForwardedHeaders.XForwardedFor |
                 ForwardedHeaders.XForwardedProto;
 
-            //// Ch? tin t??ng proxy n�y
+            //// Ch? tin t??ng proxy nï¿½y
             //options.KnownProxies.Add(IPAddress.Parse("10.0.0.100"));
 
             //// Ho?c n?u proxy n?m trong 1 subnet
             //options.KnownNetworks.Add(
-            //             //// Chỉ tin tưởng proxy này
+            //             //// Chá»‰ tin tÆ°á»Ÿng proxy nÃ y
             //options.KnownProxies.Add(IPAddress.Parse("10.0.0.100"));
 
-            //// Hoặc nếu proxy nằm trong 1 subnet
+            //// Hoáº·c náº¿u proxy náº±m trong 1 subnet
         });
     }
 
@@ -321,6 +319,24 @@ public class AdministrationServiceHttpApiHostModule : AbpModule
         Console.WriteLine($"----------Start OnApplicationInitialization----------");
 
         var app = context.GetApplicationBuilder();
+        
+        app.Use(async (httpContext, next) =>
+        {
+            var headerKeys = string.Join(", ", httpContext.Request.Headers.Keys);
+            Log.Information("[AUTH TRACE] Request: {Method} {Path}", httpContext.Request.Method, httpContext.Request.Path);
+            Log.Information("[AUTH TRACE] ALL HEADERS: {Keys}", headerKeys);
+            
+            var authHeader = httpContext.Request.Headers["Authorization"].ToString();
+            Log.Information("[AUTH TRACE] Authorization Header present: {Present}, Length: {Length}", 
+                !string.IsNullOrEmpty(authHeader), authHeader?.Length ?? 0);
+            
+            if (!string.IsNullOrEmpty(authHeader) && authHeader.Length > 20)
+            {
+                Log.Information("[AUTH TRACE] Authorization Header Prefix: {Prefix}", authHeader.Substring(0, 15));
+            }
+            
+            await next();
+        });
         var env = context.GetEnvironment();
         var configuration = context.GetConfiguration();
         var isEnabledNginx = configuration.GetSection("NginxSettings:IsEnabled").Get<bool>();
@@ -339,14 +355,7 @@ public class AdministrationServiceHttpApiHostModule : AbpModule
         }
 
         string swaggerRoutePrefix = "ltc/administration-service/swagger";
-        app.UseSwaggerUI("LTC Administration Service", swaggerRoutePrefix);
-        app.UseSwagger();
-        app.UseAbpSwaggerUI(options =>
-        {
-            options.SwaggerEndpoint("/ltc/administration-service/swagger/v1/swagger.json", "Administration Service API");
-            var configuration = context.ServiceProvider.GetRequiredService<IConfiguration>();
-            options.OAuthClientId(configuration["AuthServer:SwaggerClientId"]);
-        });
+        app.UseConfiguredSwagger("LTC Administration Service", swaggerRoutePrefix);
 
         app.UseRouting();
         app.UseRequestLocalization();
@@ -383,6 +392,12 @@ public class AdministrationServiceHttpApiHostModule : AbpModule
         });
     }
 }
+
+
+
+
+
+
 
 
 
