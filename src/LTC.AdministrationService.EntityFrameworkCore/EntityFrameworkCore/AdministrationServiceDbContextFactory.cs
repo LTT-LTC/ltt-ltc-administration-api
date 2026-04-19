@@ -1,5 +1,6 @@
-﻿using System;
 using System.IO;
+using System.Linq;
+using LTC.AdministrationService.MultiTenancy;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
@@ -19,12 +20,33 @@ public class AdministrationServiceDbContextFactory : IDesignTimeDbContextFactory
         var builder = new DbContextOptionsBuilder<AdministrationServiceDbContext>()
             .UseSqlServer(configuration.GetConnectionString("Default"));
         
-        return new AdministrationServiceDbContext(builder.Options);
+        return new AdministrationServiceDbContext(builder.Options, new DesignTimeSchemaResolver());
+    }
+
+    private class DesignTimeSchemaResolver : ITenantSchemaResolver
+    {
+        public string GetSchemaName() => "dbo"; // Default schema for migrations
     }
 
     private static IConfigurationRoot BuildConfiguration()
     {
-        var migratorPath = Path.Combine(Directory.GetCurrentDirectory(), "../LTC.AdministrationService.DbMigrator/");
+        var currentDirectory = Directory.GetCurrentDirectory();
+        var candidateBasePaths = new[]
+        {
+            Path.Combine(currentDirectory, "../LTC.AdministrationService.DbMigrator/"),
+            Path.Combine(currentDirectory, "../src/LTC.AdministrationService.DbMigrator/"),
+            Path.Combine(currentDirectory, "../../src/LTC.AdministrationService.DbMigrator/")
+        };
+
+        var migratorPath = candidateBasePaths
+            .Select(Path.GetFullPath)
+            .FirstOrDefault(Directory.Exists);
+
+        if (migratorPath == null)
+        {
+            throw new DirectoryNotFoundException("Unable to locate LTC.AdministrationService.DbMigrator directory for EF design-time configuration.");
+        }
+
         var builder = new ConfigurationBuilder()
             .SetBasePath(migratorPath)
             .AddJsonFile("appsettings.json", optional: false);

@@ -34,27 +34,25 @@ namespace LTC.Shared.Hosting.Microservices
                 context.HttpContext.Response.ContentType = "application/json";
                 if (context.Exception is EntityNotFoundException)
                     statusCode = HttpStatusCode.NotFound;
-                else if (context.Exception is UserFriendlyException || context.Exception is BusinessException)
+                else if (context.Exception is BusinessException exception)
                 {
                     //statusCode = HttpStatusCode.Conflict;
-                    var exception = context.Exception as BusinessException;
-                    context.Result = new JsonResult(ApiResult.ErrorResult(exception.Message, exception.Code, statusCode));
+                    context.Result = new JsonResult(ApiResult.ErrorResult(exception.Message, exception.Code ?? "UNKNOWN", statusCode));
                 }
                 else if (context.Exception is AbpAuthorizationException)
                 {
                     statusCode = HttpStatusCode.Unauthorized;
                     context.Result = new JsonResult(ApiResult.ErrorResult("Unauthorized", "Unauthorized", statusCode));
                 }
-                else if (context.Exception is AbpValidationException)
+                else if (context.Exception is AbpValidationException validationException)
                 {
-                    var exception = context.Exception as AbpValidationException;
-                    string message = string.Join("\r\n", exception.ValidationErrors.Select(x => x.ErrorMessage));
+                    string message = string.Join("\r\n", validationException.ValidationErrors.Select(x => x.ErrorMessage));
                     context.Result = new JsonResult(ApiResult.ErrorResult(message, "VALIDATE_ERROR", statusCode));
                 }
                 else
                 {
                     if (_hostEnvironment.EnvironmentName.EndsWith("Development"))
-                        context.Result = new JsonResult(ApiResult.ErrorResult(context.Exception.Message, null, HttpStatusCode.InternalServerError));
+                        context.Result = new JsonResult(ApiResult.ErrorResult(context.Exception.Message, "INTERNAL_ERROR", HttpStatusCode.InternalServerError));
                     else
                         context.Result = new JsonResult(ApiResult.ErrorResult("Unexpected error. Try again later", "Unknown", HttpStatusCode.InternalServerError));
 

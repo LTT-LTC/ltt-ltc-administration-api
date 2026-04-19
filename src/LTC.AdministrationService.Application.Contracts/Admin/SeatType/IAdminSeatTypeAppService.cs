@@ -2,11 +2,11 @@ using System;
 using System.Threading.Tasks;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Application.Dtos;
-using LTC.AdministrationService.Admin.SeatType.Dtos.Input;
-using LTC.AdministrationService.Admin.SeatType.Dtos.Output;
+using LTC.AdministrationService.Admin.SeatTypes.Dtos.Input;
+using LTC.AdministrationService.Admin.SeatTypes.Dtos.Output;
 using LTC.Shared.CrossCuttingConcerns.Pagination;
 
-namespace LTC.AdministrationService.Admin.SeatType
+namespace LTC.AdministrationService.Admin.SeatTypes
 {
     public interface IAdminSeatTypeAppService : IApplicationService
     {

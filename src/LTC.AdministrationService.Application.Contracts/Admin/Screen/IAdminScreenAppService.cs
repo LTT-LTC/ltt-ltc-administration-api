@@ -2,11 +2,11 @@ using System;
 using System.Threading.Tasks;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Application.Dtos;
-using LTC.AdministrationService.Admin.Screen.Dtos.Input;
-using LTC.AdministrationService.Admin.Screen.Dtos.Output;
+using LTC.AdministrationService.Admin.Screens.Dtos.Input;
+using LTC.AdministrationService.Admin.Screens.Dtos.Output;
 using LTC.Shared.CrossCuttingConcerns.Pagination;
 
-namespace LTC.AdministrationService.Admin.Screen
+namespace LTC.AdministrationService.Admin.Screens
 {
     public interface IAdminScreenAppService : IApplicationService
     {

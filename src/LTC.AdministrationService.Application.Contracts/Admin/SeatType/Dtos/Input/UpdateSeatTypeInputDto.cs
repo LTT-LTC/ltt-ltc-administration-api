@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace LTC.AdministrationService.Admin.SeatType.Dtos.Input
+namespace LTC.AdministrationService.Admin.SeatTypes.Dtos.Input
 {
     public class UpdateSeatTypeInputDto
     {

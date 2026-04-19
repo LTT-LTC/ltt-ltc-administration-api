@@ -1,5 +1,7 @@
 using LTC.CustomerManagement.MongoDb;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Volo.Abp.AuditLogging;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
@@ -65,6 +67,8 @@ public class AdministrationServiceEntityFrameworkCoreModule : AbpModule
                  * default repositories only for aggregate roots */
             options.AddDefaultRepositories(includeAllEntities: true);
         });
+
+        context.Services.Replace(ServiceDescriptor.Singleton<IModelCacheKeyFactory, TenantModelCacheKeyFactory>());
 
         if (AbpStudioAnalyzeHelper.IsInAnalyzeMode)
         {

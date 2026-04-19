@@ -32,10 +32,11 @@ namespace LTC.AdministrationService
             var employeesQueryable = await employeeRepository.GetQueryableAsync();
             var identityUsersQueryable = await _identityUserRepository.GetQueryableAsync();
 
-            // TODO: query theo phòng ban và vai trò
+            // TODO: query theo vai trò
             var query = from employee in employeesQueryable
                         join identityUser in identityUsersQueryable on employee.UserId equals identityUser.Id
-                        where string.IsNullOrEmpty(keyword) || employee.Name.Contains(keyword) || employee.Code.Contains(keyword)
+                        where (string.IsNullOrEmpty(keyword) || employee.Name.Contains(keyword) || employee.Code.Contains(keyword))
+                           && (input.CinemaId == null || employee.CinemaId == input.CinemaId || employee.OrganizationUnitId == input.CinemaId)
                         select new EmployeeOutputDto
                         {
                             Id = employee.Id,

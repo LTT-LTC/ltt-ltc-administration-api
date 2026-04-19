@@ -1,6 +1,6 @@
 using System;
 
-namespace LTC.AdministrationService.Admin.Screen.Dtos.Output
+namespace LTC.AdministrationService.Admin.Screens.Dtos.Output
 {
     public class ScreenOutputDto
     {

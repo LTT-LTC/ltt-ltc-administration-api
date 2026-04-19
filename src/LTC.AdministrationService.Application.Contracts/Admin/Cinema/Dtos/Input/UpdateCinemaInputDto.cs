@@ -1,9 +1,9 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace LTC.AdministrationService.Admin.Cinema.Dtos.Input
+namespace LTC.AdministrationService.Admin.Cinemas.Dtos.Input
 {
-    public class UpdateCinemaInputDto
+    public class UpdateCinemasInputDto
     {
         [Required]
         [MaxLength(256)]

@@ -2,7 +2,7 @@ using System;
 using LTC.Shared.CrossCuttingConcerns.Pagination;
 using System.ComponentModel.DataAnnotations;
 
-namespace LTC.AdministrationService.Admin.Screen.Dtos.Input
+namespace LTC.AdministrationService.Admin.Screens.Dtos.Input
 {
     public class GetScreenListInputDto : PaginationWithSearchRequestDto
     {

@@ -1,12 +1,12 @@
 using LTC.AdministrationService.Entities;
-using Volo.Abp.EntityFrameworkCore.Modeling;
+using LTC.AdministrationService.MultiTenancy;
 using Microsoft.EntityFrameworkCore;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
 using Volo.Abp.BlobStoring.Database.EntityFrameworkCore;
 using Volo.Abp.Data;
-using Volo.Abp.DependencyInjection;
 using Volo.Abp.EntityFrameworkCore;
+using Volo.Abp.EntityFrameworkCore.Modeling;
 using Volo.Abp.FeatureManagement.EntityFrameworkCore;
 using Volo.Abp.Identity;
 using Volo.Abp.Identity.EntityFrameworkCore;
@@ -22,11 +22,17 @@ namespace LTC.AdministrationService.EntityFrameworkCore;
 public class AdministrationServiceDbContext :
     AbpDbContext<AdministrationServiceDbContext>
 {
-    public AdministrationServiceDbContext(DbContextOptions<AdministrationServiceDbContext> options)
+    private readonly ITenantSchemaResolver _tenantSchemaResolver;
+
+    public AdministrationServiceDbContext(
+        DbContextOptions<AdministrationServiceDbContext> options,
+        ITenantSchemaResolver tenantSchemaResolver)
     : base(options)
     {
-
+        _tenantSchemaResolver = tenantSchemaResolver;
     }
+
+    public string GetCurrentSchema() => _tenantSchemaResolver.GetSchemaName();
 
     #region Entities from the modules
 
@@ -59,69 +65,73 @@ public class AdministrationServiceDbContext :
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
-        builder.HasDefaultSchema(AdministrationServiceConsts.DbSchema);
+        
+        var schema = GetCurrentSchema();
+        builder.HasDefaultSchema(schema);
 
         /* Include modules to your migration db context */
 
+        builder.HasDefaultSchema("dbo");
         builder.ConfigurePermissionManagement();
         builder.ConfigureIdentity();
         builder.ConfigureTenantManagement();
         builder.ConfigureFeatureManagement();
         builder.ConfigureSettingManagement();
         
+        builder.HasDefaultSchema(schema);
         /* Configure custom entities */
 
         builder.Entity<Entities.Employee>(b =>
         {
-            b.ToTable("Employees", AdministrationServiceConsts.DbSchema);
+            b.ToTable("Employees");
             b.ConfigureByConvention(); 
         });
 
         builder.Entity<MediaFile>(b =>
         {
-            b.ToTable("MediaFiles", AdministrationServiceConsts.DbSchema);
+            b.ToTable("MediaFiles");
             b.ConfigureByConvention(); 
         });
 
         builder.Entity<Cinema>(b =>
         {
-            b.ToTable("Cinemas", AdministrationServiceConsts.DbSchema);
+            b.ToTable("Cinemas");
             b.ConfigureByConvention();
         });
 
         builder.Entity<Screen>(b =>
         {
-            b.ToTable("Screens", AdministrationServiceConsts.DbSchema);
+            b.ToTable("Screens");
             b.ConfigureByConvention();
         });
 
         builder.Entity<SeatType>(b =>
         {
-            b.ToTable("SeatTypes", AdministrationServiceConsts.DbSchema);
+            b.ToTable("SeatTypes");
             b.ConfigureByConvention();
         });
 
         builder.Entity<Showtime>(b =>
         {
-            b.ToTable("Showtimes", AdministrationServiceConsts.DbSchema);
+            b.ToTable("Showtimes");
             b.ConfigureByConvention();
         });
 
         builder.Entity<PricingRule>(b =>
         {
-            b.ToTable("PricingRules", AdministrationServiceConsts.DbSchema);
+            b.ToTable("PricingRules");
             b.ConfigureByConvention();
         });
 
         builder.Entity<CinemaAmenity>(b =>
         {
-            b.ToTable("CinemaAmenities", AdministrationServiceConsts.DbSchema);
+            b.ToTable("CinemaAmenities");
             b.ConfigureByConvention();
         });
 
         builder.Entity<Entities.NewsAndOffers>(b =>
         {
-            b.ToTable("NewsAndOffers", AdministrationServiceConsts.DbSchema);
+            b.ToTable("NewsAndOffers");
             b.HasKey(x => x.Id);
             b.Property(x => x.Id).HasColumnName("Id").IsRequired();
             b.Property(x => x.CinemaId).HasColumnName("CinemaId");
@@ -138,19 +148,19 @@ public class AdministrationServiceDbContext :
 
         builder.Entity<CinemaAmenityType>(b =>
         {
-            b.ToTable("CinemaAmenityTypes", AdministrationServiceConsts.DbSchema);
+            b.ToTable("CinemaAmenityTypes");
             b.ConfigureByConvention();
         });
 
         builder.Entity<GiftCode>(b =>
         {
-            b.ToTable("GiftCodes", AdministrationServiceConsts.DbSchema);
+            b.ToTable("GiftCodes");
             b.ConfigureByConvention();
         });
 
         builder.Entity<RevenueSnapshot>(b =>
         {
-            b.ToTable("RevenueSnapshots", AdministrationServiceConsts.DbSchema);
+            b.ToTable("RevenueSnapshots");
             b.ConfigureByConvention();
         });
 
