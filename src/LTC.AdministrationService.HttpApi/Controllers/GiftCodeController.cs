@@ -36,6 +36,14 @@ namespace LTC.AdministrationService.Controllers
             return Ok(result);
         }
 
+        [HttpPut]
+        [Route("{id}")]
+        public async Task<IActionResult> UpdateAsync(Guid id, [FromBody] CreateGiftCodeDto input)
+        {
+            var result = await _giftCodeAppService.UpdateAsync(id, input);
+            return Ok(result);
+        }
+
         [HttpDelete]
         [Route("{id}")]
         public async Task<IActionResult> DeleteAsync(Guid id)
