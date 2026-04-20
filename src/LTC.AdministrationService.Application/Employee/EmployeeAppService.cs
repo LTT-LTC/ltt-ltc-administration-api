@@ -30,38 +30,67 @@ namespace LTC.AdministrationService
             var keyword = input.Keyword?.Trim();
 
             var employeesQueryable = await employeeRepository.GetQueryableAsync();
+
+            var employeeRows = await employeesQueryable
+                .Where(employee =>
+                    (string.IsNullOrEmpty(keyword) || employee.Name.Contains(keyword) || employee.Code.Contains(keyword))
+                    && (input.CinemaId == null || employee.CinemaId == input.CinemaId || employee.OrganizationUnitId == input.CinemaId))
+                .Select(employee => new
+                {
+                    employee.Id,
+                    employee.UserId,
+                    employee.Name,
+                    employee.Email,
+                    employee.Code,
+                    employee.PositionId,
+                    employee.OrganizationUnitId
+                })
+                .ToListAsync();
+
+            var userIds = employeeRows
+                .Select(x => x.UserId)
+                .Where(x => x.HasValue)
+                .Select(x => x.Value)
+                .Distinct()
+                .ToList();
+
             var identityUsersQueryable = await _identityUserRepository.GetQueryableAsync();
+            var userActiveLookup = await identityUsersQueryable
+                .Where(user => userIds.Contains(user.Id))
+                .Select(user => new { user.Id, user.IsActive })
+                .ToDictionaryAsync(user => user.Id, user => user.IsActive);
 
-            // TODO: query theo vai trò
-            var query = from employee in employeesQueryable
-                        join identityUser in identityUsersQueryable on employee.UserId equals identityUser.Id
-                        where (string.IsNullOrEmpty(keyword) || employee.Name.Contains(keyword) || employee.Code.Contains(keyword))
-                           && (input.CinemaId == null || employee.CinemaId == input.CinemaId || employee.OrganizationUnitId == input.CinemaId)
-                        select new EmployeeOutputDto
-                        {
-                            Id = employee.Id,
-                            Name = employee.Name,
-                            Email = employee.Email,
-                            Code = employee.Code,
-                            PositionId = employee.PositionId,
-                            OrganizationUnitId = employee.OrganizationUnitId,
-                            IsActive = identityUser.IsActive
-                        };
+            var mappedEmployees = employeeRows
+                .Select(row => new EmployeeOutputDto
+                {
+                    Id = row.Id,
+                    Name = row.Name,
+                    Email = row.Email,
+                    Code = row.Code,
+                    PositionId = row.PositionId,
+                    OrganizationUnitId = row.OrganizationUnitId,
+                    IsActive = row.UserId.HasValue
+                        && userActiveLookup.TryGetValue(row.UserId.Value, out var isActive)
+                        && isActive
+                })
+                .ToList();
 
-            var totalCount = await query.CountAsync();
-            var totalActiveEmployees = await query.CountAsync(e => e.IsActive);
-            var totalDeactiveEmployees = totalCount - totalActiveEmployees;
+            var totalActiveEmployees = mappedEmployees.Count(e => e.IsActive);
+            var totalDeactiveEmployees = mappedEmployees.Count - totalActiveEmployees;
 
             if (input.IsActive.HasValue)
             {
-                totalCount = await query.CountAsync(e => e.IsActive == input.IsActive.Value);
-                query = query.Where(e => e.IsActive == input.IsActive.Value);
+                mappedEmployees = mappedEmployees
+                    .Where(e => e.IsActive == input.IsActive.Value)
+                    .ToList();
             }
 
-            var employees = await query
+            var totalCount = mappedEmployees.Count;
+
+            var employees = mappedEmployees
                 .Skip((input.Page - 1) * input.Fetch)
                 .Take(input.Fetch)
-                .ToListAsync();
+                .ToList();
 
             var result = new PagedResultEmployeeOutputDto(totalCount, employees);
             result.ExtendData = new Dictionary<string, object>
