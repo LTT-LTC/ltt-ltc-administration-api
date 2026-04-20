@@ -10,6 +10,7 @@ namespace LTC.AdministrationService.GiftCodes
     {
         Task<PagedResultDto<GiftCodeOutputDto>> GetListAsync(int skipCount, int maxResultCount);
         Task<GiftCodeOutputDto> CreateAsync(CreateGiftCodeDto input);
+        Task<GiftCodeOutputDto> UpdateAsync(Guid id, CreateGiftCodeDto input);
         Task DeleteAsync(Guid id);
     }
 }

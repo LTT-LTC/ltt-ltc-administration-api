@@ -54,6 +54,25 @@ namespace LTC.AdministrationService.GiftCodes
             return ObjectMapper.Map<GiftCode, GiftCodeOutputDto>(entity);
         }
 
+        public async Task<GiftCodeOutputDto> UpdateAsync(Guid id, CreateGiftCodeDto input)
+        {
+            var entity = await _repository.GetAsync(id);
+
+            entity.Code = input.Code;
+            entity.Description = input.Description;
+            entity.DiscountType = input.DiscountType;
+            entity.DiscountValue = input.DiscountValue;
+            entity.MinOrderAmount = input.MinOrderAmount;
+            entity.UsageLimit = input.UsageLimit;
+            entity.PerUserLimit = input.PerUserLimit;
+            entity.StartDate = input.StartDate;
+            entity.EndDate = input.EndDate;
+            entity.Status = input.Status ?? entity.Status;
+
+            await _repository.UpdateAsync(entity, true);
+            return ObjectMapper.Map<GiftCode, GiftCodeOutputDto>(entity);
+        }
+
         public async Task DeleteAsync(Guid id)
         {
             await _repository.DeleteAsync(id);
