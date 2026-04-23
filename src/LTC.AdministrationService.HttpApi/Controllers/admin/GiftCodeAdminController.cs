@@ -1,24 +1,22 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
-using Volo.Abp;
 using Volo.Abp.Application.Dtos;
-using Volo.Abp.AspNetCore.Mvc;
 using LTC.AdministrationService.GiftCodes;
 using LTC.AdministrationService.GiftCodes.Dtos;
+using LTC.AdministrationService.Controllers.Admin;
 
-namespace LTC.AdministrationService.Controllers
+namespace LTC.AdministrationService.Controllers.Admin
 {
-    [RemoteService]
-    [Area("administration")]
-    [Route(AdministrationServiceSettingNames.DefaultRoute + "/gift-codes")]
-    [Authorize(Roles = "Admin,Manager")]
-    public class GiftCodeController : AdministrationServiceController
+    /// <summary>
+    /// Admin-only GiftCode operations: all CRUD including delete.
+    /// </summary>
+    [Route(AdministrationServiceSettingNames.DefaultRoute + "/admin/gift-codes")]
+    public class GiftCodeAdminController : AdminControllerBase
     {
         private readonly IGiftCodeAppService _giftCodeAppService;
 
-        public GiftCodeController(IGiftCodeAppService giftCodeAppService)
+        public GiftCodeAdminController(IGiftCodeAppService giftCodeAppService)
         {
             _giftCodeAppService = giftCodeAppService;
         }
@@ -36,16 +34,14 @@ namespace LTC.AdministrationService.Controllers
             return Ok(result);
         }
 
-        [HttpPut]
-        [Route("{id}")]
+        [HttpPut("{id}")]
         public async Task<IActionResult> UpdateAsync(Guid id, [FromBody] CreateGiftCodeDto input)
         {
             var result = await _giftCodeAppService.UpdateAsync(id, input);
             return Ok(result);
         }
 
-        [HttpDelete]
-        [Route("{id}")]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAsync(Guid id)
         {
             await _giftCodeAppService.DeleteAsync(id);

@@ -1,27 +1,23 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Volo.Abp;
 using Volo.Abp.Application.Dtos;
-using Volo.Abp.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
-using LTC.AdministrationService.Controllers;
 using LTC.AdministrationService.Admin.Cinemas;
 using LTC.AdministrationService.Admin.Cinemas.Dtos.Input;
 using LTC.AdministrationService.Admin.Cinemas.Dtos.Output;
+using LTC.AdministrationService.Controllers.Admin;
 
-namespace LTC.AdministrationService.Controllers
+namespace LTC.AdministrationService.Controllers.Admin
 {
-    [RemoteService]
-    [Area("administration")]
-    [Route(AdministrationServiceSettingNames.DefaultRoute + "/cinema")]
-    [ApiController]
-    [Authorize(Roles = "Admin,Manager")]
-    public class CinemaController : AdministrationServiceController
+    /// <summary>
+    /// Admin-only Cinema operations: create, update, delete.
+    /// </summary>
+    [Route(AdministrationServiceSettingNames.DefaultRoute + "/admin/cinema")]
+    public class CinemaAdminController : AdminControllerBase
     {
         private readonly IAdminCinemaAppService _cinemaAppService;
 
-        public CinemaController(IAdminCinemaAppService cinemaAppService)
+        public CinemaAdminController(IAdminCinemaAppService cinemaAppService)
         {
             _cinemaAppService = cinemaAppService;
         }
@@ -55,6 +51,5 @@ namespace LTC.AdministrationService.Controllers
         {
             await _cinemaAppService.DeleteAsync(id);
         }
-
     }
 }

@@ -51,8 +51,11 @@ public class AdministrationServiceDbContext :
     public DbSet<MediaFile> MediaFiles { get; set; }
     public DbSet<Cinema> Cinemas { get; set; }
     public DbSet<Screen> Screens { get; set; }
+    public DbSet<SeatMap> SeatMaps { get; set; }
     public DbSet<SeatType> SeatTypes { get; set; }
     public DbSet<Showtime> Showtimes { get; set; }
+    public DbSet<MovieProjection> MovieProjections { get; set; }
+    public DbSet<MovieDistributionProjection> MovieDistributionProjections { get; set; }
     public DbSet<PricingRule> PricingRules { get; set; }
     public DbSet<CinemaAmenity> CinemaAmenities { get; set; }
     public DbSet<CinemaAmenityType> CinemaAmenityTypes { get; set; }
@@ -84,7 +87,10 @@ public class AdministrationServiceDbContext :
         builder.Entity<Entities.Employee>(b =>
         {
             b.ToTable("Employees");
-            b.ConfigureByConvention(); 
+            b.ConfigureByConvention();
+            b.HasIndex(x => x.UserId)
+                .IsUnique()
+                .HasFilter("[UserId] IS NOT NULL");
         });
 
         builder.Entity<MediaFile>(b =>
@@ -99,10 +105,20 @@ public class AdministrationServiceDbContext :
             b.ConfigureByConvention();
         });
 
+        builder.Entity<SeatMap>(b =>
+        {
+            b.ToTable("SeatMaps");
+            b.ConfigureByConvention();
+        });
+
         builder.Entity<Screen>(b =>
         {
             b.ToTable("Screens");
             b.ConfigureByConvention();
+            b.HasOne(x => x.SeatMap)
+                .WithMany()
+                .HasForeignKey(x => x.SeatMapId)
+                .IsRequired(false);
         });
 
         builder.Entity<SeatType>(b =>
@@ -114,6 +130,18 @@ public class AdministrationServiceDbContext :
         builder.Entity<Showtime>(b =>
         {
             b.ToTable("Showtimes");
+            b.ConfigureByConvention();
+        });
+
+        builder.Entity<MovieProjection>(b =>
+        {
+            b.ToTable("MovieProjections");
+            b.ConfigureByConvention();
+        });
+
+        builder.Entity<MovieDistributionProjection>(b =>
+        {
+            b.ToTable("MovieDistributionProjections");
             b.ConfigureByConvention();
         });
 

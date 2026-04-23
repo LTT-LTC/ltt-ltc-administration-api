@@ -9,7 +9,10 @@ namespace LTC.AdministrationService.Admin.Screens.Dtos.Output
         public Guid CinemaId { get; set; }
         public int ScreenNumber { get; set; }
         public string? ScreenType { get; set; }
+        public Guid? SeatMapId { get; set; }
+        /// <summary>Populated from linked <c>SeatMap</c> for API compatibility.</summary>
         public string? SeatLayout { get; set; }
+        /// <summary>Populated from linked <c>SeatMap</c> for API compatibility.</summary>
         public int SeatCount { get; set; }
         public string? Status { get; set; }
         public DateTime? CreatedAt { get; set; }

@@ -1,32 +1,26 @@
 using System;
 using System.Threading.Tasks;
-using LTC.AdministrationService.Admin;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Volo.Abp;
 using Volo.Abp.Application.Dtos;
-using Volo.Abp.AspNetCore.Mvc;
 using LTC.AdministrationService.NewsAndOffers.Dtos;
-using LTC.AdministrationService.Controllers;
 using LTC.AdministrationService.NewsAndOffers.Dtos.Input;
 using LTC.AdministrationService.NewsAndOffers.Dtos.Output;
 using LTC.AdministrationService.NewsAndOffers;
+using LTC.AdministrationService.Controllers.Admin;
 
-
-namespace LTC.AdministrationService.Controllers
+namespace LTC.AdministrationService.Controllers.Admin
 {
-    [RemoteService]
-    [Area("administration")]
-    [Route(AdministrationServiceSettingNames.DefaultRoute + "/news-and-offers")]
-    [ApiController]
-    [Authorize(Roles = "Admin,Manager")]
-    public class NewsAndOffersController : AbpController, IRemoteService
+    /// <summary>
+    /// Admin-only NewsAndOffers operations: all CRUD including delete.
+    /// </summary>
+    [Route(AdministrationServiceSettingNames.DefaultRoute + "/admin/news-and-offers")]
+    public class NewsAndOffersAdminController : AdminControllerBase
     {
         private readonly INewsAndOffersAppService _newsAndOffersService;
 
-        public NewsAndOffersController(INewsAndOffersAppService newsAndOfferAppService)
+        public NewsAndOffersAdminController(INewsAndOffersAppService newsAndOffersService)
         {
-            _newsAndOffersService = newsAndOfferAppService;
+            _newsAndOffersService = newsAndOffersService;
         }
 
         [HttpGet]

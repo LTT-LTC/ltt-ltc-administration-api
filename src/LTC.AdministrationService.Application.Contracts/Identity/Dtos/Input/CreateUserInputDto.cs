@@ -9,5 +9,6 @@ namespace LTC.AdministrationService.Identity.Dtos.Input
 {
     public class CreateUserInputDto : IdentityUserCreateOrUpdateDtoBase
     {
+        public List<string> Roles { get; set; } = [];
     }
 }

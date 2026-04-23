@@ -4,6 +4,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Localization;
 using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Volo.Abp.Identity;
 
@@ -60,11 +61,23 @@ namespace LTC.AdministrationService.Employee.Dtos.Input
         /// ngày sinh của nhân sự
         /// </summary>
         public DateTime? DateOfBirth { get; set; }
+
+        /// <summary>
+        /// Role được gán trong ABP Identity (Admin/Manager/Staff/POS)
+        /// </summary>
+        public string Role { get; set; } = "Staff";
     }
 
     public class CreateEmployeeInputValidator : AbstractValidator<CreateEmployeeInputDto>
     {
         private readonly IIdentityUserAppService _userAppService;
+        private static readonly HashSet<string> AllowedRoles = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "Admin",
+            "Manager",
+            "Staff",
+            "POS"
+        };
 
         public CreateEmployeeInputValidator(IStringLocalizer<AdministrationServiceResource> localizer, IIdentityUserAppService userAppService)
         {
@@ -163,6 +176,10 @@ namespace LTC.AdministrationService.Employee.Dtos.Input
                     localizer["User:PhoneNumber"],
                     EmployeeConsts.PhoneNumberMaxLength)
                 );
+
+            RuleFor(x => x.Role)
+                .Must(role => !string.IsNullOrWhiteSpace(role) && AllowedRoles.Contains(role))
+                .WithMessage(CommonExtensions.GetValidateMessage(localizer["InvalidValue"], localizer["User:Role"]));
         }
     }
 }

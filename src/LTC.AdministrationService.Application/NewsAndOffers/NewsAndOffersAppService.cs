@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
@@ -11,16 +11,21 @@ using Volo.Abp.Domain.Repositories;
 using LTC.AdministrationService.NewsAndOffers;
 using LTC.AdministrationService.NewsAndOffers.Dtos.Input;
 using LTC.AdministrationService.NewsAndOffers.Dtos.Output;
+using LTC.Shared.Hosting.Microservices.Timing;
 
 namespace LTC.AdministrationService.Admin
 {
         public class NewsAndOffersAppService : ApplicationService, INewsAndOffersAppService
         {
             private readonly IRepository<Entities.NewsAndOffers, Guid> _newsAndOffersRepository;
+            private readonly IGmt7Clock _gmt7Clock;
 
-            public NewsAndOffersAppService(IRepository<Entities.NewsAndOffers, Guid> newsAndOffersRepository)
+            public NewsAndOffersAppService(
+                IRepository<Entities.NewsAndOffers, Guid> newsAndOffersRepository,
+                IGmt7Clock gmt7Clock)
             {
                 _newsAndOffersRepository = newsAndOffersRepository;
+                _gmt7Clock = gmt7Clock;
             }
 
             public async Task<PagedResultDto<NewsAndOffersOutputDto>> GetListAsync(GetNewsAndOffersListinputDto input)
@@ -74,8 +79,8 @@ namespace LTC.AdministrationService.Admin
                     EndDate = input.EndDate,
                     IsActive = input.IsActive,
                     PosterUrl = input.PosterUrl ?? string.Empty,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow,
+                    CreatedAt = _gmt7Clock.Gmt7Now,
+                    UpdatedAt = _gmt7Clock.Gmt7Now,
                     IsDeleted = false
                 };
 
@@ -93,7 +98,7 @@ namespace LTC.AdministrationService.Admin
                 entity.EndDate = input.EndDate;
                 entity.IsActive = input.IsActive;
                 entity.PosterUrl = input.PosterUrl ?? string.Empty;
-                entity.UpdatedAt = DateTime.UtcNow;
+                entity.UpdatedAt = _gmt7Clock.Gmt7Now;
 
                 await _newsAndOffersRepository.UpdateAsync(entity, true);
                 return ObjectMapper.Map<Entities.NewsAndOffers, NewsAndOffersOutputDto>(entity);
