@@ -45,6 +45,12 @@ namespace LTC.AdministrationService.Identity
             }
             user.SetIsActive(input.IsActive);
             (await _userManager.CreateAsync(user, password)).CheckErrors();
+
+            if (input.Roles != null && input.Roles.Count > 0)
+            {
+                (await _userManager.SetRolesAsync(user, input.Roles)).CheckErrors();
+            }
+
             return user.Id;
         }
     }

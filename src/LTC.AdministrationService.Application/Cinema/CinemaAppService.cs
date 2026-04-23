@@ -8,16 +8,21 @@ using Volo.Abp.Domain.Repositories;
 using LTC.AdministrationService.Admin.Cinemas;
 using LTC.AdministrationService.Admin.Cinemas.Dtos.Input;
 using LTC.AdministrationService.Admin.Cinemas.Dtos.Output;
+using LTC.Shared.Hosting.Microservices.Timing;
 
 namespace LTC.AdministrationService.Cinemas
 {
     public class CinemaAppService : ApplicationService, IAdminCinemaAppService
     {
         private readonly IRepository<Entities.Cinema, Guid> _cinemaRepository;
+        private readonly IGmt7Clock _gmt7Clock;
 
-        public CinemaAppService(IRepository<Entities.Cinema, Guid> cinemaRepository)
+        public CinemaAppService(
+            IRepository<Entities.Cinema, Guid> cinemaRepository,
+            IGmt7Clock gmt7Clock)
         {
             _cinemaRepository = cinemaRepository;
+            _gmt7Clock = gmt7Clock;
         }
 
         public async Task<PagedResultDto<CinemasOutputDto>> GetListAsync(GetCinemasListInputDto input)
@@ -56,7 +61,7 @@ namespace LTC.AdministrationService.Cinemas
         public async Task<CinemasOutputDto> CreateAsync(CreateCinemasInputDto input)
         {
             var cinema = ObjectMapper.Map<CreateCinemasInputDto, Entities.Cinema>(input);
-            cinema.CreatedAt = DateTime.UtcNow;
+            cinema.CreatedAt = _gmt7Clock.Gmt7Now;
 
             cinema = await _cinemaRepository.InsertAsync(cinema, autoSave: true);
             return ObjectMapper.Map<Entities.Cinema, CinemasOutputDto>(cinema);
@@ -66,7 +71,7 @@ namespace LTC.AdministrationService.Cinemas
         {
             var cinema = await _cinemaRepository.GetAsync(id);
             ObjectMapper.Map(input, cinema);
-            cinema.UpdatedAt = DateTime.UtcNow;
+            cinema.UpdatedAt = _gmt7Clock.Gmt7Now;
 
             cinema = await _cinemaRepository.UpdateAsync(cinema, autoSave: true);
             return ObjectMapper.Map<Entities.Cinema, CinemasOutputDto>(cinema);

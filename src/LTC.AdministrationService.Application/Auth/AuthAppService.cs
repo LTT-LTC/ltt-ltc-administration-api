@@ -4,6 +4,7 @@ using LTC.AdministrationService.Entities.CacheKeys;
 using LTC.AdministrationService.Events;
 using LTC.Shared.CrossCuttingConcerns.ExtensionMethods;
 using LTC.Shared.Hosting.Microservices.Authentication;
+using LTC.Shared.Hosting.Microservices.Timing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
@@ -49,6 +50,7 @@ namespace LTC.AdministrationService.Auth
         private readonly IRepository<IdentityUser, Guid> _userRepository;
         private readonly ICurrentUser _currentUser;
         private readonly IDataFilter _dataFilter;
+        private readonly IGmt7Clock _gmt7Clock;
 
         public AuthAppService(
             IIdentityUserRepository identityUserRepository,
@@ -67,7 +69,8 @@ namespace LTC.AdministrationService.Auth
             IConnectionMultiplexer redis,
             IRepository<IdentityUser, Guid> userRepository,
             ICurrentUser currentUser,
-            IDataFilter dataFilter
+            IDataFilter dataFilter,
+            IGmt7Clock gmt7Clock
             )
         {
             _identityUserRepository = identityUserRepository;
@@ -87,6 +90,7 @@ namespace LTC.AdministrationService.Auth
             _userRepository = userRepository;
             _currentUser = currentUser;
             _dataFilter = dataFilter;
+            _gmt7Clock = gmt7Clock;
         }
 
         /// <summary>
@@ -250,7 +254,7 @@ namespace LTC.AdministrationService.Auth
                 UserId = user.Id,
                 Token = token,
                 Email = user.Email,
-                ExpirationTime = DateTime.Now.AddHours(AuthConsts.PASSWORD_RESET_TOKEN_EXPIRE_HOURS),
+                ExpirationTime = _gmt7Clock.Gmt7Now.AddHours(AuthConsts.PASSWORD_RESET_TOKEN_EXPIRE_HOURS),
                 IsUsed = false
             };
 
@@ -300,7 +304,7 @@ namespace LTC.AdministrationService.Auth
                 if (resetToken.IsUsed)
                     throw new UserFriendlyException(L["TokenAlreadyUsed"]);
 
-                if (resetToken.ExpirationTime < DateTime.Now)
+                if (resetToken.ExpirationTime < _gmt7Clock.Gmt7Now)
                     throw new UserFriendlyException(L["TokenExpired"]);
 
                 // Find user
@@ -332,7 +336,7 @@ namespace LTC.AdministrationService.Auth
                 );
 
                 // Publish success event to send confirmation email
-                var now = DateTime.Now;
+                var now = _gmt7Clock.Gmt7Now;
                 await _localEventBus.PublishAsync(new PasswordResetSuccessEvent
                 {
                     Email = user.Email,
@@ -378,8 +382,8 @@ namespace LTC.AdministrationService.Auth
                 issuer: _tokenAuthOption.Issuer,
                 audience: _tokenAuthOption.Audience,
                 claims: claims,
-                notBefore: DateTime.Now,
-                expires: DateTime.Now.AddHours(_tokenAuthOption.Expiration),
+                notBefore: _gmt7Clock.UtcNow,
+                expires: _gmt7Clock.UtcNow.AddHours(_tokenAuthOption.Expiration),
                 signingCredentials: _tokenAuthOption.SigningCredentials
             );
 

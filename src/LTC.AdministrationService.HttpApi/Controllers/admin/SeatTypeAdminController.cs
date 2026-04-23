@@ -1,24 +1,23 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
-using Volo.Abp.AspNetCore.Mvc;
 using Volo.Abp.Application.Dtos;
 using LTC.AdministrationService.Admin.SeatTypes;
 using LTC.AdministrationService.Admin.SeatTypes.Dtos.Input;
 using LTC.AdministrationService.Admin.SeatTypes.Dtos.Output;
-using LTC.Shared.CrossCuttingConcerns.Pagination;
+using LTC.AdministrationService.Controllers.Admin;
 
-namespace LTC.AdministrationService.Controllers
+namespace LTC.AdministrationService.Controllers.Admin
 {
-    [ApiController]
-    [Route(AdministrationServiceSettingNames.DefaultRoute + "/seat-type")]
-    [Authorize(Roles = "Admin,Manager")]
-    public class SeatTypeController : AbpControllerBase
+    /// <summary>
+    /// Admin-only SeatType operations: create, update, delete.
+    /// </summary>
+    [Route(AdministrationServiceSettingNames.DefaultRoute + "/admin/seat-type")]
+    public class SeatTypeAdminController : AdminControllerBase
     {
         private readonly IAdminSeatTypeAppService _appService;
 
-        public SeatTypeController(IAdminSeatTypeAppService appService)
+        public SeatTypeAdminController(IAdminSeatTypeAppService appService)
         {
             _appService = appService;
         }

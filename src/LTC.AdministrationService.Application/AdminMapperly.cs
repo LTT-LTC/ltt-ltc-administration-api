@@ -43,6 +43,8 @@ public partial class UpdateCinemaInputMapper : IObjectMapper<UpdateCinemasInputD
 [Mapper]
 public partial class ScreenOutputMapper : IObjectMapper<Entities.Screen, ScreenOutputDto>, ITransientDependency
 {
+    [MapperIgnoreTarget(nameof(ScreenOutputDto.SeatLayout))]
+    [MapperIgnoreTarget(nameof(ScreenOutputDto.SeatCount))]
     public partial ScreenOutputDto Map(Entities.Screen source);
     public ScreenOutputDto Map(Entities.Screen source, ScreenOutputDto destination) => Map(source);
 }
@@ -50,6 +52,10 @@ public partial class ScreenOutputMapper : IObjectMapper<Entities.Screen, ScreenO
 [Mapper]
 public partial class CreateScreenInputMapper : IObjectMapper<CreateScreenInputDto, Entities.Screen>, ITransientDependency
 {
+    [MapperIgnoreSource(nameof(CreateScreenInputDto.SeatLayout))]
+    [MapperIgnoreSource(nameof(CreateScreenInputDto.SeatCount))]
+    [MapperIgnoreTarget(nameof(Entities.Screen.SeatMapId))]
+    [MapperIgnoreTarget(nameof(Entities.Screen.SeatMap))]
     public partial Entities.Screen Map(CreateScreenInputDto source);
     public Entities.Screen Map(CreateScreenInputDto source, Entities.Screen destination) => null;
 }
@@ -57,10 +63,14 @@ public partial class CreateScreenInputMapper : IObjectMapper<CreateScreenInputDt
 [Mapper]
 public partial class UpdateScreenInputMapper : IObjectMapper<UpdateScreenInputDto, Entities.Screen>, ITransientDependency
 {
+    [MapperIgnoreSource(nameof(UpdateScreenInputDto.SeatLayout))]
+    [MapperIgnoreSource(nameof(UpdateScreenInputDto.SeatCount))]
     public partial Entities.Screen Map(UpdateScreenInputDto source);
     public Entities.Screen Map(UpdateScreenInputDto source, Entities.Screen destination) { MapUpdate(source, destination); return destination; }
     [MapperIgnoreTarget(nameof(Entities.Screen.Id))]
     [MapperIgnoreTarget(nameof(Entities.Screen.TenantId))]
+    [MapperIgnoreTarget(nameof(Entities.Screen.SeatMapId))]
+    [MapperIgnoreTarget(nameof(Entities.Screen.SeatMap))]
     public partial void MapUpdate(UpdateScreenInputDto source, Entities.Screen target);
 }
 

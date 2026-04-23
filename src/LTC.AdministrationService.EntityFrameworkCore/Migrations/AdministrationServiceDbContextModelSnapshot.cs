@@ -78,6 +78,20 @@ namespace LTC.AdministrationService.Migrations
                     b.Property<Guid>("CinemaId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("ProductId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<Guid?>("TenantId")
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("TenantId");
@@ -209,6 +223,10 @@ namespace LTC.AdministrationService.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("UserId")
+                        .IsUnique()
+                        .HasFilter("[UserId] IS NOT NULL");
+
                     b.ToTable("Employees", "dbo");
                 });
 
@@ -333,6 +351,67 @@ namespace LTC.AdministrationService.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("MediaFiles", "dbo");
+                });
+
+            modelBuilder.Entity("LTC.AdministrationService.Entities.MovieDistributionProjection", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Format")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("MovieId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("TenantId");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("MovieDistributionProjections", "dbo");
+                });
+
+            modelBuilder.Entity("LTC.AdministrationService.Entities.MovieProjection", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DurationInMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("TenantId");
+
+                    b.Property<string>("Title")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("MovieProjections", "dbo");
                 });
 
             modelBuilder.Entity("LTC.AdministrationService.Entities.NewsAndOffers", b =>
@@ -501,11 +580,8 @@ namespace LTC.AdministrationService.Migrations
                     b.Property<string>("ScreenType")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("SeatCount")
-                        .HasColumnType("int");
-
-                    b.Property<string>("SeatLayout")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<Guid?>("SeatMapId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Status")
                         .HasColumnType("nvarchar(max)");
@@ -519,7 +595,38 @@ namespace LTC.AdministrationService.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("SeatMapId");
+
                     b.ToTable("Screens", "dbo");
+                });
+
+            modelBuilder.Entity("LTC.AdministrationService.Entities.SeatMap", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CinemaId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("SeatCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SeatLayout")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("TenantId");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SeatMaps", "dbo");
                 });
 
             modelBuilder.Entity("LTC.AdministrationService.Entities.SeatType", b =>
@@ -574,6 +681,12 @@ namespace LTC.AdministrationService.Migrations
 
                     b.Property<TimeSpan>("EndTime")
                         .HasColumnType("time");
+
+                    b.Property<string>("MovieFormat")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("MovieId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("ScreenId")
                         .HasColumnType("uniqueidentifier");
@@ -1825,6 +1938,15 @@ namespace LTC.AdministrationService.Migrations
                     b.HasKey("TenantId", "Name");
 
                     b.ToTable("AbpTenantConnectionStrings", "dbo");
+                });
+
+            modelBuilder.Entity("LTC.AdministrationService.Entities.Screen", b =>
+                {
+                    b.HasOne("LTC.AdministrationService.Entities.SeatMap", "SeatMap")
+                        .WithMany()
+                        .HasForeignKey("SeatMapId");
+
+                    b.Navigation("SeatMap");
                 });
 
             modelBuilder.Entity("Volo.Abp.Identity.IdentityRoleClaim", b =>

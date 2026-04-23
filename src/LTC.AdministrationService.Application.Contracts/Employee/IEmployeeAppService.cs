@@ -12,6 +12,10 @@ namespace LTC.AdministrationService.Employee
     public interface IEmployeeAppService
     {
         Task<PagedResultEmployeeOutputDto> GetListAsync(GetListEmployeeInputDto input);
+        Task<EmployeeOutputDto?> GetAsync(Guid id);
         Task<Guid> CreateAsync(CreateEmployeeInputDto input);
+        Task<bool> UpdateAsync(Guid id, UpdateEmployeeInputDto input);
+        Task DeleteAsync(Guid id);
+        Task<EmployeeIdentityReconciliationResultDto> ReconcileIdentityLinksAsync();
     }
 }

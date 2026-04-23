@@ -8,16 +8,21 @@ using Volo.Abp.Domain.Repositories;
 using LTC.AdministrationService.Admin.SeatTypes;
 using LTC.AdministrationService.Admin.SeatTypes.Dtos.Input;
 using LTC.AdministrationService.Admin.SeatTypes.Dtos.Output;
+using LTC.Shared.Hosting.Microservices.Timing;
 
 namespace LTC.AdministrationService.SeatTypes
 {
     public class SeatTypeAppService : ApplicationService, IAdminSeatTypeAppService
     {
         private readonly IRepository<Entities.SeatType, Guid> _seatTypeRepository;
+        private readonly IGmt7Clock _gmt7Clock;
 
-        public SeatTypeAppService(IRepository<Entities.SeatType, Guid> seatTypeRepository)
+        public SeatTypeAppService(
+            IRepository<Entities.SeatType, Guid> seatTypeRepository,
+            IGmt7Clock gmt7Clock)
         {
             _seatTypeRepository = seatTypeRepository;
+            _gmt7Clock = gmt7Clock;
         }
 
         public async Task<PagedResultDto<SeatTypeOutputDto>> GetListAsync(GetSeatTypeListInputDto input)
@@ -51,7 +56,7 @@ namespace LTC.AdministrationService.SeatTypes
         public async Task<SeatTypeOutputDto> CreateAsync(CreateSeatTypeInputDto input)
         {
             var entity = ObjectMapper.Map<CreateSeatTypeInputDto, Entities.SeatType>(input);
-            entity.UpdatedAt = DateTime.UtcNow;
+            entity.UpdatedAt = _gmt7Clock.Gmt7Now;
 
             entity = await _seatTypeRepository.InsertAsync(entity, autoSave: true);
             return ObjectMapper.Map<Entities.SeatType, SeatTypeOutputDto>(entity);
@@ -61,7 +66,7 @@ namespace LTC.AdministrationService.SeatTypes
         {
             var entity = await _seatTypeRepository.GetAsync(id);
             ObjectMapper.Map(input, entity);
-            entity.UpdatedAt = DateTime.UtcNow;
+            entity.UpdatedAt = _gmt7Clock.Gmt7Now;
 
             entity = await _seatTypeRepository.UpdateAsync(entity, autoSave: true);
             return ObjectMapper.Map<Entities.SeatType, SeatTypeOutputDto>(entity);
