@@ -11,7 +11,7 @@ namespace LTC.AdministrationService.Controllers.Manager
     [RemoteService]
     [Area("manager")]
     [ApiController]
-    [Authorize(Roles = "Manager")]
+    [Authorize(Roles = "Manager,manager")]
     public abstract class ManagerControllerBase : AdministrationServiceController
     {
     }

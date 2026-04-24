@@ -14,10 +14,8 @@ namespace LTC.AdministrationService.Employee.Dtos.Input
         public string? OtherEmail { get; set; }
         public string PhoneNumber { get; set; } = string.Empty;
         public string Code { get; set; } = string.Empty;
-        public Guid? OrganizationUnitId { get; set; }
-        public Guid? PositionId { get; set; }
-        public DateTime? JoinedDate { get; set; }
-        public DateTime? DateOfBirth { get; set; }
+        public Guid? CinemaId { get; set; }
+        public DateTime? HireDate { get; set; }
         public bool IsActive { get; set; } = true;
         public string Role { get; set; } = "Staff";
     }
@@ -57,6 +55,12 @@ namespace LTC.AdministrationService.Employee.Dtos.Input
             RuleFor(x => x.Role)
                 .Must(role => !string.IsNullOrWhiteSpace(role) && AllowedRoles.Contains(role))
                 .WithMessage(CommonExtensions.GetValidateMessage(localizer["InvalidValue"], localizer["User:Role"]));
+
+            RuleFor(x => x.CinemaId)
+                .NotNull()
+                .When(x => string.Equals(x.Role, "Manager", StringComparison.OrdinalIgnoreCase)
+                           || string.Equals(x.Role, "Staff", StringComparison.OrdinalIgnoreCase))
+                .WithMessage(CommonExtensions.GetValidateMessage(localizer["NotEmpty"], localizer["Cinema"]));
         }
     }
 }

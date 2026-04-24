@@ -9,7 +9,7 @@ using LTC.AdministrationService.Controllers.Manager;
 namespace LTC.AdministrationService.Controllers.Manager
 {
     /// <summary>
-    /// Manager GiftCode operations: read, create, and update (no delete).
+    /// Manager GiftCode operations: read-only.
     /// </summary>
     [Route(AdministrationServiceSettingNames.DefaultRoute + "/manager/gift-codes")]
     public class GiftCodeManagerController : ManagerControllerBase
@@ -27,18 +27,5 @@ namespace LTC.AdministrationService.Controllers.Manager
             return await _giftCodeAppService.GetListAsync(skipCount, maxResultCount);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> CreateAsync([FromBody] CreateGiftCodeDto input)
-        {
-            var result = await _giftCodeAppService.CreateAsync(input);
-            return Ok(result);
-        }
-
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateAsync(Guid id, [FromBody] CreateGiftCodeDto input)
-        {
-            var result = await _giftCodeAppService.UpdateAsync(id, input);
-            return Ok(result);
-        }
     }
 }

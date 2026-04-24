@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
@@ -13,9 +13,14 @@ namespace LTC.AdministrationService.Employee.Dtos.Output
         public Guid? UserId { get; set; }
         public string Name { get; set; }
         public string Email { get; set; }
+        public string? PhoneNumber { get; set; }
         public string Code { get; set; }
-        public Guid? PositionId { get; set; }
+        public Guid? CinemaId { get; set; }
+        public string? CinemaName { get; set; }
+        public DateTime? HireDate { get; set; }
+        // Backward-compatibility fields for FE pages still reading old names.
         public Guid? OrganizationUnitId { get; set; }
+        public string? OrganizationUnitName { get; set; }
         public bool IsActive { get; set; }
         public string? Role { get; set; }
     }

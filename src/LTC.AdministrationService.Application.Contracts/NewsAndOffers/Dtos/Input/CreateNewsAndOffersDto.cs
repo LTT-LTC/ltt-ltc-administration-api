@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Volo.Abp.Application.Dtos;
+using Microsoft.AspNetCore.Http;
 
 namespace LTC.AdministrationService.NewsAndOffers.Dtos.Input
 {
@@ -14,5 +15,6 @@ namespace LTC.AdministrationService.NewsAndOffers.Dtos.Input
         public DateTime EndDate { get; set; }
         public bool IsActive { get; set; }
         public string? PosterUrl { get; set; }
+        public IFormFile? ImageFile { get; set; }
     }
 }

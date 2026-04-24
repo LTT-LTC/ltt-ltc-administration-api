@@ -1,4 +1,4 @@
-﻿using LTC.AdministrationService.Employee.Dtos.Input;
+using LTC.AdministrationService.Employee.Dtos.Input;
 using LTC.AdministrationService.Employee.Dtos.Output;
 using System;
 using System.Collections.Generic;
@@ -13,8 +13,8 @@ namespace LTC.AdministrationService.Employee
     {
         Task<PagedResultEmployeeOutputDto> GetListAsync(GetListEmployeeInputDto input);
         Task<EmployeeOutputDto?> GetAsync(Guid id);
-        Task<Guid> CreateAsync(CreateEmployeeInputDto input);
-        Task<bool> UpdateAsync(Guid id, UpdateEmployeeInputDto input);
+        Task<EmployeeOutputDto> CreateAsync(CreateEmployeeInputDto input);
+        Task<EmployeeOutputDto> UpdateAsync(Guid id, UpdateEmployeeInputDto input);
         Task DeleteAsync(Guid id);
         Task<EmployeeIdentityReconciliationResultDto> ReconcileIdentityLinksAsync();
     }

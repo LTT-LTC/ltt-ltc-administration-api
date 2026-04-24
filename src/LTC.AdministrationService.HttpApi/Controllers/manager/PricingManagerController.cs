@@ -27,5 +27,15 @@ namespace LTC.AdministrationService.Controllers.Manager
         [HttpPost]
         public virtual Task<PricingRuleOutputDto> CreateAsync(Guid cinemaId, CreatePricingRuleDto input)
             => _appService.CreateAsync(cinemaId, input);
+
+        [Route("rule/{id}")]
+        [HttpPut]
+        public virtual Task<PricingRuleOutputDto> UpdateAsync(Guid id, CreatePricingRuleDto input)
+            => _appService.UpdateAsync(id, input);
+
+        [Route("rule/{id}")]
+        [HttpDelete]
+        public virtual Task DeleteAsync(Guid id)
+            => _appService.DeleteAsync(id);
     }
 }
