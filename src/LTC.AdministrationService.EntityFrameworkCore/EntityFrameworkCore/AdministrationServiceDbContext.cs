@@ -91,6 +91,14 @@ public class AdministrationServiceDbContext :
             b.HasIndex(x => x.UserId)
                 .IsUnique()
                 .HasFilter("[UserId] IS NOT NULL");
+            b.HasOne<IdentityUser>()
+                .WithMany()
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.SetNull);
+            b.HasOne<Entities.Cinema>()
+                .WithMany()
+                .HasForeignKey(x => x.CinemaId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         builder.Entity<MediaFile>(b =>
@@ -103,6 +111,13 @@ public class AdministrationServiceDbContext :
         {
             b.ToTable("Cinemas");
             b.ConfigureByConvention();
+            b.HasIndex(x => x.ManagerUserId)
+                .IsUnique()
+                .HasFilter("[ManagerUserId] IS NOT NULL");
+            b.HasOne<IdentityUser>()
+                .WithMany()
+                .HasForeignKey(x => x.ManagerUserId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         builder.Entity<SeatMap>(b =>

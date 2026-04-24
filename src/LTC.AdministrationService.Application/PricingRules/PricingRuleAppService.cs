@@ -36,6 +36,7 @@ namespace LTC.AdministrationService.PricingRules
 
         public async Task<PricingRuleOutputDto> CreateAsync(Guid cinemaId, CreatePricingRuleDto input)
         {
+            ValidateInput(input);
             var entity = new PricingRule(GuidGenerator.Create())
             {
                 CinemaId = cinemaId,
@@ -51,9 +52,40 @@ namespace LTC.AdministrationService.PricingRules
             return ObjectMapper.Map<PricingRule, PricingRuleOutputDto>(entity);
         }
 
+        public async Task<PricingRuleOutputDto> UpdateAsync(Guid id, CreatePricingRuleDto input)
+        {
+            ValidateInput(input);
+            var entity = await _repository.GetAsync(id);
+            entity.SeatTypeId = input.SeatTypeId;
+            entity.RuleType = input.RuleType;
+            entity.Multiplier = input.Multiplier;
+            entity.StartTime = input.StartTime;
+            entity.EndTime = input.EndTime;
+            entity.DayOfWeek = input.DayOfWeek;
+            entity.Priority = input.Priority;
+            entity.IsActive = input.IsActive;
+            entity.UpdatedAt = Clock.Now;
+
+            await _repository.UpdateAsync(entity, true);
+            return ObjectMapper.Map<PricingRule, PricingRuleOutputDto>(entity);
+        }
+
         public async Task DeleteAsync(Guid id)
         {
             await _repository.DeleteAsync(id);
+        }
+
+        private static void ValidateInput(CreatePricingRuleDto input)
+        {
+            if (string.IsNullOrWhiteSpace(input.RuleType))
+            {
+                throw new Volo.Abp.UserFriendlyException("Rule type is required.");
+            }
+
+            if (input.Multiplier <= 0)
+            {
+                throw new Volo.Abp.UserFriendlyException("Multiplier must be a positive number.");
+            }
         }
     }
 }

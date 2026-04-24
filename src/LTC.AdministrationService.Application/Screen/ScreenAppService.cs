@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
+using Volo.Abp;
 using LTC.AdministrationService.Admin.Screens;
 using LTC.AdministrationService.Admin.Screens.Dtos.Input;
 using LTC.AdministrationService.Admin.Screens.Dtos.Output;
@@ -18,15 +19,24 @@ public class ScreenAppService : ApplicationService, IAdminScreenAppService
 {
     private readonly IRepository<Screen, Guid> _screenRepository;
     private readonly IRepository<SeatMap, Guid> _seatMapRepository;
+    private readonly IRepository<Cinema, Guid> _cinemaRepository;
     private readonly IGmt7Clock _gmt7Clock;
+    private static readonly HashSet<string> AllowedStatuses = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "active",
+        "maintenance",
+        "inactive"
+    };
 
     public ScreenAppService(
         IRepository<Screen, Guid> screenRepository,
         IRepository<SeatMap, Guid> seatMapRepository,
+        IRepository<Cinema, Guid> cinemaRepository,
         IGmt7Clock gmt7Clock)
     {
         _screenRepository = screenRepository;
         _seatMapRepository = seatMapRepository;
+        _cinemaRepository = cinemaRepository;
         _gmt7Clock = gmt7Clock;
     }
 
@@ -79,6 +89,8 @@ public class ScreenAppService : ApplicationService, IAdminScreenAppService
 
     public async Task<ScreenOutputDto> CreateAsync(Guid cinemaId, CreateScreenInputDto input)
     {
+        await ValidateScreenInputAsync(cinemaId, input.ScreenNumber, input.ScreenType, input.SeatCount, input.Status, null);
+
         var seatMap = new SeatMap(GuidGenerator.Create())
         {
             TenantId = CurrentTenant.Id,
@@ -102,6 +114,7 @@ public class ScreenAppService : ApplicationService, IAdminScreenAppService
     public async Task<ScreenOutputDto> UpdateAsync(Guid id, UpdateScreenInputDto input)
     {
         var screen = await _screenRepository.GetAsync(id);
+        await ValidateScreenInputAsync(screen.CinemaId, input.ScreenNumber, input.ScreenType, input.SeatCount, input.Status, id);
 
         ObjectMapper.Map(input, screen);
         screen.UpdatedAt = _gmt7Clock.Gmt7Now;
@@ -159,5 +172,56 @@ public class ScreenAppService : ApplicationService, IAdminScreenAppService
         dto.SeatLayout = seatMap?.SeatLayout;
         dto.SeatCount = seatMap?.SeatCount ?? 0;
         return dto;
+    }
+
+    private async Task ValidateScreenInputAsync(
+        Guid cinemaId,
+        int screenNumber,
+        string? screenType,
+        int seatCount,
+        string? status,
+        Guid? editingId)
+    {
+        if (screenNumber <= 0)
+        {
+            throw new UserFriendlyException("Screen number must be a positive value.");
+        }
+
+        if (seatCount <= 0)
+        {
+            throw new UserFriendlyException("Seat count must be a positive value.");
+        }
+
+        if (!string.IsNullOrWhiteSpace(status) && !AllowedStatuses.Contains(status))
+        {
+            throw new UserFriendlyException("Screen status is invalid.");
+        }
+
+        if (string.IsNullOrWhiteSpace(screenType))
+        {
+            throw new UserFriendlyException("Screen type is required.");
+        }
+
+        var cinema = await _cinemaRepository.FindAsync(cinemaId);
+        if (cinema == null)
+        {
+            throw new UserFriendlyException("Cinema not found.");
+        }
+
+        if (CurrentUser.Id.HasValue && cinema.ManagerUserId.HasValue && cinema.ManagerUserId != CurrentUser.Id)
+        {
+            throw new UserFriendlyException("You can only manage screens in your assigned cinema.");
+        }
+
+        var screensQ = await _screenRepository.GetQueryableAsync();
+        var duplicate = await screensQ.AnyAsync(x =>
+            x.CinemaId == cinemaId
+            && x.ScreenNumber == screenNumber
+            && (!editingId.HasValue || x.Id != editingId.Value));
+
+        if (duplicate)
+        {
+            throw new UserFriendlyException("Screen number already exists in this cinema.");
+        }
     }
 }

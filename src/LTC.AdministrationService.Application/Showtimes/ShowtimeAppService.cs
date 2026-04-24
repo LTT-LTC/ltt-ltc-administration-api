@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Volo.Abp;
@@ -16,17 +17,20 @@ namespace LTC.AdministrationService.Showtimes
     {
         private readonly IRepository<Showtime, Guid> _repository;
         private readonly IRepository<Screen, Guid> _screenRepository;
+        private readonly IRepository<Cinema, Guid> _cinemaRepository;
         private readonly IRepository<MovieProjection, Guid> _movieProjectionRepository;
         private readonly IRepository<MovieDistributionProjection, Guid> _distributionProjectionRepository;
 
         public ShowtimeAppService(
             IRepository<Showtime, Guid> repository,
             IRepository<Screen, Guid> screenRepository,
+            IRepository<Cinema, Guid> cinemaRepository,
             IRepository<MovieProjection, Guid> movieProjectionRepository,
             IRepository<MovieDistributionProjection, Guid> distributionProjectionRepository)
         {
             _repository = repository;
             _screenRepository = screenRepository;
+            _cinemaRepository = cinemaRepository;
             _movieProjectionRepository = movieProjectionRepository;
             _distributionProjectionRepository = distributionProjectionRepository;
         }
@@ -113,7 +117,7 @@ namespace LTC.AdministrationService.Showtimes
             }
 
             var normalizedStatus = (movie.Status ?? string.Empty).Trim().ToLowerInvariant();
-            if (normalizedStatus != "nowshowing" && normalizedStatus != "upcoming")
+            if (normalizedStatus != "now_showing" && normalizedStatus != "nowshowing")
             {
                 throw new BusinessException("Showtime:MovieStatusInvalid");
             }
@@ -135,9 +139,39 @@ namespace LTC.AdministrationService.Showtimes
             {
                 throw new BusinessException("Showtime:ScreenNotFound");
             }
+            if (!string.Equals(screen.Status, "active", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new BusinessException("Showtime:ScreenNotActive");
+            }
+            if (screen.CinemaId != input.CinemaId)
+            {
+                throw new BusinessException("Showtime:ScreenCinemaMismatch");
+            }
 
-            if (!string.IsNullOrWhiteSpace(input.MovieFormat) &&
-                !string.Equals(input.MovieFormat, screen.ScreenType, StringComparison.OrdinalIgnoreCase))
+            var cinema = await _cinemaRepository.FindAsync(input.CinemaId);
+            if (cinema == null)
+            {
+                throw new BusinessException("Showtime:CinemaNotFound");
+            }
+            if (CurrentUser.Id.HasValue && cinema.ManagerUserId.HasValue && cinema.ManagerUserId != CurrentUser.Id)
+            {
+                throw new BusinessException("Showtime:InvalidManagerCinema");
+            }
+
+            if (input.BasePrice <= 0)
+            {
+                throw new BusinessException("Showtime:BasePriceInvalid");
+            }
+
+            // Business timezone is GMT+7 and must be between 06:00 and 24:00.
+            if (input.StartTime < TimeSpan.FromHours(6) || input.StartTime >= TimeSpan.FromHours(24))
+            {
+                throw new BusinessException("Showtime:StartTimeOutOfAllowedRange");
+            }
+
+            var movieFormatValue = ValidateMovieFormatJson(input.MovieFormat);
+
+            if (!string.Equals(movieFormatValue, screen.ScreenType, StringComparison.OrdinalIgnoreCase))
             {
                 throw new BusinessException("Showtime:MovieFormatNotSupportedByScreen");
             }
@@ -182,6 +216,45 @@ namespace LTC.AdministrationService.Showtimes
                         throw new BusinessException("Showtime:InsufficientGapBetweenShowtimes");
                     }
                 }
+            }
+        }
+
+        private static string ValidateMovieFormatJson(string? movieFormatJson)
+        {
+            if (string.IsNullOrWhiteSpace(movieFormatJson))
+            {
+                throw new BusinessException("Showtime:MovieFormatRequired");
+            }
+
+            try
+            {
+                using var document = JsonDocument.Parse(movieFormatJson);
+                var root = document.RootElement;
+                if (root.ValueKind != JsonValueKind.Object)
+                {
+                    throw new BusinessException("Showtime:MovieFormatInvalidJson");
+                }
+
+                if (!root.TryGetProperty("movie_format", out var movieFormat) || movieFormat.ValueKind != JsonValueKind.String)
+                {
+                    throw new BusinessException("Showtime:MovieFormatValueRequired");
+                }
+
+                if (!root.TryGetProperty("movie_language", out var movieLanguage) || movieLanguage.ValueKind != JsonValueKind.String)
+                {
+                    throw new BusinessException("Showtime:MovieLanguageRequired");
+                }
+
+                if (!root.TryGetProperty("movie_caption", out var movieCaption) || movieCaption.ValueKind != JsonValueKind.String)
+                {
+                    throw new BusinessException("Showtime:MovieCaptionRequired");
+                }
+
+                return movieFormat.GetString() ?? string.Empty;
+            }
+            catch (JsonException)
+            {
+                throw new BusinessException("Showtime:MovieFormatInvalidJson");
             }
         }
     }

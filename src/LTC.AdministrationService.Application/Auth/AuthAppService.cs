@@ -110,12 +110,17 @@ namespace LTC.AdministrationService.Auth
                 }
 
                 var employeeQueryable = await _employeeRepository.GetQueryableAsync();
-                var employee = await employeeQueryable.FirstOrDefaultAsync(x => x.EmployeeId == loginIdentifier);
+                var employee = await employeeQueryable.FirstOrDefaultAsync(x => x.PhoneNumber == loginIdentifier);
 
                 IdentityUser? identityUser = null;
                 if (employee?.UserId.HasValue == true)
                 {
                     identityUser = await _identityUserManager.FindByIdAsync(employee.UserId.Value.ToString());
+                }
+
+                if (identityUser == null && Guid.TryParse(loginIdentifier, out var userIdFromIdentifier))
+                {
+                    identityUser = await _identityUserManager.FindByIdAsync(userIdFromIdentifier.ToString());
                 }
 
                 identityUser ??= await _identityUserManager.FindByNameAsync(loginIdentifier);
@@ -238,12 +243,32 @@ namespace LTC.AdministrationService.Auth
         /// <exception cref="UserFriendlyException"></exception>
         public async Task<bool> RequestPasswordRecoveryAsync(RequestPasswordRecoveryInputDto input)
         {
-            var employeeQueryable = await _employeeRepository.GetQueryableAsync();
-            var employee = await employeeQueryable.Where(x => x.EmployeeId == input.UserName.Trim()).FirstOrDefaultAsync()
-                ?? throw new UserFriendlyException(L["UserNotFound"]);
+            var loginIdentifier = input.UserName.Trim();
+            IdentityUser? user = null;
 
-            var user = await _identityUserManager.FindByIdAsync(employee.UserId.Value.ToString())
-                ?? throw new UserFriendlyException(L["UserNotFound"]);
+            if (Guid.TryParse(loginIdentifier, out var userIdFromIdentifier))
+            {
+                user = await _identityUserManager.FindByIdAsync(userIdFromIdentifier.ToString());
+            }
+
+            user ??= await _identityUserManager.FindByNameAsync(loginIdentifier);
+            user ??= await _identityUserManager.FindByEmailAsync(loginIdentifier);
+            user ??= await FindUserAcrossTenantsAsync(loginIdentifier);
+
+            if (user == null)
+            {
+                var employeeQueryable = await _employeeRepository.GetQueryableAsync();
+                var employee = await employeeQueryable.FirstOrDefaultAsync(x => x.PhoneNumber == loginIdentifier);
+                if (employee?.UserId.HasValue == true)
+                {
+                    user = await _identityUserManager.FindByIdAsync(employee.UserId.Value.ToString());
+                }
+            }
+
+            if (user == null)
+            {
+                throw new UserFriendlyException(L["UserNotFound"]);
+            }
 
             // Generate unique token
             var token = Guid.NewGuid().ToString();

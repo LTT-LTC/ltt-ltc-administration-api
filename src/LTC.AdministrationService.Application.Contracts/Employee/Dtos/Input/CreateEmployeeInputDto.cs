@@ -1,7 +1,6 @@
-﻿using LTC.AdministrationService.Localization;
+using LTC.AdministrationService.Localization;
 using LTC.Shared.CrossCuttingConcerns.ExtensionMethods;
 using FluentValidation;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Localization;
 using System;
 using System.Collections.Generic;
@@ -38,29 +37,14 @@ namespace LTC.AdministrationService.Employee.Dtos.Input
         public string PhoneNumber { get; set; }
 
         /// <summary>
-        /// Phòng ban của nhân sự
+        /// Rạp của nhân sự
         /// </summary>
-        public Guid? OrganizationUnitId { get; set; }
+        public Guid? CinemaId { get; set; }
 
         /// <summary>
-        /// Vai trò của nhân sự trong phòng ban
+        /// Ngày tuyển dụng
         /// </summary>
-        public Guid? PositionId { get; set; }
-
-        /// <summary>
-        /// avatar của nhân sự
-        /// </summary>
-        public IFormFile? AvatarFile { get; set; }
-
-        /// <summary>
-        /// Ngày gia nhập
-        /// </summary>
-        public DateTime? JoinedDate { get; set; }
-
-        /// <summary>
-        /// ngày sinh của nhân sự
-        /// </summary>
-        public DateTime? DateOfBirth { get; set; }
+        public DateTime? HireDate { get; set; }
 
         /// <summary>
         /// Role được gán trong ABP Identity (Admin/Manager/Staff/POS)
@@ -180,6 +164,12 @@ namespace LTC.AdministrationService.Employee.Dtos.Input
             RuleFor(x => x.Role)
                 .Must(role => !string.IsNullOrWhiteSpace(role) && AllowedRoles.Contains(role))
                 .WithMessage(CommonExtensions.GetValidateMessage(localizer["InvalidValue"], localizer["User:Role"]));
+
+            RuleFor(x => x.CinemaId)
+                .NotNull()
+                .When(x => string.Equals(x.Role, "Manager", StringComparison.OrdinalIgnoreCase)
+                           || string.Equals(x.Role, "Staff", StringComparison.OrdinalIgnoreCase))
+                .WithMessage(CommonExtensions.GetValidateMessage(localizer["NotEmpty"], localizer["Cinema"]));
         }
     }
 }

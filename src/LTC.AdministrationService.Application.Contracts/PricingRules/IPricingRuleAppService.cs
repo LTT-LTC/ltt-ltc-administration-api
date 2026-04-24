@@ -10,6 +10,7 @@ namespace LTC.AdministrationService.PricingRules
     {
         Task<PagedResultDto<PricingRuleOutputDto>> GetListAsync(Guid cinemaId, int skipCount, int maxResultCount);
         Task<PricingRuleOutputDto> CreateAsync(Guid cinemaId, CreatePricingRuleDto input);
+        Task<PricingRuleOutputDto> UpdateAsync(Guid id, CreatePricingRuleDto input);
         Task DeleteAsync(Guid id);
     }
 }

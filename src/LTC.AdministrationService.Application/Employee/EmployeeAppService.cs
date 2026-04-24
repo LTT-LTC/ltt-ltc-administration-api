@@ -2,6 +2,7 @@ using LTC.AdministrationService.Employee;
 using LTC.AdministrationService.Identity;
 using LTC.AdministrationService.Employee.Dtos.Input;
 using LTC.AdministrationService.Employee.Dtos.Output;
+using LTC.AdministrationService.Entities;
 using LTC.Shared.CrossCuttingConcerns.ExtensionMethods;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -19,6 +20,7 @@ namespace LTC.AdministrationService
 {
     public class EmployeeAppService(
         IRepository<Entities.Employee, Guid> employeeRepository,
+        IRepository<Cinema, Guid> cinemaRepository,
         IRepository<IdentityUser, Guid> identityUserRepository,
         IUnitOfWorkManager unitOfWorkManager,
         LTC.AdministrationService.Identity.IIdentityUserAppService identityUserAppService,
@@ -31,36 +33,91 @@ namespace LTC.AdministrationService
         private static bool IsManagerRole(string? role) =>
             string.Equals(NormalizeRole(role), "Manager", StringComparison.OrdinalIgnoreCase);
 
-        private async Task EnsureSingleManagerPerCinemaAsync(Guid? cinemaId, Guid? excludeEmployeeId = null)
+        private static bool RequiresCinema(string? role)
+        {
+            var normalized = NormalizeRole(role);
+            return string.Equals(normalized, "Manager", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(normalized, "Staff", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private async Task<Cinema?> GetCinemaAsync(Guid? cinemaId)
         {
             if (!cinemaId.HasValue)
             {
-                throw new UserFriendlyException("Cinema is required when assigning Manager role.");
+                return null;
             }
 
-            var employeesQueryable = await employeeRepository.GetQueryableAsync();
-            var managerCandidates = await employeesQueryable
-                .Where(x =>
-                    x.OrganizationUnitId == cinemaId
-                    && x.UserId.HasValue
-                    && (!excludeEmployeeId.HasValue || x.Id != excludeEmployeeId.Value))
-                .Select(x => new { x.Id, x.UserId })
+            return await cinemaRepository.FindAsync(cinemaId.Value);
+        }
+
+        private async Task EnsureCinemaRequirementAsync(string? role, Guid? cinemaId)
+        {
+            if (!RequiresCinema(role))
+            {
+                return;
+            }
+
+            if (!cinemaId.HasValue)
+            {
+                throw new UserFriendlyException("Cinema is required for manager/staff employees.");
+            }
+
+            var cinema = await GetCinemaAsync(cinemaId);
+            if (cinema == null)
+            {
+                throw new UserFriendlyException("Cinema not found.");
+            }
+        }
+
+        private async Task SyncManagerCinemaOwnershipAsync(Guid userId, string? role, Guid? cinemaId)
+        {
+            var cinemaQueryable = await cinemaRepository.GetQueryableAsync();
+
+            if (!IsManagerRole(role))
+            {
+                var managedCinemas = await cinemaQueryable
+                    .Where(x => x.ManagerUserId == userId)
+                    .ToListAsync();
+
+                if (managedCinemas.Count == 0)
+                {
+                    return;
+                }
+
+                foreach (var managedCinema in managedCinemas)
+                {
+                    managedCinema.ManagerUserId = null;
+                    await cinemaRepository.UpdateAsync(managedCinema);
+                }
+
+                return;
+            }
+
+            if (!cinemaId.HasValue)
+            {
+                throw new UserFriendlyException("Manager must be assigned to one cinema.");
+            }
+
+            var targetCinema = await cinemaRepository.FindAsync(cinemaId.Value)
+                ?? throw new UserFriendlyException("Cinema not found.");
+
+            if (targetCinema.ManagerUserId.HasValue && targetCinema.ManagerUserId != userId)
+            {
+                throw new UserFriendlyException("This cinema already has a manager.");
+            }
+
+            var existingOwnership = await cinemaQueryable
+                .Where(x => x.ManagerUserId == userId && x.Id != cinemaId.Value)
                 .ToListAsync();
 
-            foreach (var candidate in managerCandidates)
+            foreach (var ownedCinema in existingOwnership)
             {
-                var user = await identityUserRepository.FindAsync(candidate.UserId!.Value);
-                if (user == null || !user.IsActive)
-                {
-                    continue;
-                }
-
-                var roles = await identityUserManager.GetRolesAsync(user);
-                if (roles.Any(r => string.Equals(r, "Manager", StringComparison.OrdinalIgnoreCase)))
-                {
-                    throw new UserFriendlyException("Each cinema can only have one active manager.");
-                }
+                ownedCinema.ManagerUserId = null;
+                await cinemaRepository.UpdateAsync(ownedCinema);
             }
+
+            targetCinema.ManagerUserId = userId;
+            await cinemaRepository.UpdateAsync(targetCinema);
         }
 
         private async Task<Dictionary<Guid, string>> BuildRoleLookupAsync(List<Guid> userIds)
@@ -94,17 +151,14 @@ namespace LTC.AdministrationService
 
             var employeeRows = await employeesQueryable
                 .Where(employee =>
-                    (string.IsNullOrEmpty(keyword) || employee.Name.Contains(keyword) || employee.Code.Contains(keyword))
-                    && (input.CinemaId == null || employee.CinemaId == input.CinemaId || employee.OrganizationUnitId == input.CinemaId))
+                    (input.CinemaId == null || employee.CinemaId == input.CinemaId))
                 .Select(employee => new
                 {
                     employee.Id,
                     employee.UserId,
-                    employee.Name,
-                    employee.Email,
-                    employee.Code,
-                    employee.PositionId,
-                    employee.OrganizationUnitId
+                    employee.CinemaId,
+                    employee.PhoneNumber,
+                    employee.HireDate
                 })
                 .ToListAsync();
 
@@ -120,24 +174,65 @@ namespace LTC.AdministrationService
                 .Where(user => userIds.Contains(user.Id))
                 .Select(user => new { user.Id, user.IsActive })
                 .ToDictionaryAsync(user => user.Id, user => user.IsActive);
+            var userProfileLookup = await identityUsersQueryable
+                .Where(user => userIds.Contains(user.Id))
+                .Select(user => new { user.Id, user.Name, user.Email, user.UserName, user.PhoneNumber })
+                .ToDictionaryAsync(
+                    user => user.Id,
+                    user => new { user.Name, user.Email, user.UserName, user.PhoneNumber });
             var roleLookup = await BuildRoleLookupAsync(userIds);
+            var cinemaIds = employeeRows
+                .Select(x => x.CinemaId)
+                .Where(x => x.HasValue)
+                .Select(x => x!.Value)
+                .Distinct()
+                .ToList();
+            var cinemaLookup = await (await cinemaRepository.GetQueryableAsync())
+                .Where(c => cinemaIds.Contains(c.Id))
+                .ToDictionaryAsync(c => c.Id, c => c.Name);
 
             var mappedEmployees = employeeRows
-                .Select(row => new EmployeeOutputDto
+                .Select(row =>
                 {
-                    Id = row.Id,
-                    UserId = row.UserId,
-                    Name = row.Name,
-                    Email = row.Email,
-                    Code = row.Code,
-                    PositionId = row.PositionId,
-                    OrganizationUnitId = row.OrganizationUnitId,
-                    Role = row.UserId.HasValue && roleLookup.TryGetValue(row.UserId.Value, out var role) ? role : "Staff",
-                    IsActive = row.UserId.HasValue
-                        && userActiveLookup.TryGetValue(row.UserId.Value, out var isActive)
-                        && isActive
+                    var profile = row.UserId.HasValue && userProfileLookup.TryGetValue(row.UserId.Value, out var profileValue)
+                        ? profileValue
+                        : null;
+                    var cinemaName = row.CinemaId.HasValue && cinemaLookup.TryGetValue(row.CinemaId.Value, out var cinemaNameValue)
+                        ? cinemaNameValue
+                        : null;
+                    var role = row.UserId.HasValue && roleLookup.TryGetValue(row.UserId.Value, out var roleValue) ? roleValue : "Staff";
+                    var isActive = row.UserId.HasValue
+                        && userActiveLookup.TryGetValue(row.UserId.Value, out var isActiveValue)
+                        && isActiveValue;
+
+                    return new EmployeeOutputDto
+                    {
+                        Id = row.Id,
+                        UserId = row.UserId,
+                        Name = profile?.Name ?? string.Empty,
+                        Email = profile?.Email ?? string.Empty,
+                        Code = profile?.UserName ?? string.Empty,
+                        PhoneNumber = row.PhoneNumber ?? profile?.PhoneNumber,
+                        CinemaId = row.CinemaId,
+                        CinemaName = cinemaName,
+                        OrganizationUnitId = row.CinemaId,
+                        OrganizationUnitName = cinemaName,
+                        HireDate = row.HireDate,
+                        Role = role,
+                        IsActive = isActive
+                    };
                 })
                 .ToList();
+
+            if (!string.IsNullOrEmpty(keyword))
+            {
+                mappedEmployees = mappedEmployees
+                    .Where(e =>
+                        (e.Name?.Contains(keyword, StringComparison.OrdinalIgnoreCase) ?? false)
+                        || (e.Email?.Contains(keyword, StringComparison.OrdinalIgnoreCase) ?? false)
+                        || (e.Code?.Contains(keyword, StringComparison.OrdinalIgnoreCase) ?? false))
+                    .ToList();
+            }
 
             var totalActiveEmployees = mappedEmployees.Count(e => e.IsActive);
             var totalDeactiveEmployees = mappedEmployees.Count - totalActiveEmployees;
@@ -171,14 +266,11 @@ namespace LTC.AdministrationService
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        public async Task<Guid> CreateAsync(CreateEmployeeInputDto input)
+        public async Task<EmployeeOutputDto> CreateAsync(CreateEmployeeInputDto input)
         {
             using (var uow = unitOfWorkManager.Begin())
             {
-                if (IsManagerRole(input.Role))
-                {
-                    await EnsureSingleManagerPerCinemaAsync(input.OrganizationUnitId);
-                }
+                await EnsureCinemaRequirementAsync(input.Role, input.CinemaId);
 
                 // tạo user
                 var userId = await identityUserAppService.CreateAsync(new CreateUserInputDto
@@ -194,24 +286,21 @@ namespace LTC.AdministrationService
 
                 var employee = new Entities.Employee
                 {
-                    Name = input.Name,
-                    Code = input.Code,
-                    Email = input.Email,
-                    OtherEmail = input.OtherEmail,
+                    CinemaId = input.CinemaId,
+                    HireDate = input.HireDate,
                     PhoneNumber = input.PhoneNumber,
-                    OrganizationUnitId = input.OrganizationUnitId,
-                    PositionId = input.PositionId,
-                    AvatarFileId = null,
-                    JoinedDate = input.JoinedDate,
-                    DateOfBirth = input.DateOfBirth,
+                    Position = NormalizeRole(input.Role),
+                    Status = "Active",
+                    CreatedByUserId = CurrentUser.Id,
                     UserId = userId,
-                    IsFirstLogin = true
                 };
 
                 await employeeRepository.InsertAsync(employee);
+                await SyncManagerCinemaOwnershipAsync(userId, input.Role, input.CinemaId);
 
                 await uow.CompleteAsync();
-                return employee.Id;
+                var createdEmployee = await GetAsync(employee.Id);
+                return createdEmployee ?? throw new UserFriendlyException("Failed to load created employee.");
             }
         }
 
@@ -234,22 +323,29 @@ namespace LTC.AdministrationService
                     role = roles.FirstOrDefault() ?? role;
                 }
             }
+            var cinemaName = employee.CinemaId.HasValue
+                ? (await cinemaRepository.FindAsync(employee.CinemaId.Value))?.Name
+                : null;
 
             return new EmployeeOutputDto
             {
                 Id = employee.Id,
                 UserId = employee.UserId,
-                Name = employee.Name ?? string.Empty,
-                Email = employee.Email ?? string.Empty,
-                Code = employee.Code ?? string.Empty,
-                PositionId = employee.PositionId,
-                OrganizationUnitId = employee.OrganizationUnitId,
+                Name = user?.Name ?? string.Empty,
+                Email = user?.Email ?? string.Empty,
+                Code = user?.UserName ?? string.Empty,
+                PhoneNumber = employee.PhoneNumber ?? user?.PhoneNumber,
+                CinemaId = employee.CinemaId,
+                CinemaName = cinemaName,
+                OrganizationUnitId = employee.CinemaId,
+                OrganizationUnitName = cinemaName,
+                HireDate = employee.HireDate,
                 Role = role,
                 IsActive = user?.IsActive ?? false
             };
         }
 
-        public async Task<bool> UpdateAsync(Guid id, UpdateEmployeeInputDto input)
+        public async Task<EmployeeOutputDto> UpdateAsync(Guid id, UpdateEmployeeInputDto input)
         {
             using var uow = unitOfWorkManager.Begin();
 
@@ -259,10 +355,7 @@ namespace LTC.AdministrationService
                 throw new UserFriendlyException(L["UserNotFound"]);
             }
 
-            if (IsManagerRole(input.Role))
-            {
-                await EnsureSingleManagerPerCinemaAsync(input.OrganizationUnitId, id);
-            }
+            await EnsureCinemaRequirementAsync(input.Role, input.CinemaId);
 
             var user = await identityUserRepository.GetAsync(employee.UserId.Value);
             user.Name = input.Name;
@@ -294,19 +387,17 @@ namespace LTC.AdministrationService
                 throw new UserFriendlyException(string.Join("; ", roleResult.Errors.Select(e => e.Description)));
             }
 
-            employee.Name = input.Name;
-            employee.Email = input.Email;
-            employee.OtherEmail = input.OtherEmail;
+            employee.CinemaId = input.CinemaId;
+            employee.HireDate = input.HireDate;
             employee.PhoneNumber = input.PhoneNumber;
-            employee.Code = input.Code;
-            employee.OrganizationUnitId = input.OrganizationUnitId;
-            employee.PositionId = input.PositionId;
-            employee.JoinedDate = input.JoinedDate;
-            employee.DateOfBirth = input.DateOfBirth;
+            employee.Position = NormalizeRole(input.Role);
+            employee.Status = input.IsActive ? "Active" : "Inactive";
             await employeeRepository.UpdateAsync(employee);
+            await SyncManagerCinemaOwnershipAsync(employee.UserId.Value, input.Role, input.CinemaId);
 
             await uow.CompleteAsync();
-            return true;
+            var updatedEmployee = await GetAsync(id);
+            return updatedEmployee ?? throw new UserFriendlyException("Failed to load updated employee.");
         }
 
         public async Task DeleteAsync(Guid id)

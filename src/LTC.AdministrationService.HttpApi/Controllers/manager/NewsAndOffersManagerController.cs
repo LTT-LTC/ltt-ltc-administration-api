@@ -36,15 +36,21 @@ namespace LTC.AdministrationService.Controllers.Manager
         }
 
         [HttpPost]
-        public async Task<NewsAndOffersOutputDto> CreateAsync(CreateNewsAndOffersDto input)
+        public async Task<NewsAndOffersOutputDto> CreateAsync([FromForm] CreateNewsAndOffersDto input)
         {
             return await _newsAndOffersService.CreateAsync(input);
         }
 
         [HttpPut("{id}")]
-        public async Task<NewsAndOffersOutputDto> UpdateAsync(Guid id, UpdateNewsAndOffersDto input)
+        public async Task<NewsAndOffersOutputDto> UpdateAsync(Guid id, [FromForm] UpdateNewsAndOffersDto input)
         {
             return await _newsAndOffersService.UpdateAsync(id, input);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task DeleteAsync(Guid id)
+        {
+            await _newsAndOffersService.DeleteAsync(id);
         }
     }
 }
