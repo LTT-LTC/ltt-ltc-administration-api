@@ -69,6 +69,19 @@ namespace LTC.AdministrationService.Admin
             public async Task<PagedResultDto<NewsAndOffersOutputDto>> GetListAsync(GetNewsAndOffersListinputDto input)
             {
                 var queryable = await _newsAndOffersRepository.GetQueryableAsync();
+                var currentTenantId = CurrentTenant?.Id;
+
+                queryable = queryable.Where(x => !x.IsDeleted);
+
+                // Scope by current tenant resolved from X-Tenant.
+                if (currentTenantId.HasValue)
+                {
+                    queryable = queryable.Where(x => x.TenantId == currentTenantId.Value);
+                }
+                else
+                {
+                    queryable = queryable.Where(x => x.TenantId == null);
+                }
 
                 if (!string.IsNullOrWhiteSpace(input.Keyword))
                 {
@@ -89,7 +102,8 @@ namespace LTC.AdministrationService.Admin
 
                 var totalCount = await queryable.CountAsync();
                 var items = await queryable
-                    .OrderByDescending(x => x.CreatedAt)
+                    .OrderByDescending(x => x.StartDate ?? DateTime.MinValue)
+                    .ThenByDescending(x => x.CreatedAt ?? DateTime.MinValue)
                     .Skip((input.Page - 1) * input.Fetch)
                     .Take(input.Fetch)
                     .ToListAsync();
