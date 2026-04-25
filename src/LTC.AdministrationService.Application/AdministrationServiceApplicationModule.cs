@@ -11,9 +11,11 @@ using Microsoft.Extensions.DependencyInjection;
 using LTC.AdministrationService.Admin.Cinemas;
 using LTC.AdministrationService.Admin.Screens;
 using LTC.AdministrationService.Admin.SeatTypes;
+using LTC.AdministrationService.Admin.SeatMaps;
 using LTC.AdministrationService.Cinemas;
 using LTC.AdministrationService.Screens;
 using LTC.AdministrationService.SeatTypes;
+using LTC.AdministrationService.SeatMaps;
 
 namespace LTC.AdministrationService;
 
@@ -39,5 +41,6 @@ public class AdministrationServiceApplicationModule : AbpModule
         context.Services.AddTransient<IAdminCinemaAmenityAppService, CinemaAmenityAppService>();
         context.Services.AddTransient<IAdminScreenAppService, ScreenAppService>();
         context.Services.AddTransient<IAdminSeatTypeAppService, SeatTypeAppService>();
+        context.Services.AddTransient<IAdminSeatMapAppService, SeatMapAppService>();
     }
 }

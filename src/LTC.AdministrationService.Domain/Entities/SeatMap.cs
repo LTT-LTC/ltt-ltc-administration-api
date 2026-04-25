@@ -20,6 +20,8 @@ public class SeatMap : Entity<Guid>, IMultiTenant
 
     public Guid? TenantId { get; set; }
     public Guid CinemaId { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string? Description { get; set; }
     public string? SeatLayout { get; set; }
     public int SeatCount { get; set; }
     public DateTime? CreatedAt { get; set; }

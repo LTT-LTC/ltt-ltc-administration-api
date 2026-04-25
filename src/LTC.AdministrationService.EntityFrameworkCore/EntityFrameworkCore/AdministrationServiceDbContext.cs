@@ -124,6 +124,15 @@ public class AdministrationServiceDbContext :
         {
             b.ToTable("SeatMaps");
             b.ConfigureByConvention();
+            b.Property(x => x.Name).HasMaxLength(256).IsRequired();
+            b.Property(x => x.Description).HasMaxLength(2000);
+            b.Property(x => x.SeatLayout).HasColumnType("nvarchar(max)");
+            b.Property(x => x.SeatCount)
+                .HasConversion(
+                    v => v.ToString(),
+                    v => v == null ? 0 : int.Parse(v)
+                )
+                .HasMaxLength(32);
         });
 
         builder.Entity<Screen>(b =>
