@@ -164,6 +164,7 @@ public class AdministrationServiceDbContext :
         {
             b.ToTable("PricingRules");
             b.ConfigureByConvention();
+            b.Property(x => x.DayOfWeek).HasColumnType("nvarchar(max)");
         });
 
         builder.Entity<CinemaAmenity>(b =>

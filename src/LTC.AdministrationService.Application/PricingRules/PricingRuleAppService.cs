@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Volo.Abp.Application.Services;
@@ -30,7 +31,7 @@ namespace LTC.AdministrationService.PricingRules
 
             return new PagedResultDto<PricingRuleOutputDto>(
                 total,
-                items.Select(x => ObjectMapper.Map<PricingRule, PricingRuleOutputDto>(x)).ToList()
+                items.Select(ToOutputDto).ToList()
             );
         }
 
@@ -45,11 +46,16 @@ namespace LTC.AdministrationService.PricingRules
                 Multiplier = input.Multiplier,
                 StartTime = input.StartTime,
                 EndTime = input.EndTime,
-                DayOfWeek = input.DayOfWeek,
-                Priority = input.Priority
+                DayOfWeek = SerializeDaysOfWeek(input.DaysOfWeek),
+                Priority = input.Priority,
+                ValidFrom = input.ValidFrom,
+                ValidUntil = input.ValidUntil,
+                IsActive = input.IsActive,
+                CreatedAt = Clock.Now,
+                UpdatedAt = Clock.Now
             };
             await _repository.InsertAsync(entity, true);
-            return ObjectMapper.Map<PricingRule, PricingRuleOutputDto>(entity);
+            return ToOutputDto(entity);
         }
 
         public async Task<PricingRuleOutputDto> UpdateAsync(Guid id, CreatePricingRuleDto input)
@@ -61,13 +67,15 @@ namespace LTC.AdministrationService.PricingRules
             entity.Multiplier = input.Multiplier;
             entity.StartTime = input.StartTime;
             entity.EndTime = input.EndTime;
-            entity.DayOfWeek = input.DayOfWeek;
+            entity.DayOfWeek = SerializeDaysOfWeek(input.DaysOfWeek);
             entity.Priority = input.Priority;
+            entity.ValidFrom = input.ValidFrom;
+            entity.ValidUntil = input.ValidUntil;
             entity.IsActive = input.IsActive;
             entity.UpdatedAt = Clock.Now;
 
             await _repository.UpdateAsync(entity, true);
-            return ObjectMapper.Map<PricingRule, PricingRuleOutputDto>(entity);
+            return ToOutputDto(entity);
         }
 
         public async Task DeleteAsync(Guid id)
@@ -86,6 +94,111 @@ namespace LTC.AdministrationService.PricingRules
             {
                 throw new Volo.Abp.UserFriendlyException("Multiplier must be a positive number.");
             }
+
+            if (input.ValidFrom.HasValue && input.ValidUntil.HasValue && input.ValidFrom.Value.Date > input.ValidUntil.Value.Date)
+            {
+                throw new Volo.Abp.UserFriendlyException("Valid from date cannot be later than valid until date.");
+            }
+
+            if (input.DaysOfWeek == null || input.DaysOfWeek.Length == 0)
+            {
+                throw new Volo.Abp.UserFriendlyException("At least one day token is required.");
+            }
+
+            var normalized = input.DaysOfWeek
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .Select(x => x.Trim().ToUpperInvariant())
+                .Distinct()
+                .ToList();
+
+            if (normalized.Count == 0)
+            {
+                throw new Volo.Abp.UserFriendlyException("At least one valid day token is required.");
+            }
+
+            var allowed = new HashSet<string> { "ALL", "MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN" };
+            if (normalized.Any(x => !allowed.Contains(x)))
+            {
+                throw new Volo.Abp.UserFriendlyException("Day-of-week token is invalid.");
+            }
+        }
+
+        private static string SerializeDaysOfWeek(string[]? daysOfWeek)
+        {
+            var normalized = (daysOfWeek ?? Array.Empty<string>())
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .Select(x => x.Trim().ToUpperInvariant())
+                .Distinct()
+                .ToList();
+
+            if (normalized.Contains("ALL"))
+            {
+                return JsonSerializer.Serialize(new[] { "ALL" });
+            }
+
+            return JsonSerializer.Serialize(normalized);
+        }
+
+        private static string[] ParseDaysOfWeek(string? serialized)
+        {
+            if (string.IsNullOrWhiteSpace(serialized))
+            {
+                return Array.Empty<string>();
+            }
+
+            var raw = serialized.Trim();
+            if (raw.StartsWith("["))
+            {
+                try
+                {
+                    var parsed = JsonSerializer.Deserialize<string[]>(raw);
+                    return parsed?.Where(x => !string.IsNullOrWhiteSpace(x))
+                        .Select(x => x.Trim().ToUpperInvariant())
+                        .Distinct()
+                        .ToArray() ?? Array.Empty<string>();
+                }
+                catch
+                {
+                    return Array.Empty<string>();
+                }
+            }
+
+            if (int.TryParse(raw, out var legacyDay))
+            {
+                return legacyDay switch
+                {
+                    1 => new[] { "MON" },
+                    2 => new[] { "TUE" },
+                    3 => new[] { "WED" },
+                    4 => new[] { "THU" },
+                    5 => new[] { "FRI" },
+                    6 => new[] { "SAT" },
+                    0 => new[] { "SUN" },
+                    _ => Array.Empty<string>()
+                };
+            }
+
+            return new[] { raw.ToUpperInvariant() };
+        }
+
+        private static PricingRuleOutputDto ToOutputDto(PricingRule entity)
+        {
+            return new PricingRuleOutputDto
+            {
+                Id = entity.Id,
+                TenantId = entity.TenantId,
+                CinemaId = entity.CinemaId,
+                SeatTypeId = entity.SeatTypeId,
+                RuleType = entity.RuleType ?? string.Empty,
+                Multiplier = entity.Multiplier,
+                StartTime = entity.StartTime,
+                EndTime = entity.EndTime,
+                DaysOfWeek = ParseDaysOfWeek(entity.DayOfWeek),
+                Priority = entity.Priority,
+                ValidFrom = entity.ValidFrom,
+                ValidUntil = entity.ValidUntil,
+                IsActive = entity.IsActive
+            };
         }
     }
 }

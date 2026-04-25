@@ -21,7 +21,7 @@ namespace LTC.AdministrationService.Entities
         public decimal Multiplier { get; set; }
         public TimeSpan? StartTime { get; set; }
         public TimeSpan? EndTime { get; set; }
-        public int? DayOfWeek { get; set; }
+        public string? DayOfWeek { get; set; }
         public int Priority { get; set; }
         public DateTime? ValidFrom { get; set; }
         public DateTime? ValidUntil { get; set; }
