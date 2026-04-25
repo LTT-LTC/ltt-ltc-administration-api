@@ -44,6 +44,7 @@ namespace LTC.AdministrationService.Auth
         private readonly IDistributedCache<PasswordResetTokenCacheItem, PasswordResetTokenCacheKey> _passwordResetTokenCache;
         private readonly IConfiguration _configuration;
         private readonly IRepository<Entities.Employee> _employeeRepository;
+        private readonly IRepository<Entities.Cinema> _cinemaRepository;
         private readonly ICurrentTenant _currentTenant;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IConnectionMultiplexer _redis;
@@ -62,6 +63,7 @@ namespace LTC.AdministrationService.Auth
             IDistributedCache<string, UserRefreshTokenDto> cacheToken,
             IOptions<TokenAuthOption> tokenAuthOption,
             IRepository<Entities.Employee> employeeRepository,
+            IRepository<Entities.Cinema> cinemaRepository,
             ICurrentTenant currentTenant,
             IDistributedCache<PasswordResetTokenCacheItem, PasswordResetTokenCacheKey> passwordResetTokenCache,
             IDistributedCache<string, string> cacheIpAddress,
@@ -83,6 +85,7 @@ namespace LTC.AdministrationService.Auth
             _cacheToken = cacheToken;
             _tokenAuthOption = tokenAuthOption.Value;
             _employeeRepository = employeeRepository;
+            _cinemaRepository = cinemaRepository;
             _currentTenant = currentTenant;
             _httpContextAccessor = httpContextAccessor;
             _cacheIpAddress = cacheIpAddress;
@@ -398,6 +401,49 @@ namespace LTC.AdministrationService.Auth
                 {
                     claims.Add(new Claim(ClaimTypes.Role, role));
                 }
+            }
+
+            var normalizedRoles = roles.Select(r => r.Trim().ToLowerInvariant()).ToList();
+            string? cinemaIdClaim = null;
+
+            using (_dataFilter.Disable<IMultiTenant>())
+            {
+                if (normalizedRoles.Contains("manager"))
+                {
+                    var cinemaQueryable = await _cinemaRepository.GetQueryableAsync();
+                    var managerCinemaId = await cinemaQueryable
+                        .Where(x => x.ManagerUserId == user.Id)
+                        .Select(x => (Guid?)x.Id)
+                        .FirstOrDefaultAsync();
+
+                    cinemaIdClaim = managerCinemaId?.ToString();
+
+                    if (string.IsNullOrWhiteSpace(cinemaIdClaim))
+                    {
+                        var employeeQueryable = await _employeeRepository.GetQueryableAsync();
+                        var fallbackCinemaId = await employeeQueryable
+                            .Where(x => x.UserId == user.Id && x.CinemaId.HasValue)
+                            .Select(x => x.CinemaId)
+                            .FirstOrDefaultAsync();
+
+                        cinemaIdClaim = fallbackCinemaId?.ToString();
+                    }
+                }
+                else if (normalizedRoles.Contains("staff") || normalizedRoles.Contains("pos"))
+                {
+                    var employeeQueryable = await _employeeRepository.GetQueryableAsync();
+                    var staffCinemaId = await employeeQueryable
+                        .Where(x => x.UserId == user.Id && x.CinemaId.HasValue)
+                        .Select(x => x.CinemaId)
+                        .FirstOrDefaultAsync();
+
+                    cinemaIdClaim = staffCinemaId?.ToString();
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(cinemaIdClaim) && !claims.Any(c => c.Type == "cinemaId"))
+            {
+                claims.Add(new Claim("cinemaId", cinemaIdClaim));
             }
 
             string sessionId = Guid.CreateVersion7().ToString();
