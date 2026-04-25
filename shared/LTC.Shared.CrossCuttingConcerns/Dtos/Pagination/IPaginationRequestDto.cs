@@ -1,4 +1,4 @@
-﻿namespace LTC.Shared.CrossCuttingConcerns.Dtos.Pagination
+namespace LTC.Shared.CrossCuttingConcerns.Dtos.Pagination
 {
     public interface IPaginationRequestDto
     {
@@ -15,6 +15,6 @@
 
     public interface ISearchRequestDto
     {
-        public string Keyword { get; set; }
+        public string? Keyword { get; set; }
     }
 }
