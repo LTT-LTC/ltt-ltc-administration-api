@@ -10,6 +10,7 @@ namespace LTC.AdministrationService.Entities
         public Guid CinemaId { get; set; }
         public int ScreenNumber { get; set; }
         public string? ScreenType { get; set; }
+        public int SeatCount { get; set; }
         /// <summary>
         /// FK to <see cref="SeatMap"/> holding <see cref="SeatMap.SeatLayout"/> and <see cref="SeatMap.SeatCount"/>.
         /// </summary>

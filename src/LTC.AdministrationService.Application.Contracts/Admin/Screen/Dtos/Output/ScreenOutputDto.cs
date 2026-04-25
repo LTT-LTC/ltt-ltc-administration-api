@@ -10,6 +10,8 @@ namespace LTC.AdministrationService.Admin.Screens.Dtos.Output
         public int ScreenNumber { get; set; }
         public string? ScreenType { get; set; }
         public Guid? SeatMapId { get; set; }
+        public string? SeatMapName { get; set; }
+        public string? SeatMapDescription { get; set; }
         /// <summary>Populated from linked <c>SeatMap</c> for API compatibility.</summary>
         public string? SeatLayout { get; set; }
         /// <summary>Populated from linked <c>SeatMap</c> for API compatibility.</summary>

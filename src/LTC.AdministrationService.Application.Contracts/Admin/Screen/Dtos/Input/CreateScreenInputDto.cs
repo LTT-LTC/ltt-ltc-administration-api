@@ -10,9 +10,9 @@ namespace LTC.AdministrationService.Admin.Screens.Dtos.Input
         [MaxLength(64)]
         public string? ScreenType { get; set; }
         
-        public string? SeatLayout { get; set; }
-        
         public int SeatCount { get; set; }
+        
+        public Guid SeatMapId { get; set; }
         
         [MaxLength(64)]
         public string? Status { get; set; }

@@ -1,0 +1,17 @@
+using System;
+
+namespace LTC.AdministrationService.Admin.SeatMaps.Dtos.Output
+{
+    public class SeatMapOutputDto
+    {
+        public Guid Id { get; set; }
+        public Guid? TenantId { get; set; }
+        public Guid CinemaId { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public string? SeatLayout { get; set; }
+        public int SeatCount { get; set; }
+        public DateTime? CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
+    }
+}
