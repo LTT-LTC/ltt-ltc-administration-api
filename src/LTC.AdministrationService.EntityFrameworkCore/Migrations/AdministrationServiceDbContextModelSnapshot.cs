@@ -676,6 +676,9 @@ namespace LTC.AdministrationService.Migrations
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("Duration")
+                        .HasColumnType("int");
+
                     b.Property<Guid>("DistributionId")
                         .HasColumnType("uniqueidentifier");
 
