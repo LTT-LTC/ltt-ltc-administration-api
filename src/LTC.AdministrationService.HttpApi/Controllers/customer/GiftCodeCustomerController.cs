@@ -17,6 +17,6 @@ public class GiftCodeCustomerController : CustomerControllerBase
     }
 
     [HttpGet]
-    public Task<PagedResultDto<GiftCodeOutputDto>> GetListAsync(int skipCount = 0, int maxResultCount = 10)
-        => _giftCodeAppService.GetListAsync(skipCount, maxResultCount);
+    public Task<PagedResultDto<GiftCodeOutputDto>> GetGiftCodeListAsync(int skipCount = 0, int maxResultCount = 10)
+        => _giftCodeAppService.GetGiftCodeListAsync(skipCount, maxResultCount);
 }

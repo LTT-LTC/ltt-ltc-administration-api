@@ -10,10 +10,10 @@ namespace LTC.AdministrationService.Admin.Screens
 {
     public interface IAdminScreenAppService : IApplicationService
     {
-        Task<PagedResultDto<ScreenOutputDto>> GetListAsync(Guid cinemaId, GetScreenListInputDto input);
-        Task<ScreenOutputDto> GetAsync(Guid id);
-        Task<ScreenOutputDto> CreateAsync(Guid cinemaId, CreateScreenInputDto input);
-        Task<ScreenOutputDto> UpdateAsync(Guid id, UpdateScreenInputDto input);
-        Task DeleteAsync(Guid id);
+        Task<PagedResultDto<ScreenOutputDto>> GetScreenListAsync(Guid cinemaId, GetScreenListInputDto input);
+        Task<ScreenOutputDto> GetScreenAsync(Guid id);
+        Task<ScreenOutputDto> CreateScreenAsync(Guid cinemaId, CreateScreenInputDto input);
+        Task<ScreenOutputDto> UpdateScreenAsync(Guid id, UpdateScreenInputDto input);
+        Task DeleteScreenAsync(Guid id);
     }
 }

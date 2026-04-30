@@ -24,33 +24,33 @@ namespace LTC.AdministrationService.Controllers.Manager
         }
 
         [HttpGet]
-        public virtual async Task<PagedResultDto<NewsAndOffersOutputDto>> GetListAsync([FromQuery] GetNewsAndOffersListinputDto input)
+        public virtual async Task<PagedResultDto<NewsAndOffersOutputDto>> GetNewsAndOffersListAsync([FromQuery] GetNewsAndOffersListinputDto input)
         {
-            return await _newsAndOffersService.GetListAsync(input);
+            return await _newsAndOffersService.GetNewsAndOffersListAsync(input);
         }
 
         [HttpGet("{id}")]
-        public async Task<NewsAndOffersOutputDto> GetAsync(Guid id)
+        public async Task<NewsAndOffersOutputDto> GetNewsAndOffersAsync(Guid id)
         {
-            return await _newsAndOffersService.GetAsync(id);
+            return await _newsAndOffersService.GetNewsAndOffersAsync(id);
         }
 
         [HttpPost]
-        public async Task<NewsAndOffersOutputDto> CreateAsync([FromForm] CreateNewsAndOffersDto input)
+        public async Task<NewsAndOffersOutputDto> CreateNewsAndOffersAsync([FromForm] CreateNewsAndOffersDto input)
         {
-            return await _newsAndOffersService.CreateAsync(input);
+            return await _newsAndOffersService.CreateNewsAndOffersAsync(input);
         }
 
         [HttpPut("{id}")]
-        public async Task<NewsAndOffersOutputDto> UpdateAsync(Guid id, [FromForm] UpdateNewsAndOffersDto input)
+        public async Task<NewsAndOffersOutputDto> UpdateNewsAndOffersAsync(Guid id, [FromForm] UpdateNewsAndOffersDto input)
         {
-            return await _newsAndOffersService.UpdateAsync(id, input);
+            return await _newsAndOffersService.UpdateNewsAndOffersAsync(id, input);
         }
 
         [HttpDelete("{id}")]
-        public async Task DeleteAsync(Guid id)
+        public async Task DeleteNewsAndOffersAsync(Guid id)
         {
-            await _newsAndOffersService.DeleteAsync(id);
+            await _newsAndOffersService.DeleteNewsAndOffersAsync(id);
         }
     }
 }

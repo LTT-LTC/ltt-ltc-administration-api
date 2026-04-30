@@ -23,33 +23,33 @@ namespace LTC.AdministrationService.Controllers.Admin
         }
 
         [HttpGet]
-        public virtual async Task<PagedResultDto<CinemasOutputDto>> GetListAsync([FromQuery] GetCinemasListInputDto input)
+        public virtual async Task<PagedResultDto<CinemasOutputDto>> GetCinemaListAsync([FromQuery] GetCinemasListInputDto input)
         {
-            return await _cinemaAppService.GetListAsync(input);
+            return await _cinemaAppService.GetCinemaListAsync(input);
         }
 
         [HttpGet("{id}")]
-        public virtual async Task<CinemasOutputDto> GetAsync(Guid id)
+        public virtual async Task<CinemasOutputDto> GetCinemaAsync(Guid id)
         {
-            return await _cinemaAppService.GetAsync(id);
+            return await _cinemaAppService.GetCinemaAsync(id);
         }
 
         [HttpPost]
-        public virtual async Task<CinemasOutputDto> CreateAsync(CreateCinemasInputDto input)
+        public virtual async Task<CinemasOutputDto> CreateCinemaAsync(CreateCinemasInputDto input)
         {
-            return await _cinemaAppService.CreateAsync(input);
+            return await _cinemaAppService.CreateCinemaAsync(input);
         }
 
         [HttpPut("{id}")]
-        public virtual async Task<CinemasOutputDto> UpdateAsync(Guid id, UpdateCinemasInputDto input)
+        public virtual async Task<CinemasOutputDto> UpdateCinemaAsync(Guid id, UpdateCinemasInputDto input)
         {
-            return await _cinemaAppService.UpdateAsync(id, input);
+            return await _cinemaAppService.UpdateCinemaAsync(id, input);
         }
 
         [HttpDelete("{id}")]
-        public virtual async Task DeleteAsync(Guid id)
+        public virtual async Task DeleteCinemaAsync(Guid id)
         {
-            await _cinemaAppService.DeleteAsync(id);
+            await _cinemaAppService.DeleteCinemaAsync(id);
         }
     }
 }

@@ -23,36 +23,36 @@ namespace LTC.AdministrationService.Controllers.Manager
         }
 
         [HttpGet("movie/{movieId}")]
-        public async Task<PagedResultDto<ShowtimeOutputDto>> GetListByMovieAsync(Guid movieId, Guid? cinemaId = null, int skipCount = 0, int maxResultCount = 10)
+        public async Task<PagedResultDto<ShowtimeOutputDto>> GetShowtimeListByMovieAsync(Guid movieId, Guid? cinemaId = null, int skipCount = 0, int maxResultCount = 10)
         {
-            return await _showtimeAppService.GetListAsync(movieId, cinemaId, skipCount, maxResultCount);
+            return await _showtimeAppService.GetShowtimeListAsync(movieId, cinemaId, skipCount, maxResultCount);
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetAsync(Guid id)
+        public async Task<IActionResult> GetShowtimeAsync(Guid id)
         {
-            var result = await _showtimeAppService.GetAsync(id);
+            var result = await _showtimeAppService.GetShowtimeAsync(id);
             return Ok(result);
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateAsync([FromBody] CreateShowtimeDto input)
+        public async Task<IActionResult> CreateShowtimeAsync([FromBody] CreateShowtimeDto input)
         {
-            var result = await _showtimeAppService.CreateAsync(input);
+            var result = await _showtimeAppService.CreateShowtimeAsync(input);
             return Ok(result);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateAsync(Guid id, [FromBody] CreateShowtimeDto input)
+        public async Task<IActionResult> UpdateShowtimeAsync(Guid id, [FromBody] CreateShowtimeDto input)
         {
-            var result = await _showtimeAppService.UpdateAsync(id, input);
+            var result = await _showtimeAppService.UpdateShowtimeAsync(id, input);
             return Ok(result);
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteAsync(Guid id)
+        public async Task<IActionResult> DeleteShowtimeAsync(Guid id)
         {
-            await _showtimeAppService.DeleteAsync(id);
+            await _showtimeAppService.DeleteShowtimeAsync(id);
             return Ok();
         }
     }

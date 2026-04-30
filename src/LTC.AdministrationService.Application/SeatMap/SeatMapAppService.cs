@@ -31,7 +31,7 @@ namespace LTC.AdministrationService.SeatMaps
             _gmt7Clock = gmt7Clock;
         }
 
-        public async Task<PagedResultDto<SeatMapOutputDto>> GetListAsync(Guid cinemaId, GetSeatMapListInputDto input)
+        public async Task<PagedResultDto<SeatMapOutputDto>> GetSeatMapListAsync(Guid cinemaId, GetSeatMapListInputDto input)
         {
             await EnsureManagerOwnsCinemaAsync(cinemaId);
 
@@ -58,14 +58,14 @@ namespace LTC.AdministrationService.SeatMaps
             );
         }
 
-        public async Task<SeatMapOutputDto> GetAsync(Guid id)
+        public async Task<SeatMapOutputDto> GetSeatMapAsync(Guid id)
         {
             var entity = await _seatMapRepository.GetAsync(id);
             await EnsureManagerOwnsCinemaAsync(entity.CinemaId);
             return MapToOutput(entity);
         }
 
-        public async Task<SeatMapOutputDto> CreateAsync(Guid cinemaId, CreateSeatMapInputDto input)
+        public async Task<SeatMapOutputDto> CreateSeatMapAsync(Guid cinemaId, CreateSeatMapInputDto input)
         {
             await EnsureManagerOwnsCinemaAsync(cinemaId);
             ValidateSeatMapInput(input.Name, input.SeatCount, input.SeatLayout);
@@ -86,7 +86,7 @@ namespace LTC.AdministrationService.SeatMaps
             return MapToOutput(entity);
         }
 
-        public async Task<SeatMapOutputDto> UpdateAsync(Guid id, UpdateSeatMapInputDto input)
+        public async Task<SeatMapOutputDto> UpdateSeatMapAsync(Guid id, UpdateSeatMapInputDto input)
         {
             var entity = await _seatMapRepository.GetAsync(id);
             await EnsureManagerOwnsCinemaAsync(entity.CinemaId);
@@ -102,7 +102,7 @@ namespace LTC.AdministrationService.SeatMaps
             return MapToOutput(entity);
         }
 
-        public async Task DeleteAsync(Guid id)
+        public async Task DeleteSeatMapAsync(Guid id)
         {
             var entity = await _seatMapRepository.GetAsync(id);
             await EnsureManagerOwnsCinemaAsync(entity.CinemaId);

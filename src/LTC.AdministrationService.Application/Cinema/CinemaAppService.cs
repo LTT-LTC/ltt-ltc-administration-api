@@ -59,7 +59,7 @@ namespace LTC.AdministrationService.Cinemas
             }
         }
 
-        public async Task<PagedResultDto<CinemasOutputDto>> GetListAsync(GetCinemasListInputDto input)
+        public async Task<PagedResultDto<CinemasOutputDto>> GetCinemaListAsync(GetCinemasListInputDto input)
         {
             var queryable = await _cinemaRepository.GetQueryableAsync();
 
@@ -86,13 +86,13 @@ namespace LTC.AdministrationService.Cinemas
             );
         }
 
-        public async Task<CinemasOutputDto> GetAsync(Guid id)
+        public async Task<CinemasOutputDto> GetCinemaAsync(Guid id)
         {
             var cinema = await _cinemaRepository.GetAsync(id);
             return ObjectMapper.Map<Entities.Cinema, CinemasOutputDto>(cinema);
         }
 
-        public async Task<CinemasOutputDto> CreateAsync(CreateCinemasInputDto input)
+        public async Task<CinemasOutputDto> CreateCinemaAsync(CreateCinemasInputDto input)
         {
             await ValidateManagerUserAsync(input.ManagerUserId);
             var cinema = ObjectMapper.Map<CreateCinemasInputDto, Entities.Cinema>(input);
@@ -102,7 +102,7 @@ namespace LTC.AdministrationService.Cinemas
             return ObjectMapper.Map<Entities.Cinema, CinemasOutputDto>(cinema);
         }
 
-        public async Task<CinemasOutputDto> UpdateAsync(Guid id, UpdateCinemasInputDto input)
+        public async Task<CinemasOutputDto> UpdateCinemaAsync(Guid id, UpdateCinemasInputDto input)
         {
             await ValidateManagerUserAsync(input.ManagerUserId, id);
             var cinema = await _cinemaRepository.GetAsync(id);
@@ -113,7 +113,7 @@ namespace LTC.AdministrationService.Cinemas
             return ObjectMapper.Map<Entities.Cinema, CinemasOutputDto>(cinema);
         }
 
-        public async Task DeleteAsync(Guid id)
+        public async Task DeleteCinemaAsync(Guid id)
         {
             await _cinemaRepository.DeleteAsync(id, autoSave: true);
         }

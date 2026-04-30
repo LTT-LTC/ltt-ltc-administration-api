@@ -143,7 +143,7 @@ namespace LTC.AdministrationService
         /// Get List Employee
         /// </summary>
         /// <returns></returns>
-        public async Task<PagedResultEmployeeOutputDto> GetListAsync(GetListEmployeeInputDto input)
+        public async Task<PagedResultEmployeeOutputDto> GetEmployeeListAsync(GetListEmployeeInputDto input)
         {
             var keyword = input.Keyword?.Trim();
 
@@ -266,14 +266,14 @@ namespace LTC.AdministrationService
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        public async Task<EmployeeOutputDto> CreateAsync(CreateEmployeeInputDto input)
+        public async Task<EmployeeOutputDto> CreateEmployeeAsync(CreateEmployeeInputDto input)
         {
             using (var uow = unitOfWorkManager.Begin())
             {
                 await EnsureCinemaRequirementAsync(input.Role, input.CinemaId);
 
                 // tạo user
-                var userId = await identityUserAppService.CreateAsync(new CreateUserInputDto
+                var userId = await identityUserAppService.CreateIdentityUserAsync(new CreateUserInputDto
                 {
                     UserName = input.Email,
                     Name = input.Name,
@@ -299,12 +299,12 @@ namespace LTC.AdministrationService
                 await SyncManagerCinemaOwnershipAsync(userId, input.Role, input.CinemaId);
 
                 await uow.CompleteAsync();
-                var createdEmployee = await GetAsync(employee.Id);
+                var createdEmployee = await GetEmployeeAsync(employee.Id);
                 return createdEmployee ?? throw new UserFriendlyException("Failed to load created employee.");
             }
         }
 
-        public async Task<EmployeeOutputDto?> GetAsync(Guid id)
+        public async Task<EmployeeOutputDto?> GetEmployeeAsync(Guid id)
         {
             var employee = await employeeRepository.FindAsync(id);
             if (employee == null)
@@ -345,7 +345,7 @@ namespace LTC.AdministrationService
             };
         }
 
-        public async Task<EmployeeOutputDto> UpdateAsync(Guid id, UpdateEmployeeInputDto input)
+        public async Task<EmployeeOutputDto> UpdateEmployeeAsync(Guid id, UpdateEmployeeInputDto input)
         {
             using var uow = unitOfWorkManager.Begin();
 
@@ -396,11 +396,11 @@ namespace LTC.AdministrationService
             await SyncManagerCinemaOwnershipAsync(employee.UserId.Value, input.Role, input.CinemaId);
 
             await uow.CompleteAsync();
-            var updatedEmployee = await GetAsync(id);
+            var updatedEmployee = await GetEmployeeAsync(id);
             return updatedEmployee ?? throw new UserFriendlyException("Failed to load updated employee.");
         }
 
-        public async Task DeleteAsync(Guid id)
+        public async Task DeleteEmployeeAsync(Guid id)
         {
             using var uow = unitOfWorkManager.Begin();
             var employee = await employeeRepository.GetAsync(id);

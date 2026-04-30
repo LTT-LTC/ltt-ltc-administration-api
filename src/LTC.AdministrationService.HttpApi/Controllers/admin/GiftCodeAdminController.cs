@@ -22,29 +22,29 @@ namespace LTC.AdministrationService.Controllers.Admin
         }
 
         [HttpGet]
-        public async Task<PagedResultDto<GiftCodeOutputDto>> GetListAsync(int skipCount = 0, int maxResultCount = 10)
+        public async Task<PagedResultDto<GiftCodeOutputDto>> GetGiftCodeListAsync(int skipCount = 0, int maxResultCount = 10)
         {
-            return await _giftCodeAppService.GetListAsync(skipCount, maxResultCount);
+            return await _giftCodeAppService.GetGiftCodeListAsync(skipCount, maxResultCount);
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateAsync([FromBody] CreateGiftCodeDto input)
+        public async Task<IActionResult> CreateGiftCodeAsync([FromBody] CreateGiftCodeDto input)
         {
-            var result = await _giftCodeAppService.CreateAsync(input);
+            var result = await _giftCodeAppService.CreateGiftCodeAsync(input);
             return Ok(result);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateAsync(Guid id, [FromBody] CreateGiftCodeDto input)
+        public async Task<IActionResult> UpdateGiftCodeAsync(Guid id, [FromBody] CreateGiftCodeDto input)
         {
-            var result = await _giftCodeAppService.UpdateAsync(id, input);
+            var result = await _giftCodeAppService.UpdateGiftCodeAsync(id, input);
             return Ok(result);
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteAsync(Guid id)
+        public async Task<IActionResult> DeleteGiftCodeAsync(Guid id)
         {
-            await _giftCodeAppService.DeleteAsync(id);
+            await _giftCodeAppService.DeleteGiftCodeAsync(id);
             return Ok();
         }
     }

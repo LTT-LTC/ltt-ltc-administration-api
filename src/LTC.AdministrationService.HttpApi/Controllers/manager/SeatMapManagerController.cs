@@ -20,33 +20,33 @@ namespace LTC.AdministrationService.Controllers.Manager
         }
 
         [HttpGet("cinema/{cinemaId}")]
-        public virtual async Task<PagedResultDto<SeatMapOutputDto>> GetListAsync(Guid cinemaId, [FromQuery] GetSeatMapListInputDto input)
+        public virtual async Task<PagedResultDto<SeatMapOutputDto>> GetSeatMapListAsync(Guid cinemaId, [FromQuery] GetSeatMapListInputDto input)
         {
-            return await _seatMapAppService.GetListAsync(cinemaId, input);
+            return await _seatMapAppService.GetSeatMapListAsync(cinemaId, input);
         }
 
         [HttpGet("{id}")]
-        public virtual async Task<SeatMapOutputDto> GetAsync(Guid id)
+        public virtual async Task<SeatMapOutputDto> GetSeatMapAsync(Guid id)
         {
-            return await _seatMapAppService.GetAsync(id);
+            return await _seatMapAppService.GetSeatMapAsync(id);
         }
 
         [HttpPost("cinema/{cinemaId}")]
-        public virtual async Task<SeatMapOutputDto> CreateAsync(Guid cinemaId, [FromBody] CreateSeatMapInputDto input)
+        public virtual async Task<SeatMapOutputDto> CreateSeatMapAsync(Guid cinemaId, [FromBody] CreateSeatMapInputDto input)
         {
-            return await _seatMapAppService.CreateAsync(cinemaId, input);
+            return await _seatMapAppService.CreateSeatMapAsync(cinemaId, input);
         }
 
         [HttpPut("{id}")]
-        public virtual async Task<SeatMapOutputDto> UpdateAsync(Guid id, [FromBody] UpdateSeatMapInputDto input)
+        public virtual async Task<SeatMapOutputDto> UpdateSeatMapAsync(Guid id, [FromBody] UpdateSeatMapInputDto input)
         {
-            return await _seatMapAppService.UpdateAsync(id, input);
+            return await _seatMapAppService.UpdateSeatMapAsync(id, input);
         }
 
         [HttpDelete("{id}")]
-        public virtual async Task DeleteAsync(Guid id)
+        public virtual async Task DeleteSeatMapAsync(Guid id)
         {
-            await _seatMapAppService.DeleteAsync(id);
+            await _seatMapAppService.DeleteSeatMapAsync(id);
         }
     }
 }

@@ -66,7 +66,7 @@ namespace LTC.AdministrationService.Admin
                 return uploadResult.SecureUrl.ToString();
             }
 
-            public async Task<PagedResultDto<NewsAndOffersOutputDto>> GetListAsync(GetNewsAndOffersListinputDto input)
+            public async Task<PagedResultDto<NewsAndOffersOutputDto>> GetNewsAndOffersListAsync(GetNewsAndOffersListinputDto input)
             {
                 var queryable = await _newsAndOffersRepository.GetQueryableAsync();
                 var currentTenantId = CurrentTenant?.Id;
@@ -114,13 +114,13 @@ namespace LTC.AdministrationService.Admin
                 );
             }
 
-            public async Task<NewsAndOffersOutputDto> GetAsync(Guid id)
+            public async Task<NewsAndOffersOutputDto> GetNewsAndOffersAsync(Guid id)
             {
                 var newsAndOffer = await _newsAndOffersRepository.GetAsync(id);
                 return ObjectMapper.Map<Entities.NewsAndOffers, NewsAndOffersOutputDto>(newsAndOffer);
             }
 
-            public async Task<NewsAndOffersOutputDto> CreateAsync(CreateNewsAndOffersDto input)
+            public async Task<NewsAndOffersOutputDto> CreateNewsAndOffersAsync(CreateNewsAndOffersDto input)
             {
                 var uploadedPosterUrl = await UploadPosterIfProvidedAsync(input.ImageFile);
                 var entity = new Entities.NewsAndOffers(GuidGenerator.Create())
@@ -141,7 +141,7 @@ namespace LTC.AdministrationService.Admin
                 return ObjectMapper.Map<Entities.NewsAndOffers, NewsAndOffersOutputDto>(entity);
             }
 
-            public async Task<NewsAndOffersOutputDto> UpdateAsync(Guid id, UpdateNewsAndOffersDto input)
+            public async Task<NewsAndOffersOutputDto> UpdateNewsAndOffersAsync(Guid id, UpdateNewsAndOffersDto input)
             {
                 var entity = await _newsAndOffersRepository.GetAsync(id);
                 var uploadedPosterUrl = await UploadPosterIfProvidedAsync(input.ImageFile);
@@ -158,7 +158,7 @@ namespace LTC.AdministrationService.Admin
                 return ObjectMapper.Map<Entities.NewsAndOffers, NewsAndOffersOutputDto>(entity);
             }
 
-            public async Task<NewsAndOffersOutputDto> DeleteAsync(Guid id)
+            public async Task<NewsAndOffersOutputDto> DeleteNewsAndOffersAsync(Guid id)
             {
                 var entity = await _newsAndOffersRepository.GetAsync(id);
                 await _newsAndOffersRepository.DeleteAsync(id, true);

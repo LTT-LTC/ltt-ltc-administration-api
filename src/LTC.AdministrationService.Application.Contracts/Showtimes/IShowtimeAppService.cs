@@ -8,10 +8,10 @@ namespace LTC.AdministrationService.Showtimes
 {
     public interface IShowtimeAppService : IApplicationService
     {
-        Task<PagedResultDto<ShowtimeOutputDto>> GetListAsync(Guid movieId, Guid? cinemaId, int skipCount, int maxResultCount);
-        Task<ShowtimeOutputDto> GetAsync(Guid id);
-        Task<ShowtimeOutputDto> CreateAsync(CreateShowtimeDto input);
-        Task<ShowtimeOutputDto> UpdateAsync(Guid id, CreateShowtimeDto input);
-        Task DeleteAsync(Guid id);
+        Task<PagedResultDto<ShowtimeOutputDto>> GetShowtimeListAsync(Guid movieId, Guid? cinemaId, int skipCount, int maxResultCount);
+        Task<ShowtimeOutputDto> GetShowtimeAsync(Guid id);
+        Task<ShowtimeOutputDto> CreateShowtimeAsync(CreateShowtimeDto input);
+        Task<ShowtimeOutputDto> UpdateShowtimeAsync(Guid id, CreateShowtimeDto input);
+        Task DeleteShowtimeAsync(Guid id);
     }
 }

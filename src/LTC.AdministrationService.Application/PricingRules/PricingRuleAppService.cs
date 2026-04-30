@@ -29,7 +29,7 @@ namespace LTC.AdministrationService.PricingRules
             _seatTypeRepository = seatTypeRepository;
         }
 
-        public async Task<PagedResultDto<PricingRuleOutputDto>> GetListAsync(Guid cinemaId, int skipCount, int maxResultCount)
+        public async Task<PagedResultDto<PricingRuleOutputDto>> GetPricingRuleListAsync(Guid cinemaId, int skipCount, int maxResultCount)
         {
             var query = await _repository.GetQueryableAsync();
             query = query.Where(e => e.CinemaId == cinemaId);
@@ -43,7 +43,7 @@ namespace LTC.AdministrationService.PricingRules
             );
         }
 
-        public async Task<PricingRuleOutputDto> CreateAsync(Guid cinemaId, CreatePricingRuleDto input)
+        public async Task<PricingRuleOutputDto> CreatePricingRuleAsync(Guid cinemaId, CreatePricingRuleDto input)
         {
             ValidateInput(input);
             await ValidateOwnershipAsync(cinemaId, input.SeatTypeId);
@@ -78,7 +78,7 @@ namespace LTC.AdministrationService.PricingRules
             return ToOutputDto(entity);
         }
 
-        public async Task<PricingRuleOutputDto> UpdateAsync(Guid id, CreatePricingRuleDto input)
+        public async Task<PricingRuleOutputDto> UpdatePricingRuleAsync(Guid id, CreatePricingRuleDto input)
         {
             ValidateInput(input);
             var entity = await _repository.GetAsync(id);
@@ -109,7 +109,7 @@ namespace LTC.AdministrationService.PricingRules
             return ToOutputDto(entity);
         }
 
-        public async Task DeleteAsync(Guid id)
+        public async Task DeletePricingRuleAsync(Guid id)
         {
             await _repository.DeleteAsync(id);
         }

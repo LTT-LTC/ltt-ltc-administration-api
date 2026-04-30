@@ -23,33 +23,33 @@ namespace LTC.AdministrationService.Controllers.Admin
         }
 
         [HttpGet]
-        public virtual async Task<PagedResultDto<SeatTypeOutputDto>> GetListAsync([FromQuery] GetSeatTypeListInputDto input)
+        public virtual async Task<PagedResultDto<SeatTypeOutputDto>> GetSeatTypeListAsync([FromQuery] GetSeatTypeListInputDto input)
         {
-            return await _appService.GetListAsync(input);
+            return await _appService.GetSeatTypeListAsync(input);
         }
 
         [HttpGet("{id}")]
-        public virtual async Task<SeatTypeOutputDto> GetAsync(Guid id)
+        public virtual async Task<SeatTypeOutputDto> GetSeatTypeAsync(Guid id)
         {
-            return await _appService.GetAsync(id);
+            return await _appService.GetSeatTypeAsync(id);
         }
 
         [HttpPost]
-        public virtual async Task<SeatTypeOutputDto> CreateAsync([FromBody] CreateSeatTypeInputDto input)
+        public virtual async Task<SeatTypeOutputDto> CreateSeatTypeAsync([FromBody] CreateSeatTypeInputDto input)
         {
-            return await _appService.CreateAsync(input);
+            return await _appService.CreateSeatTypeAsync(input);
         }
 
         [HttpPut("{id}")]
-        public virtual async Task<SeatTypeOutputDto> UpdateAsync(Guid id, [FromBody] UpdateSeatTypeInputDto input)
+        public virtual async Task<SeatTypeOutputDto> UpdateSeatTypeAsync(Guid id, [FromBody] UpdateSeatTypeInputDto input)
         {
-            return await _appService.UpdateAsync(id, input);
+            return await _appService.UpdateSeatTypeAsync(id, input);
         }
 
         [HttpDelete("{id}")]
-        public virtual async Task DeleteAsync(Guid id)
+        public virtual async Task DeleteSeatTypeAsync(Guid id)
         {
-            await _appService.DeleteAsync(id);
+            await _appService.DeleteSeatTypeAsync(id);
         }
     }
 }

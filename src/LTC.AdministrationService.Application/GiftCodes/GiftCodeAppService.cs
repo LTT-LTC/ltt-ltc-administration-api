@@ -20,7 +20,7 @@ namespace LTC.AdministrationService.GiftCodes
             _repository = repository;
         }
 
-        public async Task<PagedResultDto<GiftCodeOutputDto>> GetListAsync(int skipCount, int maxResultCount)
+        public async Task<PagedResultDto<GiftCodeOutputDto>> GetGiftCodeListAsync(int skipCount, int maxResultCount)
         {
             var query = await _repository.GetQueryableAsync();
 
@@ -33,7 +33,7 @@ namespace LTC.AdministrationService.GiftCodes
             );
         }
 
-        public async Task<GiftCodeOutputDto> CreateAsync(CreateGiftCodeDto input)
+        public async Task<GiftCodeOutputDto> CreateGiftCodeAsync(CreateGiftCodeDto input)
         {
             var entity = new GiftCode(GuidGenerator.Create())
             {
@@ -54,7 +54,7 @@ namespace LTC.AdministrationService.GiftCodes
             return ObjectMapper.Map<GiftCode, GiftCodeOutputDto>(entity);
         }
 
-        public async Task<GiftCodeOutputDto> UpdateAsync(Guid id, CreateGiftCodeDto input)
+        public async Task<GiftCodeOutputDto> UpdateGiftCodeAsync(Guid id, CreateGiftCodeDto input)
         {
             var entity = await _repository.GetAsync(id);
 
@@ -73,7 +73,7 @@ namespace LTC.AdministrationService.GiftCodes
             return ObjectMapper.Map<GiftCode, GiftCodeOutputDto>(entity);
         }
 
-        public async Task DeleteAsync(Guid id)
+        public async Task DeleteGiftCodeAsync(Guid id)
         {
             await _repository.DeleteAsync(id);
         }

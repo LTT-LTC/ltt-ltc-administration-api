@@ -1,4 +1,4 @@
-﻿using LTC.AdministrationService.Employee.Dtos.Input;
+using LTC.AdministrationService.Employee.Dtos.Input;
 using LTC.AdministrationService.Identity.Dtos.Input;
 using LTC.AdministrationService.Identity.Dtos.Output;
 using LTC.Shared.CrossCuttingConcerns.ExtensionMethods;
@@ -30,7 +30,7 @@ namespace LTC.AdministrationService.Identity
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        public async Task<Guid> CreateAsync(CreateUserInputDto input)
+        public async Task<Guid> CreateIdentityUserAsync(CreateUserInputDto input)
         {
             var passwordSettings = configuration.GetSection("PasswordSettings").Get<PasswordSettingsDto>();
             await identityOptions.SetAsync();

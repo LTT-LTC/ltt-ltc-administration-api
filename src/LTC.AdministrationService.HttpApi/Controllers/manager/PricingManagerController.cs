@@ -20,22 +20,22 @@ namespace LTC.AdministrationService.Controllers.Manager
 
         [Route("cinema/{cinemaId}/rule")]
         [HttpGet]
-        public virtual Task<PagedResultDto<PricingRuleOutputDto>> GetListAsync(Guid cinemaId, int skipCount = 0, int maxResultCount = 10)
-            => _appService.GetListAsync(cinemaId, skipCount, maxResultCount);
+        public virtual Task<PagedResultDto<PricingRuleOutputDto>> GetPricingRuleListAsync(Guid cinemaId, int skipCount = 0, int maxResultCount = 10)
+            => _appService.GetPricingRuleListAsync(cinemaId, skipCount, maxResultCount);
 
         [Route("cinema/{cinemaId}/rule")]
         [HttpPost]
-        public virtual Task<PricingRuleOutputDto> CreateAsync(Guid cinemaId, CreatePricingRuleDto input)
-            => _appService.CreateAsync(cinemaId, input);
+        public virtual Task<PricingRuleOutputDto> CreatePricingRuleAsync(Guid cinemaId, CreatePricingRuleDto input)
+            => _appService.CreatePricingRuleAsync(cinemaId, input);
 
         [Route("rule/{id}")]
         [HttpPut]
-        public virtual Task<PricingRuleOutputDto> UpdateAsync(Guid id, CreatePricingRuleDto input)
-            => _appService.UpdateAsync(id, input);
+        public virtual Task<PricingRuleOutputDto> UpdatePricingRuleAsync(Guid id, CreatePricingRuleDto input)
+            => _appService.UpdatePricingRuleAsync(id, input);
 
         [Route("rule/{id}")]
         [HttpDelete]
-        public virtual Task DeleteAsync(Guid id)
-            => _appService.DeleteAsync(id);
+        public virtual Task DeletePricingRuleAsync(Guid id)
+            => _appService.DeletePricingRuleAsync(id);
     }
 }

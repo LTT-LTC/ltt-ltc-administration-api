@@ -22,9 +22,9 @@ namespace LTC.AdministrationService.Controllers.Manager
         }
 
         [HttpGet]
-        public async Task<PagedResultDto<GiftCodeOutputDto>> GetListAsync(int skipCount = 0, int maxResultCount = 10)
+        public async Task<PagedResultDto<GiftCodeOutputDto>> GetGiftCodeListAsync(int skipCount = 0, int maxResultCount = 10)
         {
-            return await _giftCodeAppService.GetListAsync(skipCount, maxResultCount);
+            return await _giftCodeAppService.GetGiftCodeListAsync(skipCount, maxResultCount);
         }
 
     }

@@ -24,14 +24,14 @@ public class ScreenAdminController : AdminControllerBase
 
     [HttpGet("cinema/{cinemaId}")]
     [HttpGet("cinema/{cinemaId}/screen-all")]
-    public virtual async Task<PagedResultDto<ScreenOutputDto>> GetListAsync(Guid cinemaId, [FromQuery] GetScreenListInputDto input)
+    public virtual async Task<PagedResultDto<ScreenOutputDto>> GetScreenListAsync(Guid cinemaId, [FromQuery] GetScreenListInputDto input)
     {
-        return await _screenAppService.GetListAsync(cinemaId, input);
+        return await _screenAppService.GetScreenListAsync(cinemaId, input);
     }
 
     [HttpGet("{id}")]
-    public virtual async Task<ScreenOutputDto> GetAsync(Guid id)
+    public virtual async Task<ScreenOutputDto> GetScreenAsync(Guid id)
     {
-        return await _screenAppService.GetAsync(id);
+        return await _screenAppService.GetScreenAsync(id);
     }
 }

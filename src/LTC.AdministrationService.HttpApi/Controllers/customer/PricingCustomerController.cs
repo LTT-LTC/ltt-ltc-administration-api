@@ -19,6 +19,6 @@ public class PricingCustomerController : CustomerControllerBase
 
     [Route("cinema/{cinemaId}/rule")]
     [HttpGet]
-    public virtual Task<PagedResultDto<PricingRuleOutputDto>> GetListAsync(Guid cinemaId, int skipCount = 0, int maxResultCount = 10)
-        => _appService.GetListAsync(cinemaId, skipCount, maxResultCount);
+    public virtual Task<PagedResultDto<PricingRuleOutputDto>> GetPricingRuleListAsync(Guid cinemaId, int skipCount = 0, int maxResultCount = 10)
+        => _appService.GetPricingRuleListAsync(cinemaId, skipCount, maxResultCount);
 }
