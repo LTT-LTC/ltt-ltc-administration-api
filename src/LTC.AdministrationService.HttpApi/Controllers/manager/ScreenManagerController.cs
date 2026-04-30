@@ -24,32 +24,32 @@ public class ScreenManagerController : ManagerControllerBase
 
     [HttpGet("cinema/{cinemaId}")]
     [HttpGet("cinema/{cinemaId}/screen-all")]
-    public virtual async Task<PagedResultDto<ScreenOutputDto>> GetListAsync(Guid cinemaId, [FromQuery] GetScreenListInputDto input)
+    public virtual async Task<PagedResultDto<ScreenOutputDto>> GetScreenListAsync(Guid cinemaId, [FromQuery] GetScreenListInputDto input)
     {
-        return await _screenAppService.GetListAsync(cinemaId, input);
+        return await _screenAppService.GetScreenListAsync(cinemaId, input);
     }
 
     [HttpGet("{id}")]
-    public virtual async Task<ScreenOutputDto> GetAsync(Guid id)
+    public virtual async Task<ScreenOutputDto> GetScreenAsync(Guid id)
     {
-        return await _screenAppService.GetAsync(id);
+        return await _screenAppService.GetScreenAsync(id);
     }
 
     [HttpPost("cinema/{cinemaId}")]
-    public virtual async Task<ScreenOutputDto> CreateAsync(Guid cinemaId, [FromBody] CreateScreenInputDto input)
+    public virtual async Task<ScreenOutputDto> CreateScreenAsync(Guid cinemaId, [FromBody] CreateScreenInputDto input)
     {
-        return await _screenAppService.CreateAsync(cinemaId, input);
+        return await _screenAppService.CreateScreenAsync(cinemaId, input);
     }
 
     [HttpPut("{id}")]
-    public virtual async Task<ScreenOutputDto> UpdateAsync(Guid id, [FromBody] UpdateScreenInputDto input)
+    public virtual async Task<ScreenOutputDto> UpdateScreenAsync(Guid id, [FromBody] UpdateScreenInputDto input)
     {
-        return await _screenAppService.UpdateAsync(id, input);
+        return await _screenAppService.UpdateScreenAsync(id, input);
     }
 
     [HttpDelete("{id}")]
-    public virtual async Task DeleteAsync(Guid id)
+    public virtual async Task DeleteScreenAsync(Guid id)
     {
-        await _screenAppService.DeleteAsync(id);
+        await _screenAppService.DeleteScreenAsync(id);
     }
 }

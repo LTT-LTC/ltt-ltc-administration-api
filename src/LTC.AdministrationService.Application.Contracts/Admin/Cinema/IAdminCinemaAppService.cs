@@ -10,10 +10,10 @@ namespace LTC.AdministrationService.Admin.Cinemas
 {
     public interface IAdminCinemaAppService : IApplicationService
     {
-        Task<PagedResultDto<CinemasOutputDto>> GetListAsync(GetCinemasListInputDto input);
-        Task<CinemasOutputDto> GetAsync(Guid id);
-        Task<CinemasOutputDto> CreateAsync(CreateCinemasInputDto input);
-        Task<CinemasOutputDto> UpdateAsync(Guid id, UpdateCinemasInputDto input);
-        Task DeleteAsync(Guid id);
+        Task<PagedResultDto<CinemasOutputDto>> GetCinemaListAsync(GetCinemasListInputDto input);
+        Task<CinemasOutputDto> GetCinemaAsync(Guid id);
+        Task<CinemasOutputDto> CreateCinemaAsync(CreateCinemasInputDto input);
+        Task<CinemasOutputDto> UpdateCinemaAsync(Guid id, UpdateCinemasInputDto input);
+        Task DeleteCinemaAsync(Guid id);
     }
 }

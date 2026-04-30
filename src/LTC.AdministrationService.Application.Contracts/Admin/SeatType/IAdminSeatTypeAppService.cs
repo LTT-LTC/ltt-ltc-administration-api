@@ -10,10 +10,10 @@ namespace LTC.AdministrationService.Admin.SeatTypes
 {
     public interface IAdminSeatTypeAppService : IApplicationService
     {
-        Task<PagedResultDto<SeatTypeOutputDto>> GetListAsync(GetSeatTypeListInputDto input);
-        Task<SeatTypeOutputDto> GetAsync(Guid id);
-        Task<SeatTypeOutputDto> CreateAsync(CreateSeatTypeInputDto input);
-        Task<SeatTypeOutputDto> UpdateAsync(Guid id, UpdateSeatTypeInputDto input);
-        Task DeleteAsync(Guid id);
+        Task<PagedResultDto<SeatTypeOutputDto>> GetSeatTypeListAsync(GetSeatTypeListInputDto input);
+        Task<SeatTypeOutputDto> GetSeatTypeAsync(Guid id);
+        Task<SeatTypeOutputDto> CreateSeatTypeAsync(CreateSeatTypeInputDto input);
+        Task<SeatTypeOutputDto> UpdateSeatTypeAsync(Guid id, UpdateSeatTypeInputDto input);
+        Task DeleteSeatTypeAsync(Guid id);
     }
 }

@@ -20,10 +20,10 @@ public class ScreenStaffController : StaffControllerBase
 
     [HttpGet("cinema/{cinemaId}")]
     [HttpGet("cinema/{cinemaId}/screen-all")]
-    public virtual Task<PagedResultDto<ScreenOutputDto>> GetListAsync(Guid cinemaId, [FromQuery] GetScreenListInputDto input)
-        => _screenAppService.GetListAsync(cinemaId, input);
+    public virtual Task<PagedResultDto<ScreenOutputDto>> GetScreenListAsync(Guid cinemaId, [FromQuery] GetScreenListInputDto input)
+        => _screenAppService.GetScreenListAsync(cinemaId, input);
 
     [HttpGet("{id}")]
-    public virtual Task<ScreenOutputDto> GetAsync(Guid id)
-        => _screenAppService.GetAsync(id);
+    public virtual Task<ScreenOutputDto> GetScreenAsync(Guid id)
+        => _screenAppService.GetScreenAsync(id);
 }

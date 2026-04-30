@@ -21,10 +21,10 @@ public class NewsAndOffersCustomerController : CustomerControllerBase
     }
 
     [HttpGet]
-    public virtual Task<PagedResultDto<NewsAndOffersOutputDto>> GetListAsync([FromQuery] GetNewsAndOffersListinputDto input)
-        => _newsAndOffersAppService.GetListAsync(input);
+    public virtual Task<PagedResultDto<NewsAndOffersOutputDto>> GetNewsAndOffersListAsync([FromQuery] GetNewsAndOffersListinputDto input)
+        => _newsAndOffersAppService.GetNewsAndOffersListAsync(input);
 
     [HttpGet("{id}")]
-    public virtual Task<NewsAndOffersOutputDto> GetAsync(Guid id)
-        => _newsAndOffersAppService.GetAsync(id);
+    public virtual Task<NewsAndOffersOutputDto> GetNewsAndOffersAsync(Guid id)
+        => _newsAndOffersAppService.GetNewsAndOffersAsync(id);
 }

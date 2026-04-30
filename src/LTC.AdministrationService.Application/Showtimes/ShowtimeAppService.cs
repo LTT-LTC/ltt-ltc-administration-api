@@ -29,7 +29,7 @@ namespace LTC.AdministrationService.Showtimes
             _cinemaRepository = cinemaRepository;
         }
 
-        public async Task<PagedResultDto<ShowtimeOutputDto>> GetListAsync(Guid movieId, Guid? cinemaId, int skipCount, int maxResultCount)
+        public async Task<PagedResultDto<ShowtimeOutputDto>> GetShowtimeListAsync(Guid movieId, Guid? cinemaId, int skipCount, int maxResultCount)
         {
             var query = await _repository.GetQueryableAsync();
 
@@ -53,13 +53,13 @@ namespace LTC.AdministrationService.Showtimes
             );
         }
 
-        public async Task<ShowtimeOutputDto> GetAsync(Guid id)
+        public async Task<ShowtimeOutputDto> GetShowtimeAsync(Guid id)
         {
             var entity = await _repository.GetAsync(id);
             return await MapToOutputDtoAsync(entity);
         }
 
-        public async Task<ShowtimeOutputDto> CreateAsync(CreateShowtimeDto input)
+        public async Task<ShowtimeOutputDto> CreateShowtimeAsync(CreateShowtimeDto input)
         {
             var duration = await ValidateCreateOrUpdateAsync(input, null);
 
@@ -84,7 +84,7 @@ namespace LTC.AdministrationService.Showtimes
             return await MapToOutputDtoAsync(entity);
         }
 
-        public async Task<ShowtimeOutputDto> UpdateAsync(Guid id, CreateShowtimeDto input)
+        public async Task<ShowtimeOutputDto> UpdateShowtimeAsync(Guid id, CreateShowtimeDto input)
         {
             var duration = await ValidateCreateOrUpdateAsync(input, id);
 
@@ -121,7 +121,7 @@ namespace LTC.AdministrationService.Showtimes
             return mapped;
         }
 
-        public async Task DeleteAsync(Guid id)
+        public async Task DeleteShowtimeAsync(Guid id)
         {
             await _repository.DeleteAsync(id);
         }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,10 +11,10 @@ namespace LTC.AdministrationService.NewsAndOffers
 {
     public interface INewsAndOffersAppService
     {
-        Task<PagedResultDto<NewsAndOffersOutputDto>> GetListAsync(GetNewsAndOffersListinputDto input);
-        Task<NewsAndOffersOutputDto> GetAsync(Guid id);
-        Task<NewsAndOffersOutputDto> CreateAsync(CreateNewsAndOffersDto input);
-        Task<NewsAndOffersOutputDto> UpdateAsync(Guid id, UpdateNewsAndOffersDto input);
-        Task<NewsAndOffersOutputDto> DeleteAsync(Guid id);
+        Task<PagedResultDto<NewsAndOffersOutputDto>> GetNewsAndOffersListAsync(GetNewsAndOffersListinputDto input);
+        Task<NewsAndOffersOutputDto> GetNewsAndOffersAsync(Guid id);
+        Task<NewsAndOffersOutputDto> CreateNewsAndOffersAsync(CreateNewsAndOffersDto input);
+        Task<NewsAndOffersOutputDto> UpdateNewsAndOffersAsync(Guid id, UpdateNewsAndOffersDto input);
+        Task<NewsAndOffersOutputDto> DeleteNewsAndOffersAsync(Guid id);
     }
 }

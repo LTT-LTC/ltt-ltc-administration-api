@@ -18,15 +18,15 @@ namespace LTC.AdministrationService.Controllers.Pos
         }
 
         [HttpGet("movie/{movieId}")]
-        public async Task<PagedResultDto<ShowtimeOutputDto>> GetListByMovieAsync(Guid movieId, Guid? cinemaId = null, int skipCount = 0, int maxResultCount = 10)
+        public async Task<PagedResultDto<ShowtimeOutputDto>> GetShowtimeListByMovieAsync(Guid movieId, Guid? cinemaId = null, int skipCount = 0, int maxResultCount = 10)
         {
-            return await _showtimeAppService.GetListAsync(movieId, cinemaId, skipCount, maxResultCount);
+            return await _showtimeAppService.GetShowtimeListAsync(movieId, cinemaId, skipCount, maxResultCount);
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetAsync(Guid id)
+        public async Task<IActionResult> GetShowtimeAsync(Guid id)
         {
-            var result = await _showtimeAppService.GetAsync(id);
+            var result = await _showtimeAppService.GetShowtimeAsync(id);
             return Ok(result);
         }
     }

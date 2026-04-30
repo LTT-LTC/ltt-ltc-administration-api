@@ -23,15 +23,15 @@ namespace LTC.AdministrationService.Controllers.Manager
         }
 
         [HttpGet]
-        public virtual async Task<PagedResultDto<CinemasOutputDto>> GetListAsync([FromQuery] GetCinemasListInputDto input)
+        public virtual async Task<PagedResultDto<CinemasOutputDto>> GetCinemaListAsync([FromQuery] GetCinemasListInputDto input)
         {
-            return await _cinemaAppService.GetListAsync(input);
+            return await _cinemaAppService.GetCinemaListAsync(input);
         }
 
         [HttpGet("{id}")]
-        public virtual async Task<CinemasOutputDto> GetAsync(Guid id)
+        public virtual async Task<CinemasOutputDto> GetCinemaAsync(Guid id)
         {
-            return await _cinemaAppService.GetAsync(id);
+            return await _cinemaAppService.GetCinemaAsync(id);
         }
     }
 }

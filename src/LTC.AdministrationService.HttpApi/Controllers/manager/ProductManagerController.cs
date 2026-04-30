@@ -12,7 +12,7 @@ namespace LTC.AdministrationService.Controllers.Manager
     public class ProductManagerController : ManagerControllerBase
     {
         [HttpGet]
-        public virtual async Task<IActionResult> GetListAsync(Guid cinemaId) => Ok();
+        public virtual async Task<IActionResult> GetProductListAsync(Guid cinemaId) => Ok();
 
         [HttpGet("categories")]
         public virtual async Task<IActionResult> GetCategoriesAsync(Guid cinemaId) => Ok();

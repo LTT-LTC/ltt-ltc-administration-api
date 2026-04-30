@@ -54,8 +54,6 @@ public class AdministrationServiceDbContext :
     public DbSet<SeatMap> SeatMaps { get; set; }
     public DbSet<SeatType> SeatTypes { get; set; }
     public DbSet<Showtime> Showtimes { get; set; }
-    public DbSet<MovieProjection> MovieProjections { get; set; }
-    public DbSet<MovieDistributionProjection> MovieDistributionProjections { get; set; }
     public DbSet<PricingRule> PricingRules { get; set; }
     public DbSet<CinemaAmenity> CinemaAmenities { get; set; }
     public DbSet<CinemaAmenityType> CinemaAmenityTypes { get; set; }
@@ -154,18 +152,6 @@ public class AdministrationServiceDbContext :
         builder.Entity<Showtime>(b =>
         {
             b.ToTable("Showtimes");
-            b.ConfigureByConvention();
-        });
-
-        builder.Entity<MovieProjection>(b =>
-        {
-            b.ToTable("MovieProjections");
-            b.ConfigureByConvention();
-        });
-
-        builder.Entity<MovieDistributionProjection>(b =>
-        {
-            b.ToTable("MovieDistributionProjections");
             b.ConfigureByConvention();
         });
 

@@ -21,16 +21,16 @@ namespace LTC.AdministrationService.Controllers.Manager
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetListAsync([FromQuery] GetListEmployeeInputDto input)
+        public async Task<IActionResult> GetEmployeeListAsync([FromQuery] GetListEmployeeInputDto input)
         {
-            var result = await _employeeAppService.GetListAsync(input);
+            var result = await _employeeAppService.GetEmployeeListAsync(input);
             return Ok(result);
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetAsync(Guid id)
+        public async Task<IActionResult> GetEmployeeAsync(Guid id)
         {
-            var result = await _employeeAppService.GetAsync(id);
+            var result = await _employeeAppService.GetEmployeeAsync(id);
             return Ok(result);
         }
 

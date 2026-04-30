@@ -41,7 +41,7 @@ public class ScreenAppService : ApplicationService, IAdminScreenAppService
         _gmt7Clock = gmt7Clock;
     }
 
-    public async Task<PagedResultDto<ScreenOutputDto>> GetListAsync(Guid cinemaId, GetScreenListInputDto input)
+    public async Task<PagedResultDto<ScreenOutputDto>> GetScreenListAsync(Guid cinemaId, GetScreenListInputDto input)
     {
         var screensQ = await _screenRepository.GetQueryableAsync();
         var seatMapsQ = await _seatMapRepository.GetQueryableAsync();
@@ -76,7 +76,7 @@ public class ScreenAppService : ApplicationService, IAdminScreenAppService
         return new PagedResultDto<ScreenOutputDto>(totalCount, items);
     }
 
-    public async Task<ScreenOutputDto> GetAsync(Guid id)
+    public async Task<ScreenOutputDto> GetScreenAsync(Guid id)
     {
         var screen = await _screenRepository.GetAsync(id);
         SeatMap? seatMap = null;
@@ -88,7 +88,7 @@ public class ScreenAppService : ApplicationService, IAdminScreenAppService
         return ToOutputDto(screen, seatMap);
     }
 
-    public async Task<ScreenOutputDto> CreateAsync(Guid cinemaId, CreateScreenInputDto input)
+    public async Task<ScreenOutputDto> CreateScreenAsync(Guid cinemaId, CreateScreenInputDto input)
     {
         var seatMap = await ValidateAndGetSeatMapAsync(cinemaId, input.SeatMapId);
         await ValidateScreenInputAsync(cinemaId, input.ScreenNumber, input.ScreenType, seatMap.SeatCount, input.Status, null);
@@ -111,7 +111,7 @@ public class ScreenAppService : ApplicationService, IAdminScreenAppService
         return ToOutputDto(screen, seatMap);
     }
 
-    public async Task<ScreenOutputDto> UpdateAsync(Guid id, UpdateScreenInputDto input)
+    public async Task<ScreenOutputDto> UpdateScreenAsync(Guid id, UpdateScreenInputDto input)
     {
         var screen = await _screenRepository.GetAsync(id);
         var seatMap = await ValidateAndGetSeatMapAsync(screen.CinemaId, input.SeatMapId);
@@ -134,7 +134,7 @@ public class ScreenAppService : ApplicationService, IAdminScreenAppService
         return ToOutputDto(screen, seatMap);
     }
 
-    public async Task DeleteAsync(Guid id)
+    public async Task DeleteScreenAsync(Guid id)
     {
         var screen = await _screenRepository.GetAsync(id);
         var seatMapId = screen.SeatMapId;

@@ -1,4 +1,4 @@
-﻿using LTC.AdministrationService.Employee.Dtos.Input;
+using LTC.AdministrationService.Employee.Dtos.Input;
 using LTC.AdministrationService.Identity.Dtos.Input;
 using System;
 using System.Threading.Tasks;
@@ -8,6 +8,6 @@ namespace LTC.AdministrationService.Identity
 {
     public interface IIdentityUserAppService
     {
-        Task<Guid> CreateAsync(CreateUserInputDto input);
+        Task<Guid> CreateIdentityUserAsync(CreateUserInputDto input);
     }
 }

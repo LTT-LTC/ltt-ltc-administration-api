@@ -8,9 +8,9 @@ namespace LTC.AdministrationService.GiftCodes
 {
     public interface IGiftCodeAppService : IApplicationService
     {
-        Task<PagedResultDto<GiftCodeOutputDto>> GetListAsync(int skipCount, int maxResultCount);
-        Task<GiftCodeOutputDto> CreateAsync(CreateGiftCodeDto input);
-        Task<GiftCodeOutputDto> UpdateAsync(Guid id, CreateGiftCodeDto input);
-        Task DeleteAsync(Guid id);
+        Task<PagedResultDto<GiftCodeOutputDto>> GetGiftCodeListAsync(int skipCount, int maxResultCount);
+        Task<GiftCodeOutputDto> CreateGiftCodeAsync(CreateGiftCodeDto input);
+        Task<GiftCodeOutputDto> UpdateGiftCodeAsync(Guid id, CreateGiftCodeDto input);
+        Task DeleteGiftCodeAsync(Guid id);
     }
 }

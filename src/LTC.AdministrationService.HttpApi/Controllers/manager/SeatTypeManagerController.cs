@@ -23,15 +23,15 @@ namespace LTC.AdministrationService.Controllers.Manager
         }
 
         [HttpGet]
-        public virtual async Task<PagedResultDto<SeatTypeOutputDto>> GetListAsync([FromQuery] GetSeatTypeListInputDto input)
+        public virtual async Task<PagedResultDto<SeatTypeOutputDto>> GetSeatTypeListAsync([FromQuery] GetSeatTypeListInputDto input)
         {
-            return await _appService.GetListAsync(input);
+            return await _appService.GetSeatTypeListAsync(input);
         }
 
         [HttpGet("{id}")]
-        public virtual async Task<SeatTypeOutputDto> GetAsync(Guid id)
+        public virtual async Task<SeatTypeOutputDto> GetSeatTypeAsync(Guid id)
         {
-            return await _appService.GetAsync(id);
+            return await _appService.GetSeatTypeAsync(id);
         }
     }
 }

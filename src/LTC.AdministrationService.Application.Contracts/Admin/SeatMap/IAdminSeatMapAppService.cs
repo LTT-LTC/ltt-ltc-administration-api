@@ -9,10 +9,10 @@ namespace LTC.AdministrationService.Admin.SeatMaps
 {
     public interface IAdminSeatMapAppService : IApplicationService
     {
-        Task<PagedResultDto<SeatMapOutputDto>> GetListAsync(Guid cinemaId, GetSeatMapListInputDto input);
-        Task<SeatMapOutputDto> GetAsync(Guid id);
-        Task<SeatMapOutputDto> CreateAsync(Guid cinemaId, CreateSeatMapInputDto input);
-        Task<SeatMapOutputDto> UpdateAsync(Guid id, UpdateSeatMapInputDto input);
-        Task DeleteAsync(Guid id);
+        Task<PagedResultDto<SeatMapOutputDto>> GetSeatMapListAsync(Guid cinemaId, GetSeatMapListInputDto input);
+        Task<SeatMapOutputDto> GetSeatMapAsync(Guid id);
+        Task<SeatMapOutputDto> CreateSeatMapAsync(Guid cinemaId, CreateSeatMapInputDto input);
+        Task<SeatMapOutputDto> UpdateSeatMapAsync(Guid id, UpdateSeatMapInputDto input);
+        Task DeleteSeatMapAsync(Guid id);
     }
 }

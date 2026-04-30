@@ -21,7 +21,7 @@ namespace LTC.AdministrationService.Cinemas
             _amenityRepository = amenityRepository;
         }
 
-        public async Task<PagedResultDto<CinemaAmenityOutputDto>> GetListAsync(Guid cinemaId, GetCinemaAmenityListInputDto input)
+        public async Task<PagedResultDto<CinemaAmenityOutputDto>> GetCinemaAmenityListAsync(Guid cinemaId, GetCinemaAmenityListInputDto input)
         {
             var queryable = await _amenityRepository.GetQueryableAsync();
             queryable = queryable.Where(x => x.CinemaId == cinemaId);
@@ -44,13 +44,13 @@ namespace LTC.AdministrationService.Cinemas
             );
         }
 
-        public async Task<CinemaAmenityOutputDto> GetAsync(Guid cinemaId, Guid id)
+        public async Task<CinemaAmenityOutputDto> GetCinemaAmenityAsync(Guid cinemaId, Guid id)
         {
             var amenity = await _amenityRepository.GetAsync(x => x.CinemaId == cinemaId && x.Id == id);
             return ObjectMapper.Map<CinemaAmenity, CinemaAmenityOutputDto>(amenity);
         }
 
-        public async Task<CinemaAmenityOutputDto> CreateAsync(Guid cinemaId, CreateCinemaAmenityInputDto input)
+        public async Task<CinemaAmenityOutputDto> CreateCinemaAmenityAsync(Guid cinemaId, CreateCinemaAmenityInputDto input)
         {
             var amenity = ObjectMapper.Map<CreateCinemaAmenityInputDto, CinemaAmenity>(input);
             amenity.CinemaId = cinemaId;
@@ -59,7 +59,7 @@ namespace LTC.AdministrationService.Cinemas
             return ObjectMapper.Map<CinemaAmenity, CinemaAmenityOutputDto>(amenity);
         }
 
-        public async Task<CinemaAmenityOutputDto> UpdateAsync(Guid cinemaId, Guid id, UpdateCinemaAmenityInputDto input)
+        public async Task<CinemaAmenityOutputDto> UpdateCinemaAmenityAsync(Guid cinemaId, Guid id, UpdateCinemaAmenityInputDto input)
         {
             var amenity = await _amenityRepository.GetAsync(x => x.Id == id && x.CinemaId == cinemaId);
             ObjectMapper.Map(input, amenity);
@@ -68,7 +68,7 @@ namespace LTC.AdministrationService.Cinemas
             return ObjectMapper.Map<CinemaAmenity, CinemaAmenityOutputDto>(amenity);
         }
 
-        public async Task DeleteAsync(Guid cinemaId, Guid id)
+        public async Task DeleteCinemaAmenityAsync(Guid cinemaId, Guid id)
         {
             await _amenityRepository.DeleteAsync(x => x.Id == id && x.CinemaId == cinemaId, autoSave: true);
         }

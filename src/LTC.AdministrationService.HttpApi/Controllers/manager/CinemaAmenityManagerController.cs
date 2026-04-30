@@ -23,15 +23,15 @@ namespace LTC.AdministrationService.Controllers.Manager
         }
 
         [HttpGet]
-        public virtual Task<PagedResultDto<CinemaAmenityOutputDto>> GetListAsync(Guid cinemaId, GetCinemaAmenityListInputDto input)
+        public virtual Task<PagedResultDto<CinemaAmenityOutputDto>> GetCinemaAmenityListAsync(Guid cinemaId, GetCinemaAmenityListInputDto input)
         {
-            return _amenityAppService.GetListAsync(cinemaId, input);
+            return _amenityAppService.GetCinemaAmenityListAsync(cinemaId, input);
         }
 
         [HttpGet("{id}")]
-        public virtual Task<CinemaAmenityOutputDto> GetAsync(Guid cinemaId, Guid id)
+        public virtual Task<CinemaAmenityOutputDto> GetCinemaAmenityAsync(Guid cinemaId, Guid id)
         {
-            return _amenityAppService.GetAsync(cinemaId, id);
+            return _amenityAppService.GetCinemaAmenityAsync(cinemaId, id);
         }
     }
 }

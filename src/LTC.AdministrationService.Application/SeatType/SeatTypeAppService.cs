@@ -25,7 +25,7 @@ namespace LTC.AdministrationService.SeatTypes
             _gmt7Clock = gmt7Clock;
         }
 
-        public async Task<PagedResultDto<SeatTypeOutputDto>> GetListAsync(GetSeatTypeListInputDto input)
+        public async Task<PagedResultDto<SeatTypeOutputDto>> GetSeatTypeListAsync(GetSeatTypeListInputDto input)
         {
             var queryable = await _seatTypeRepository.GetQueryableAsync();
 
@@ -47,13 +47,13 @@ namespace LTC.AdministrationService.SeatTypes
             );
         }
 
-        public async Task<SeatTypeOutputDto> GetAsync(Guid id)
+        public async Task<SeatTypeOutputDto> GetSeatTypeAsync(Guid id)
         {
             var entity = await _seatTypeRepository.GetAsync(id);
             return ObjectMapper.Map<Entities.SeatType, SeatTypeOutputDto>(entity);
         }
 
-        public async Task<SeatTypeOutputDto> CreateAsync(CreateSeatTypeInputDto input)
+        public async Task<SeatTypeOutputDto> CreateSeatTypeAsync(CreateSeatTypeInputDto input)
         {
             var entity = ObjectMapper.Map<CreateSeatTypeInputDto, Entities.SeatType>(input);
             entity.UpdatedAt = _gmt7Clock.Gmt7Now;
@@ -62,7 +62,7 @@ namespace LTC.AdministrationService.SeatTypes
             return ObjectMapper.Map<Entities.SeatType, SeatTypeOutputDto>(entity);
         }
 
-        public async Task<SeatTypeOutputDto> UpdateAsync(Guid id, UpdateSeatTypeInputDto input)
+        public async Task<SeatTypeOutputDto> UpdateSeatTypeAsync(Guid id, UpdateSeatTypeInputDto input)
         {
             var entity = await _seatTypeRepository.GetAsync(id);
             ObjectMapper.Map(input, entity);
@@ -72,7 +72,7 @@ namespace LTC.AdministrationService.SeatTypes
             return ObjectMapper.Map<Entities.SeatType, SeatTypeOutputDto>(entity);
         }
 
-        public async Task DeleteAsync(Guid id)
+        public async Task DeleteSeatTypeAsync(Guid id)
         {
             await _seatTypeRepository.DeleteAsync(id, autoSave: true);
         }

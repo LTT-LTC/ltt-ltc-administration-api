@@ -21,37 +21,37 @@ namespace LTC.AdministrationService.Controllers.Admin
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetListAsync([FromQuery] GetListEmployeeInputDto input)
+        public async Task<IActionResult> GetEmployeeListAsync([FromQuery] GetListEmployeeInputDto input)
         {
-            var result = await _employeeAppService.GetListAsync(input);
+            var result = await _employeeAppService.GetEmployeeListAsync(input);
             return Ok(result);
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetAsync(Guid id)
+        public async Task<IActionResult> GetEmployeeAsync(Guid id)
         {
-            var result = await _employeeAppService.GetAsync(id);
+            var result = await _employeeAppService.GetEmployeeAsync(id);
             return Ok(result);
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateAsync([FromForm] CreateEmployeeInputDto input)
+        public async Task<IActionResult> CreateEmployeeAsync([FromForm] CreateEmployeeInputDto input)
         {
-            var result = await _employeeAppService.CreateAsync(input);
+            var result = await _employeeAppService.CreateEmployeeAsync(input);
             return Ok(result);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateAsync(Guid id, [FromBody] UpdateEmployeeInputDto input)
+        public async Task<IActionResult> UpdateEmployeeAsync(Guid id, [FromBody] UpdateEmployeeInputDto input)
         {
-            var result = await _employeeAppService.UpdateAsync(id, input);
+            var result = await _employeeAppService.UpdateEmployeeAsync(id, input);
             return Ok(result);
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteAsync(Guid id)
+        public async Task<IActionResult> DeleteEmployeeAsync(Guid id)
         {
-            await _employeeAppService.DeleteAsync(id);
+            await _employeeAppService.DeleteEmployeeAsync(id);
             return Ok();
         }
 

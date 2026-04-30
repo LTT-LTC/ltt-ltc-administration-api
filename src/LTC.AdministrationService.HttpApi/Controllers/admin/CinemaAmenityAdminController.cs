@@ -24,33 +24,33 @@ namespace LTC.AdministrationService.Controllers.Admin
         }
 
         [HttpPost]
-        public virtual Task<CinemaAmenityOutputDto> CreateAsync(Guid cinemaId, CreateCinemaAmenityInputDto input)
+        public virtual Task<CinemaAmenityOutputDto> CreateCinemaAmenityAsync(Guid cinemaId, CreateCinemaAmenityInputDto input)
         {
-            return _amenityAppService.CreateAsync(cinemaId, input);
+            return _amenityAppService.CreateCinemaAmenityAsync(cinemaId, input);
         }
 
         [HttpGet]
-        public virtual Task<PagedResultDto<CinemaAmenityOutputDto>> GetListAsync(Guid cinemaId, [FromQuery] GetCinemaAmenityListInputDto input)
+        public virtual Task<PagedResultDto<CinemaAmenityOutputDto>> GetCinemaAmenityListAsync(Guid cinemaId, [FromQuery] GetCinemaAmenityListInputDto input)
         {
-            return _amenityAppService.GetListAsync(cinemaId, input);
+            return _amenityAppService.GetCinemaAmenityListAsync(cinemaId, input);
         }
 
         [HttpGet("{id}")]
-        public virtual Task<CinemaAmenityOutputDto> GetAsync(Guid cinemaId, Guid id)
+        public virtual Task<CinemaAmenityOutputDto> GetCinemaAmenityAsync(Guid cinemaId, Guid id)
         {
-            return _amenityAppService.GetAsync(cinemaId, id);
+            return _amenityAppService.GetCinemaAmenityAsync(cinemaId, id);
         }
 
         [HttpPut("{id}")]
-        public virtual Task<CinemaAmenityOutputDto> UpdateAsync(Guid cinemaId, Guid id, UpdateCinemaAmenityInputDto input)
+        public virtual Task<CinemaAmenityOutputDto> UpdateCinemaAmenityAsync(Guid cinemaId, Guid id, UpdateCinemaAmenityInputDto input)
         {
-            return _amenityAppService.UpdateAsync(cinemaId, id, input);
+            return _amenityAppService.UpdateCinemaAmenityAsync(cinemaId, id, input);
         }
 
         [HttpDelete("{id}")]
-        public virtual Task DeleteAsync(Guid cinemaId, Guid id)
+        public virtual Task DeleteCinemaAmenityAsync(Guid cinemaId, Guid id)
         {
-            return _amenityAppService.DeleteAsync(cinemaId, id);
+            return _amenityAppService.DeleteCinemaAmenityAsync(cinemaId, id);
         }
     }
 }
