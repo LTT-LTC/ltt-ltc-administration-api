@@ -13,6 +13,7 @@ namespace LTC.AdministrationService.Showtimes.Dtos
         public DateTime ShowDate { get; set; }
         public TimeSpan StartTime { get; set; }
         public TimeSpan EndTime { get; set; }
+        public int Duration { get; set; }
         public decimal BasePrice { get; set; }
         public string? Status { get; set; }
         public DateTime? CreatedAt { get; set; }

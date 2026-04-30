@@ -18,21 +18,15 @@ namespace LTC.AdministrationService.Showtimes
         private readonly IRepository<Showtime, Guid> _repository;
         private readonly IRepository<Screen, Guid> _screenRepository;
         private readonly IRepository<Cinema, Guid> _cinemaRepository;
-        private readonly IRepository<MovieProjection, Guid> _movieProjectionRepository;
-        private readonly IRepository<MovieDistributionProjection, Guid> _distributionProjectionRepository;
 
         public ShowtimeAppService(
             IRepository<Showtime, Guid> repository,
             IRepository<Screen, Guid> screenRepository,
-            IRepository<Cinema, Guid> cinemaRepository,
-            IRepository<MovieProjection, Guid> movieProjectionRepository,
-            IRepository<MovieDistributionProjection, Guid> distributionProjectionRepository)
+            IRepository<Cinema, Guid> cinemaRepository)
         {
             _repository = repository;
             _screenRepository = screenRepository;
             _cinemaRepository = cinemaRepository;
-            _movieProjectionRepository = movieProjectionRepository;
-            _distributionProjectionRepository = distributionProjectionRepository;
         }
 
         public async Task<PagedResultDto<ShowtimeOutputDto>> GetListAsync(Guid movieId, Guid? cinemaId, int skipCount, int maxResultCount)
@@ -47,22 +41,27 @@ namespace LTC.AdministrationService.Showtimes
 
             var total = await query.CountAsync();
             var items = await query.Skip(skipCount).Take(maxResultCount).ToListAsync();
+            var mappedItems = new List<ShowtimeOutputDto>(items.Count);
+            foreach (var item in items)
+            {
+                mappedItems.Add(await MapToOutputDtoAsync(item));
+            }
 
             return new PagedResultDto<ShowtimeOutputDto>(
                 total,
-                items.Select(x => ObjectMapper.Map<Showtime, ShowtimeOutputDto>(x)).ToList()
+                mappedItems
             );
         }
 
         public async Task<ShowtimeOutputDto> GetAsync(Guid id)
         {
             var entity = await _repository.GetAsync(id);
-            return ObjectMapper.Map<Showtime, ShowtimeOutputDto>(entity);
+            return await MapToOutputDtoAsync(entity);
         }
 
         public async Task<ShowtimeOutputDto> CreateAsync(CreateShowtimeDto input)
         {
-            await ValidateCreateOrUpdateAsync(input, null);
+            var duration = await ValidateCreateOrUpdateAsync(input, null);
 
             var entity = new Showtime(GuidGenerator.Create())
             {
@@ -74,17 +73,20 @@ namespace LTC.AdministrationService.Showtimes
                 ShowDate = input.ShowDate,
                 StartTime = input.StartTime,
                 EndTime = input.EndTime,
+                Duration = duration,
                 BasePrice = input.BasePrice,
-                Status = input.Status ?? "Scheduled"
+                Status = input.Status ?? "Scheduled",
+                CreatedAt = Clock.Now,
+                UpdatedAt = Clock.Now
             };
 
             await _repository.InsertAsync(entity, true);
-            return ObjectMapper.Map<Showtime, ShowtimeOutputDto>(entity);
+            return await MapToOutputDtoAsync(entity);
         }
 
         public async Task<ShowtimeOutputDto> UpdateAsync(Guid id, CreateShowtimeDto input)
         {
-            await ValidateCreateOrUpdateAsync(input, id);
+            var duration = await ValidateCreateOrUpdateAsync(input, id);
 
             var entity = await _repository.GetAsync(id);
             entity.MovieId = input.MovieId;
@@ -95,12 +97,28 @@ namespace LTC.AdministrationService.Showtimes
             entity.ShowDate = input.ShowDate;
             entity.StartTime = input.StartTime;
             entity.EndTime = input.EndTime;
+            entity.Duration = duration;
             entity.BasePrice = input.BasePrice;
             entity.Status = input.Status ?? entity.Status;
             entity.UpdatedAt = Clock.Now;
 
             await _repository.UpdateAsync(entity, true);
-            return ObjectMapper.Map<Showtime, ShowtimeOutputDto>(entity);
+            return await MapToOutputDtoAsync(entity);
+        }
+
+        private async Task<ShowtimeOutputDto> MapToOutputDtoAsync(Showtime entity)
+        {
+            var mapped = ObjectMapper.Map<Showtime, ShowtimeOutputDto>(entity);
+
+            if (entity.Duration > 0)
+            {
+                mapped.Duration = entity.Duration;
+                return mapped;
+            }
+
+            var computedDuration = (int)Math.Round((entity.EndTime - entity.StartTime).TotalMinutes);
+            mapped.Duration = computedDuration > 0 ? computedDuration : 0;
+            return mapped;
         }
 
         public async Task DeleteAsync(Guid id)
@@ -108,80 +126,67 @@ namespace LTC.AdministrationService.Showtimes
             await _repository.DeleteAsync(id);
         }
 
-        private async Task ValidateCreateOrUpdateAsync(CreateShowtimeDto input, Guid? editingId)
+        private async Task<int> ValidateCreateOrUpdateAsync(CreateShowtimeDto input, Guid? editingId)
         {
-            var movie = await _movieProjectionRepository.FindAsync(input.MovieId);
-            if (movie == null)
-            {
-                throw new BusinessException("Showtime:MovieNotFound");
-            }
-
-            var normalizedStatus = (movie.Status ?? string.Empty).Trim().ToLowerInvariant();
-            if (normalizedStatus != "now_showing" && normalizedStatus != "nowshowing")
-            {
-                throw new BusinessException("Showtime:MovieStatusInvalid");
-            }
-
-            var distribution = await _distributionProjectionRepository.FindAsync(input.DistributionId);
-            if (distribution == null || distribution.MovieId != input.MovieId)
-            {
-                throw new BusinessException("Showtime:DistributionNotFoundForMovie");
-            }
-
             var showDate = input.ShowDate.Date;
-            if (showDate < distribution.StartDate.Date || showDate > distribution.EndDate.Date)
-            {
-                throw new BusinessException("Showtime:ShowDateOutOfDistributionRange");
-            }
 
             var screen = await _screenRepository.FindAsync(input.ScreenId);
             if (screen == null)
             {
-                throw new BusinessException("Showtime:ScreenNotFound");
+                throw new UserFriendlyException("Screen not found.");
             }
             if (!string.Equals(screen.Status, "active", StringComparison.OrdinalIgnoreCase))
             {
-                throw new BusinessException("Showtime:ScreenNotActive");
+                throw new UserFriendlyException("Selected screen is not active.");
             }
             if (screen.CinemaId != input.CinemaId)
             {
-                throw new BusinessException("Showtime:ScreenCinemaMismatch");
+                throw new UserFriendlyException("Selected screen does not belong to the selected cinema.");
             }
 
             var cinema = await _cinemaRepository.FindAsync(input.CinemaId);
             if (cinema == null)
             {
-                throw new BusinessException("Showtime:CinemaNotFound");
+                throw new UserFriendlyException("Cinema not found.");
             }
             if (CurrentUser.Id.HasValue && cinema.ManagerUserId.HasValue && cinema.ManagerUserId != CurrentUser.Id)
             {
-                throw new BusinessException("Showtime:InvalidManagerCinema");
+                throw new UserFriendlyException("You can only manage showtimes in your assigned cinema.");
             }
 
             if (input.BasePrice <= 0)
             {
-                throw new BusinessException("Showtime:BasePriceInvalid");
+                throw new UserFriendlyException("Base price must be greater than zero.");
             }
 
             // Business timezone is GMT+7 and must be between 06:00 and 24:00.
             if (input.StartTime < TimeSpan.FromHours(6) || input.StartTime >= TimeSpan.FromHours(24))
             {
-                throw new BusinessException("Showtime:StartTimeOutOfAllowedRange");
+                throw new UserFriendlyException("Start time must be between 06:00 and 24:00.");
             }
 
             var movieFormatValue = ValidateMovieFormatJson(input.MovieFormat);
 
             if (!string.Equals(movieFormatValue, screen.ScreenType, StringComparison.OrdinalIgnoreCase))
             {
-                throw new BusinessException("Showtime:MovieFormatNotSupportedByScreen");
+                throw new UserFriendlyException("Selected movie format is not supported by this screen.");
             }
 
-            var minDurationMinutes = movie.DurationInMinutes + 10;
+            // Validate runtime directly from provided showtime range.
             var actualDurationMinutes = (input.EndTime - input.StartTime).TotalMinutes;
-            if (actualDurationMinutes < minDurationMinutes)
+            if (actualDurationMinutes <= 0)
             {
-                throw new BusinessException("Showtime:DurationTooShort");
+                throw new UserFriendlyException("End time must be after start time.");
             }
+
+            // Keep minimum practical length to prevent accidental ultra-short slots.
+            if (actualDurationMinutes < 30)
+            {
+                throw new UserFriendlyException("Showtime duration must be at least 30 minutes.");
+            }
+
+            // Persist duration directly in showtime (minutes).
+            var effectiveDuration = (int)Math.Round(actualDurationMinutes);
 
             var query = await _repository.GetQueryableAsync();
             var sameScreenSameDate = await query
@@ -195,7 +200,8 @@ namespace LTC.AdministrationService.Showtimes
                 var overlaps = input.StartTime < existing.EndTime && existing.StartTime < input.EndTime;
                 if (overlaps)
                 {
-                    throw new BusinessException("Showtime:ScreenScheduleOverlaps");
+                    throw new UserFriendlyException(
+                        $"Screen schedule overlaps. Existing showtime on this screen is {existing.StartTime:hh\\:mm}-{existing.EndTime:hh\\:mm}.");
                 }
 
                 // Gap rule: at least 5 minutes between adjacent showtimes on same screen
@@ -205,7 +211,7 @@ namespace LTC.AdministrationService.Showtimes
                     var gap = input.StartTime - existing.EndTime;
                     if (gap.TotalMinutes < 5)
                     {
-                        throw new BusinessException("Showtime:InsufficientGapBetweenShowtimes");
+                        throw new UserFriendlyException("At least 5 minutes gap is required between adjacent showtimes.");
                     }
                 }
                 else
@@ -213,10 +219,12 @@ namespace LTC.AdministrationService.Showtimes
                     var gap = existing.StartTime - input.EndTime;
                     if (gap.TotalMinutes < 5)
                     {
-                        throw new BusinessException("Showtime:InsufficientGapBetweenShowtimes");
+                        throw new UserFriendlyException("At least 5 minutes gap is required between adjacent showtimes.");
                     }
                 }
             }
+
+            return effectiveDuration;
         }
 
         private static string ValidateMovieFormatJson(string? movieFormatJson)

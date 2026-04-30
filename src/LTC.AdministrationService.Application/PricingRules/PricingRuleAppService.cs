@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Volo.Abp;
 using Microsoft.EntityFrameworkCore;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Application.Dtos;
@@ -15,10 +16,17 @@ namespace LTC.AdministrationService.PricingRules
     public class PricingRuleAppService : ApplicationService, IPricingRuleAppService
     {
         private readonly IRepository<PricingRule, Guid> _repository;
+        private readonly IRepository<Cinema, Guid> _cinemaRepository;
+        private readonly IRepository<SeatType, Guid> _seatTypeRepository;
 
-        public PricingRuleAppService(IRepository<PricingRule, Guid> repository)
+        public PricingRuleAppService(
+            IRepository<PricingRule, Guid> repository,
+            IRepository<Cinema, Guid> cinemaRepository,
+            IRepository<SeatType, Guid> seatTypeRepository)
         {
             _repository = repository;
+            _cinemaRepository = cinemaRepository;
+            _seatTypeRepository = seatTypeRepository;
         }
 
         public async Task<PagedResultDto<PricingRuleOutputDto>> GetListAsync(Guid cinemaId, int skipCount, int maxResultCount)
@@ -38,6 +46,7 @@ namespace LTC.AdministrationService.PricingRules
         public async Task<PricingRuleOutputDto> CreateAsync(Guid cinemaId, CreatePricingRuleDto input)
         {
             ValidateInput(input);
+            await ValidateOwnershipAsync(cinemaId, input.SeatTypeId);
             var entity = new PricingRule(GuidGenerator.Create())
             {
                 CinemaId = cinemaId,
@@ -54,7 +63,18 @@ namespace LTC.AdministrationService.PricingRules
                 CreatedAt = Clock.Now,
                 UpdatedAt = Clock.Now
             };
-            await _repository.InsertAsync(entity, true);
+
+            try
+            {
+                await _repository.InsertAsync(entity, true);
+            }
+            catch (DbUpdateException ex)
+            {
+                var reason = ex.GetBaseException().Message;
+                throw new UserFriendlyException(
+                    $"Unable to create pricing rule. Check DayOfWeek column migration and seat type/cinema mapping. Details: {reason}");
+            }
+
             return ToOutputDto(entity);
         }
 
@@ -62,6 +82,7 @@ namespace LTC.AdministrationService.PricingRules
         {
             ValidateInput(input);
             var entity = await _repository.GetAsync(id);
+            await ValidateOwnershipAsync(entity.CinemaId, input.SeatTypeId);
             entity.SeatTypeId = input.SeatTypeId;
             entity.RuleType = input.RuleType;
             entity.Multiplier = input.Multiplier;
@@ -74,7 +95,17 @@ namespace LTC.AdministrationService.PricingRules
             entity.IsActive = input.IsActive;
             entity.UpdatedAt = Clock.Now;
 
-            await _repository.UpdateAsync(entity, true);
+            try
+            {
+                await _repository.UpdateAsync(entity, true);
+            }
+            catch (DbUpdateException ex)
+            {
+                var reason = ex.GetBaseException().Message;
+                throw new UserFriendlyException(
+                    $"Unable to update pricing rule. Check DayOfWeek column migration and seat type/cinema mapping. Details: {reason}");
+            }
+
             return ToOutputDto(entity);
         }
 
@@ -179,6 +210,41 @@ namespace LTC.AdministrationService.PricingRules
             }
 
             return new[] { raw.ToUpperInvariant() };
+        }
+
+        private async Task ValidateOwnershipAsync(Guid cinemaId, Guid? seatTypeId)
+        {
+            var cinema = await _cinemaRepository.FindAsync(cinemaId);
+            if (cinema == null)
+            {
+                throw new UserFriendlyException("Cinema not found.");
+            }
+
+            if (CurrentTenant.Id.HasValue && cinema.TenantId != CurrentTenant.Id)
+            {
+                throw new UserFriendlyException("You can only manage pricing rules in your tenant.");
+            }
+
+            if (CurrentUser.Id.HasValue && cinema.ManagerUserId.HasValue && cinema.ManagerUserId != CurrentUser.Id)
+            {
+                throw new UserFriendlyException("You can only manage pricing rules in your assigned cinema.");
+            }
+
+            if (!seatTypeId.HasValue)
+            {
+                return;
+            }
+
+            var seatType = await _seatTypeRepository.FindAsync(seatTypeId.Value);
+            if (seatType == null)
+            {
+                throw new UserFriendlyException("Seat type not found.");
+            }
+
+            if (CurrentTenant.Id.HasValue && seatType.TenantId != CurrentTenant.Id)
+            {
+                throw new UserFriendlyException("Selected seat type does not belong to your tenant.");
+            }
         }
 
         private static PricingRuleOutputDto ToOutputDto(PricingRule entity)
