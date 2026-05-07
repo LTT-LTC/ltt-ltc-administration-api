@@ -69,14 +69,15 @@ namespace LTC.AdministrationService
             }
         }
 
-        private async Task SyncManagerCinemaOwnershipAsync(Guid userId, string? role, Guid? cinemaId)
+        private async Task SyncManagerCinemaOwnershipAsync(Guid userId, Guid employeeId, string? role, Guid? cinemaId)
         {
             var cinemaQueryable = await cinemaRepository.GetQueryableAsync();
+            var managerKeys = new[] { userId, employeeId };
 
             if (!IsManagerRole(role))
             {
                 var managedCinemas = await cinemaQueryable
-                    .Where(x => x.ManagerUserId == userId)
+                    .Where(x => x.ManagerUserId.HasValue && managerKeys.Contains(x.ManagerUserId.Value))
                     .ToListAsync();
 
                 if (managedCinemas.Count == 0)
@@ -101,13 +102,13 @@ namespace LTC.AdministrationService
             var targetCinema = await cinemaRepository.FindAsync(cinemaId.Value)
                 ?? throw new UserFriendlyException("Cinema not found.");
 
-            if (targetCinema.ManagerUserId.HasValue && targetCinema.ManagerUserId != userId)
+            if (targetCinema.ManagerUserId.HasValue && !managerKeys.Contains(targetCinema.ManagerUserId.Value))
             {
                 throw new UserFriendlyException("This cinema already has a manager.");
             }
 
             var existingOwnership = await cinemaQueryable
-                .Where(x => x.ManagerUserId == userId && x.Id != cinemaId.Value)
+                .Where(x => x.ManagerUserId.HasValue && managerKeys.Contains(x.ManagerUserId.Value) && x.Id != cinemaId.Value)
                 .ToListAsync();
 
             foreach (var ownedCinema in existingOwnership)
@@ -296,7 +297,7 @@ namespace LTC.AdministrationService
                 };
 
                 await employeeRepository.InsertAsync(employee);
-                await SyncManagerCinemaOwnershipAsync(userId, input.Role, input.CinemaId);
+                await SyncManagerCinemaOwnershipAsync(userId, employee.Id, input.Role, input.CinemaId);
 
                 await uow.CompleteAsync();
                 var createdEmployee = await GetEmployeeAsync(employee.Id);
@@ -359,9 +360,6 @@ namespace LTC.AdministrationService
             var currentRoles = await identityUserManager.GetRolesAsync(user);
             var currentRole = currentRoles.FirstOrDefault() ?? "Staff";
             var resolvedRole = string.IsNullOrWhiteSpace(input.Role) ? currentRole : NormalizeRole(input.Role);
-            var roleProvided = !string.IsNullOrWhiteSpace(input.Role);
-            var cinemaProvided = input.CinemaId.HasValue;
-            var shouldSyncManagerOwnership = roleProvided || cinemaProvided;
 
             // For partial updates that don't include role/cinema, preserve existing assignment.
             // This avoids false manager-duplication checks when editing unrelated fields.
@@ -411,10 +409,7 @@ namespace LTC.AdministrationService
             employee.Position = resolvedRole;
             employee.Status = input.IsActive ? "Active" : "Inactive";
             await employeeRepository.UpdateAsync(employee);
-            if (shouldSyncManagerOwnership)
-            {
-                await SyncManagerCinemaOwnershipAsync(employee.UserId.Value, resolvedRole, resolvedCinemaId);
-            }
+            await SyncManagerCinemaOwnershipAsync(employee.UserId.Value, employee.Id, resolvedRole, resolvedCinemaId);
 
             await uow.CompleteAsync();
             var updatedEmployee = await GetEmployeeAsync(id);
