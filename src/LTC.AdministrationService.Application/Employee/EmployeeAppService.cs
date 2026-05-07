@@ -355,9 +355,24 @@ namespace LTC.AdministrationService
                 throw new UserFriendlyException(L["UserNotFound"]);
             }
 
-            await EnsureCinemaRequirementAsync(input.Role, input.CinemaId);
-
             var user = await identityUserRepository.GetAsync(employee.UserId.Value);
+            var currentRoles = await identityUserManager.GetRolesAsync(user);
+            var currentRole = currentRoles.FirstOrDefault() ?? "Staff";
+            var resolvedRole = string.IsNullOrWhiteSpace(input.Role) ? currentRole : NormalizeRole(input.Role);
+            var roleProvided = !string.IsNullOrWhiteSpace(input.Role);
+            var cinemaProvided = input.CinemaId.HasValue;
+            var shouldSyncManagerOwnership = roleProvided || cinemaProvided;
+
+            // For partial updates that don't include role/cinema, preserve existing assignment.
+            // This avoids false manager-duplication checks when editing unrelated fields.
+            var resolvedCinemaId = input.CinemaId;
+            if (!input.CinemaId.HasValue && RequiresCinema(resolvedRole))
+            {
+                resolvedCinemaId = employee.CinemaId;
+            }
+
+            await EnsureCinemaRequirementAsync(resolvedRole, resolvedCinemaId);
+
             user.Name = input.Name;
             user.Surname = input.Name;
             var setUserNameResult = await identityUserManager.SetUserNameAsync(user, input.Email);
@@ -381,19 +396,25 @@ namespace LTC.AdministrationService
                 throw new UserFriendlyException(string.Join("; ", updateResult.Errors.Select(e => e.Description)));
             }
 
-            var roleResult = await identityUserManager.SetRolesAsync(user, [NormalizeRole(input.Role)]);
-            if (!roleResult.Succeeded)
+            if (!string.Equals(NormalizeRole(currentRole), resolvedRole, StringComparison.OrdinalIgnoreCase))
             {
-                throw new UserFriendlyException(string.Join("; ", roleResult.Errors.Select(e => e.Description)));
+                var roleResult = await identityUserManager.SetRolesAsync(user, [resolvedRole]);
+                if (!roleResult.Succeeded)
+                {
+                    throw new UserFriendlyException(string.Join("; ", roleResult.Errors.Select(e => e.Description)));
+                }
             }
 
-            employee.CinemaId = input.CinemaId;
+            employee.CinemaId = resolvedCinemaId;
             employee.HireDate = input.HireDate;
             employee.PhoneNumber = input.PhoneNumber;
-            employee.Position = NormalizeRole(input.Role);
+            employee.Position = resolvedRole;
             employee.Status = input.IsActive ? "Active" : "Inactive";
             await employeeRepository.UpdateAsync(employee);
-            await SyncManagerCinemaOwnershipAsync(employee.UserId.Value, input.Role, input.CinemaId);
+            if (shouldSyncManagerOwnership)
+            {
+                await SyncManagerCinemaOwnershipAsync(employee.UserId.Value, resolvedRole, resolvedCinemaId);
+            }
 
             await uow.CompleteAsync();
             var updatedEmployee = await GetEmployeeAsync(id);

@@ -10,22 +10,9 @@ namespace LTC.AdministrationService.Controllers
 {
     [Route(AdministrationServiceSettingNames.DefaultRoute + "/auth")]
     public class AuthController(
-        IAuthAppService authAppService,
-        IAntiforgery antiforgery
+        IAuthAppService authAppService
         ) : AppControllerBase
     {
-        [HttpGet("antiforgery-token")]
-        [AllowAnonymous]
-        public IActionResult GetAntiforgeryToken()
-        {
-            var tokens = antiforgery.GetAndStoreTokens(HttpContext);
-            return Ok(new
-            {
-                token = tokens.RequestToken,
-                headerName = tokens.HeaderName
-            });
-        }
-
         [HttpPost("request-password-recovery")]
         [AllowAnonymous]
         public async Task<IActionResult> RequestPasswordRecoveryAsync(RequestPasswordRecoveryInputDto input)
