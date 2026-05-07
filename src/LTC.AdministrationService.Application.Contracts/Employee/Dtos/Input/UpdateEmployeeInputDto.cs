@@ -17,7 +17,7 @@ namespace LTC.AdministrationService.Employee.Dtos.Input
         public Guid? CinemaId { get; set; }
         public DateTime? HireDate { get; set; }
         public bool IsActive { get; set; } = true;
-        public string Role { get; set; } = "Staff";
+        public string? Role { get; set; }
     }
 
     public class UpdateEmployeeInputValidator : AbstractValidator<UpdateEmployeeInputDto>
@@ -53,7 +53,7 @@ namespace LTC.AdministrationService.Employee.Dtos.Input
                 .WithMessage(CommonExtensions.GetValidateMessage(localizer["NotEmpty"], localizer["User:Code"]));
 
             RuleFor(x => x.Role)
-                .Must(role => !string.IsNullOrWhiteSpace(role) && AllowedRoles.Contains(role))
+                .Must(role => string.IsNullOrWhiteSpace(role) || AllowedRoles.Contains(role))
                 .WithMessage(CommonExtensions.GetValidateMessage(localizer["InvalidValue"], localizer["User:Role"]));
 
             RuleFor(x => x.CinemaId)
