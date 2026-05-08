@@ -12,6 +12,7 @@ using LTC.AdministrationService.Showtimes.Dtos;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Volo.Abp.DependencyInjection;
+using Volo.Abp.TenantManagement;
 
 namespace LTC.AdministrationService.Movies
 {
@@ -37,15 +38,18 @@ namespace LTC.AdministrationService.Movies
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IMemoryCache _memoryCache;
         private readonly ILogger<MovieLookupClient> _logger;
+        private readonly ITenantRepository _tenantRepository;
 
         public MovieLookupClient(
             IHttpClientFactory httpClientFactory,
             IMemoryCache memoryCache,
-            ILogger<MovieLookupClient> logger)
+            ILogger<MovieLookupClient> logger,
+            ITenantRepository tenantRepository)
         {
             _httpClientFactory = httpClientFactory;
             _memoryCache = memoryCache;
             _logger = logger;
+            _tenantRepository = tenantRepository;
         }
 
         public async Task<MovieLookupDto?> GetByIdAsync(
@@ -157,15 +161,20 @@ namespace LTC.AdministrationService.Movies
 
                 try
                 {
+                    var tenantName = await ResolveTenantNameAsync(tenantId);
                     foreach (var template in MoviePathTemplates)
                     {
                         var requestUri = string.Format(template, id);
                         using var request = new HttpRequestMessage(HttpMethod.Get, requestUri);
+                        if (!string.IsNullOrWhiteSpace(tenantName))
+                        {
+                            // movie-service validates X-Tenant against ITenantStore by tenant Name.
+                            request.Headers.TryAddWithoutValidation("X-Tenant", tenantName);
+                        }
                         if (tenantId.HasValue)
                         {
-                            var tenant = tenantId.Value.ToString();
-                            request.Headers.TryAddWithoutValidation("X-Tenant", tenant);
-                            request.Headers.TryAddWithoutValidation("__tenant", tenant);
+                            // Keep __tenant as id to support ABP tenant resolution when configured.
+                            request.Headers.TryAddWithoutValidation("__tenant", tenantId.Value.ToString());
                         }
 
                         using var response = await client.SendAsync(request, cancellationToken);
@@ -202,6 +211,40 @@ namespace LTC.AdministrationService.Movies
                 {
                     _logger.LogWarning(ex, "Movie lookup for {MovieId} failed via client {ClientName}.", id, clientName);
                 }
+            }
+
+            return null;
+        }
+
+        private async Task<string?> ResolveTenantNameAsync(Guid? tenantId)
+        {
+            if (!tenantId.HasValue)
+            {
+                return null;
+            }
+
+            var cacheKey = $"movie-lookup:tenant-name:{tenantId.Value}";
+            if (_memoryCache.TryGetValue<string>(cacheKey, out var cached))
+            {
+                return cached;
+            }
+
+            try
+            {
+                var tenant = await _tenantRepository.FindAsync(tenantId.Value);
+                var tenantName = tenant?.Name;
+                if (!string.IsNullOrWhiteSpace(tenantName))
+                {
+                    _memoryCache.Set(cacheKey, tenantName, new MemoryCacheEntryOptions
+                    {
+                        AbsoluteExpirationRelativeToNow = CacheDuration
+                    });
+                    return tenantName;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to resolve tenant name for tenantId {TenantId}.", tenantId);
             }
 
             return null;
