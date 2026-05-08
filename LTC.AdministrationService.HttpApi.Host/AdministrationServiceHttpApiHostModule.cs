@@ -1,6 +1,7 @@
 using CloudinaryDotNet;
 using LTC.AdministrationService.EntityFrameworkCore;
 using LTC.AdministrationService.Grpc;
+using LTC.AdministrationService.Movies;
 using LTC.AdministrationService.MultiTenancy;
 using LTC.CustomerManagement.HealthChecks;
 using LTC.CustomerManagement.MongoDb;
@@ -24,6 +25,7 @@ using Microsoft.OpenApi.Models;
 using System;
 using System.Globalization;
 using System.Linq;
+using System.Net.Http;
 using Volo.Abp;
 using Volo.Abp.AspNetCore.MultiTenancy;
 using Volo.Abp.AspNetCore.Mvc;
@@ -114,6 +116,7 @@ public class AdministrationServiceHttpApiHostModule : AbpModule
         ConfigureLocalization(context);
         ConfigureAuthentication(context);
         ConfigureMailKit(context);
+        ConfigureMovieLookupClient(context, configuration);
         //ConfigureUrls(configuration);
         //ConfigureBundles();
         //ConfigureConventionalControllers();
@@ -133,6 +136,30 @@ public class AdministrationServiceHttpApiHostModule : AbpModule
     private void ConfigureMailKit(ServiceConfigurationContext context)
     {
         Configure<AbpMailKitOptions>(options => { options.SecureSocketOption = SecureSocketOptions.Auto; });
+    }
+
+    private void ConfigureMovieLookupClient(ServiceConfigurationContext context, IConfiguration configuration)
+    {
+        // Memory cache backs the per-request dedup in MovieLookupClient.
+        context.Services.AddMemoryCache();
+
+        var baseUrl = configuration["RemoteServices:MovieService:BaseUrl"];
+
+        context.Services.AddHttpClient(MovieLookupClient.HttpClientName, client =>
+        {
+            // BaseAddress always points at the movie-service public root. The
+            // MovieCustomerController is mapped at "/ltc/movie-service" so we
+            // anchor every request beneath that prefix.
+            var resolved = string.IsNullOrWhiteSpace(baseUrl)
+                ? "https://localhost:44315"
+                : baseUrl.TrimEnd('/');
+            client.BaseAddress = new Uri(resolved + "/ltc/movie-service/");
+            client.Timeout = TimeSpan.FromSeconds(5);
+        })
+        .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+        {
+            ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+        });
     }
 
     private void ConfigureAuthentication(ServiceConfigurationContext context)

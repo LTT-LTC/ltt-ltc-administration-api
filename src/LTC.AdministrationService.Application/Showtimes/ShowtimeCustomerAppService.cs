@@ -8,6 +8,8 @@ using LTC.AdministrationService.Customer.Showtimes;
 using LTC.AdministrationService.Customer.Showtimes.Dtos.Input;
 using LTC.AdministrationService.Customer.Showtimes.Dtos.Output;
 using LTC.AdministrationService.Entities;
+using LTC.AdministrationService.Movies;
+using LTC.AdministrationService.Showtimes.Dtos;
 using Microsoft.EntityFrameworkCore;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
@@ -22,15 +24,18 @@ namespace LTC.AdministrationService.Showtimes
         private readonly IRepository<Showtime, Guid> _showtimeRepository;
         private readonly IRepository<Screen, Guid> _screenRepository;
         private readonly IDataFilter _dataFilter;
+        private readonly IMovieLookupClient _movieLookupClient;
 
         public ShowtimeCustomerAppService(
             IRepository<Showtime, Guid> showtimeRepository,
             IRepository<Screen, Guid> screenRepository,
-            IDataFilter dataFilter)
+            IDataFilter dataFilter,
+            IMovieLookupClient movieLookupClient)
         {
             _showtimeRepository = showtimeRepository;
             _screenRepository = screenRepository;
             _dataFilter = dataFilter;
+            _movieLookupClient = movieLookupClient;
         }
 
         public async Task<List<ShowtimeCustomerOutputDto>> GetListAsync(GetShowtimeCustomerListInputDto input)
@@ -62,8 +67,9 @@ namespace LTC.AdministrationService.Showtimes
                 var showtimes = await query.OrderBy(x => x.ShowDate).ThenBy(x => x.StartTime).ToListAsync();
 
                 var screenNameById = await GetScreenNameMapAsync(showtimes);
+                var movieById = await _movieLookupClient.GetByIdsAsync(showtimes.Select(x => x.MovieId));
 
-                return showtimes.Select(x => MapToDto(x, screenNameById)).ToList();
+                return showtimes.Select(x => MapToDto(x, screenNameById, movieById)).ToList();
             }
         }
 
@@ -76,7 +82,12 @@ namespace LTC.AdministrationService.Showtimes
                     ?? throw new BusinessException("AdministrationService:ShowtimeNotFound").WithData("ShowtimeId", id);
 
                 var screenNameById = await GetScreenNameMapAsync(new[] { showtime });
-                return MapToDto(showtime, screenNameById);
+                var movie = await _movieLookupClient.GetByIdAsync(showtime.MovieId);
+                var movieById = movie != null
+                    ? new Dictionary<Guid, MovieLookupDto> { [showtime.MovieId] = movie }
+                    : (IReadOnlyDictionary<Guid, MovieLookupDto>)new Dictionary<Guid, MovieLookupDto>();
+
+                return MapToDto(showtime, screenNameById, movieById);
             }
         }
 
@@ -96,13 +107,17 @@ namespace LTC.AdministrationService.Showtimes
                 x => x.ScreenNumber > 0 ? $"Screen {x.ScreenNumber}" : "Screen");
         }
 
-        private static ShowtimeCustomerOutputDto MapToDto(Showtime entity, IReadOnlyDictionary<Guid, string> screenNameById)
+        private static ShowtimeCustomerOutputDto MapToDto(
+            Showtime entity,
+            IReadOnlyDictionary<Guid, string> screenNameById,
+            IReadOnlyDictionary<Guid, MovieLookupDto> movieById)
         {
             // Compose ISO 8601 strings so the FE can `dayjs()` them directly.
             var startInstant = entity.ShowDate.Date.Add(entity.StartTime);
             var endInstant = entity.ShowDate.Date.Add(entity.EndTime);
 
             screenNameById.TryGetValue(entity.ScreenId, out var screenName);
+            movieById.TryGetValue(entity.MovieId, out var movie);
 
             return new ShowtimeCustomerOutputDto
             {
@@ -118,7 +133,8 @@ namespace LTC.AdministrationService.Showtimes
                 // FE expects just the format string (e.g. "2D"), so unwrap it when possible.
                 MovieFormat = ExtractMovieFormatString(entity.MovieFormat),
                 ScreenName = screenName,
-                DurationMins = entity.Duration > 0 ? entity.Duration : null
+                DurationMins = entity.Duration > 0 ? entity.Duration : movie?.DurationMins,
+                Movie = movie
             };
         }
 

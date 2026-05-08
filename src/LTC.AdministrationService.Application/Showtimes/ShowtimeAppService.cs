@@ -9,6 +9,7 @@ using Volo.Abp.Application.Services;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Domain.Repositories;
 using LTC.AdministrationService.Entities;
+using LTC.AdministrationService.Movies;
 using LTC.AdministrationService.Showtimes.Dtos;
 
 namespace LTC.AdministrationService.Showtimes
@@ -18,15 +19,18 @@ namespace LTC.AdministrationService.Showtimes
         private readonly IRepository<Showtime, Guid> _repository;
         private readonly IRepository<Screen, Guid> _screenRepository;
         private readonly IRepository<Cinema, Guid> _cinemaRepository;
+        private readonly IMovieLookupClient _movieLookupClient;
 
         public ShowtimeAppService(
             IRepository<Showtime, Guid> repository,
             IRepository<Screen, Guid> screenRepository,
-            IRepository<Cinema, Guid> cinemaRepository)
+            IRepository<Cinema, Guid> cinemaRepository,
+            IMovieLookupClient movieLookupClient)
         {
             _repository = repository;
             _screenRepository = screenRepository;
             _cinemaRepository = cinemaRepository;
+            _movieLookupClient = movieLookupClient;
         }
 
         public async Task<PagedResultDto<ShowtimeOutputDto>> GetShowtimeListAsync(Guid movieId, Guid? cinemaId, int skipCount, int maxResultCount)
@@ -41,10 +45,13 @@ namespace LTC.AdministrationService.Showtimes
 
             var total = await query.CountAsync();
             var items = await query.Skip(skipCount).Take(maxResultCount).ToListAsync();
+
+            var movieLookup = await _movieLookupClient.GetByIdsAsync(items.Select(x => x.MovieId));
+
             var mappedItems = new List<ShowtimeOutputDto>(items.Count);
             foreach (var item in items)
             {
-                mappedItems.Add(await MapToOutputDtoAsync(item));
+                mappedItems.Add(MapToOutputDto(item, movieLookup));
             }
 
             return new PagedResultDto<ShowtimeOutputDto>(
@@ -56,7 +63,8 @@ namespace LTC.AdministrationService.Showtimes
         public async Task<ShowtimeOutputDto> GetShowtimeAsync(Guid id)
         {
             var entity = await _repository.GetAsync(id);
-            return await MapToOutputDtoAsync(entity);
+            var movie = await _movieLookupClient.GetByIdAsync(entity.MovieId);
+            return MapToOutputDto(entity, movie);
         }
 
         public async Task<ShowtimeOutputDto> CreateShowtimeAsync(CreateShowtimeDto input)
@@ -81,7 +89,8 @@ namespace LTC.AdministrationService.Showtimes
             };
 
             await _repository.InsertAsync(entity, true);
-            return await MapToOutputDtoAsync(entity);
+            var movie = await _movieLookupClient.GetByIdAsync(entity.MovieId);
+            return MapToOutputDto(entity, movie);
         }
 
         public async Task<ShowtimeOutputDto> UpdateShowtimeAsync(Guid id, CreateShowtimeDto input)
@@ -103,21 +112,31 @@ namespace LTC.AdministrationService.Showtimes
             entity.UpdatedAt = Clock.Now;
 
             await _repository.UpdateAsync(entity, true);
-            return await MapToOutputDtoAsync(entity);
+            var movie = await _movieLookupClient.GetByIdAsync(entity.MovieId);
+            return MapToOutputDto(entity, movie);
         }
 
-        private async Task<ShowtimeOutputDto> MapToOutputDtoAsync(Showtime entity)
+        private ShowtimeOutputDto MapToOutputDto(Showtime entity, IReadOnlyDictionary<Guid, MovieLookupDto> movieLookup)
+        {
+            movieLookup.TryGetValue(entity.MovieId, out var movie);
+            return MapToOutputDto(entity, movie);
+        }
+
+        private ShowtimeOutputDto MapToOutputDto(Showtime entity, MovieLookupDto? movie)
         {
             var mapped = ObjectMapper.Map<Showtime, ShowtimeOutputDto>(entity);
 
             if (entity.Duration > 0)
             {
                 mapped.Duration = entity.Duration;
-                return mapped;
+            }
+            else
+            {
+                var computedDuration = (int)Math.Round((entity.EndTime - entity.StartTime).TotalMinutes);
+                mapped.Duration = computedDuration > 0 ? computedDuration : 0;
             }
 
-            var computedDuration = (int)Math.Round((entity.EndTime - entity.StartTime).TotalMinutes);
-            mapped.Duration = computedDuration > 0 ? computedDuration : 0;
+            mapped.Movie = movie;
             return mapped;
         }
 

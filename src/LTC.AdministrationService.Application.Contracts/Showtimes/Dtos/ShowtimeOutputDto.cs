@@ -18,5 +18,9 @@ namespace LTC.AdministrationService.Showtimes.Dtos
         public string? Status { get; set; }
         public DateTime? CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
+
+        // Virtual object - composed at read time from the movie microservice.
+        // Null if the upstream lookup failed; callers should degrade gracefully.
+        public MovieLookupDto? Movie { get; set; }
     }
 }

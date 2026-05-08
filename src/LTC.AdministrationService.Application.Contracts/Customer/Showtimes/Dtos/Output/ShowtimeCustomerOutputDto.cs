@@ -1,4 +1,5 @@
 using System;
+using LTC.AdministrationService.Showtimes.Dtos;
 
 namespace LTC.AdministrationService.Customer.Showtimes.Dtos.Output
 {
@@ -17,12 +18,12 @@ namespace LTC.AdministrationService.Customer.Showtimes.Dtos.Output
         public string? Status { get; set; }
         public string? MovieFormat { get; set; }
         public string? ScreenName { get; set; }
-        // Movie metadata fields. Currently null because admin service does not call movie-service;
-        // FE is expected to enrich client-side via customerMovieService when needed.
-        public string? MovieTitle { get; set; }
-        public string? OriginalTitle { get; set; }
-        public string? PosterUrl { get; set; }
+        // Optional duration sourced from the showtime entity itself (the embedded
+        // Movie virtual object also exposes DurationMins).
         public int? DurationMins { get; set; }
-        public string? RatingCode { get; set; }
+
+        // Virtual object enriched at read time from the movie microservice. May be
+        // null if the upstream lookup failed; callers should degrade gracefully.
+        public MovieLookupDto? Movie { get; set; }
     }
 }
