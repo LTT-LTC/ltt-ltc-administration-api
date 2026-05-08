@@ -19,7 +19,6 @@ namespace LTC.AdministrationService.Screens;
 public class ScreenAppService : ApplicationService, IAdminScreenAppService
 {
     private readonly IRepository<Screen, Guid> _screenRepository;
-    private readonly IRepository<SeatMap, Guid> _seatMapRepository;
     private readonly IRepository<Cinema, Guid> _cinemaRepository;
     private readonly IGmt7Clock _gmt7Clock;
     private static readonly HashSet<string> AllowedStatuses = new(StringComparer.OrdinalIgnoreCase)
@@ -31,12 +30,10 @@ public class ScreenAppService : ApplicationService, IAdminScreenAppService
 
     public ScreenAppService(
         IRepository<Screen, Guid> screenRepository,
-        IRepository<SeatMap, Guid> seatMapRepository,
         IRepository<Cinema, Guid> cinemaRepository,
         IGmt7Clock gmt7Clock)
     {
         _screenRepository = screenRepository;
-        _seatMapRepository = seatMapRepository;
         _cinemaRepository = cinemaRepository;
         _gmt7Clock = gmt7Clock;
     }
@@ -44,34 +41,27 @@ public class ScreenAppService : ApplicationService, IAdminScreenAppService
     public async Task<PagedResultDto<ScreenOutputDto>> GetScreenListAsync(Guid cinemaId, GetScreenListInputDto input)
     {
         var screensQ = await _screenRepository.GetQueryableAsync();
-        var seatMapsQ = await _seatMapRepository.GetQueryableAsync();
-
-        var joined =
-            from s in screensQ
-            where s.CinemaId == cinemaId
-            join m in seatMapsQ on s.SeatMapId equals m.Id into mapJoin
-            from m in mapJoin.DefaultIfEmpty()
-            select new { Screen = s, SeatMap = m };
+        var query = screensQ.Where(s => s.CinemaId == cinemaId);
 
         if (!string.IsNullOrWhiteSpace(input.Keyword))
         {
-            joined = joined.Where(x =>
-                x.Screen.ScreenType != null && x.Screen.ScreenType.Contains(input.Keyword));
+            query = query.Where(x =>
+                x.ScreenType != null && x.ScreenType.Contains(input.Keyword));
         }
 
         if (!string.IsNullOrWhiteSpace(input.Status))
         {
-            joined = joined.Where(x => x.Screen.Status == input.Status);
+            query = query.Where(x => x.Status == input.Status);
         }
 
-        var totalCount = await joined.CountAsync();
-        var page = await joined
-            .OrderBy(x => x.Screen.ScreenNumber)
+        var totalCount = await query.CountAsync();
+        var page = await query
+            .OrderBy(x => x.ScreenNumber)
             .Skip((input.Page - 1) * input.Fetch)
             .Take(input.Fetch)
             .ToListAsync();
 
-        var items = page.Select(x => ToOutputDto(x.Screen, x.SeatMap)).ToList();
+        var items = page.Select(ToOutputDto).ToList();
 
         return new PagedResultDto<ScreenOutputDto>(totalCount, items);
     }
@@ -79,24 +69,18 @@ public class ScreenAppService : ApplicationService, IAdminScreenAppService
     public async Task<ScreenOutputDto> GetScreenAsync(Guid id)
     {
         var screen = await _screenRepository.GetAsync(id);
-        SeatMap? seatMap = null;
-        if (screen.SeatMapId.HasValue)
-        {
-            seatMap = await _seatMapRepository.FindAsync(screen.SeatMapId.Value);
-        }
-
-        return ToOutputDto(screen, seatMap);
+        return ToOutputDto(screen);
     }
 
     public async Task<ScreenOutputDto> CreateScreenAsync(Guid cinemaId, CreateScreenInputDto input)
     {
-        var seatMap = await ValidateAndGetSeatMapAsync(cinemaId, input.SeatMapId);
-        await ValidateScreenInputAsync(cinemaId, input.ScreenNumber, input.ScreenType, seatMap.SeatCount, input.Status, null);
+        ValidateSeatLayoutInput(input.SeatLayout, input.SeatCount);
+        await ValidateScreenInputAsync(cinemaId, input.ScreenNumber, input.ScreenType, input.SeatCount, input.Status, null);
 
         var screen = ObjectMapper.Map<CreateScreenInputDto, Screen>(input);
         screen.CinemaId = cinemaId;
-        screen.SeatMapId = seatMap.Id;
-        screen.SeatCount = seatMap.SeatCount;
+        screen.SeatLayout = input.SeatLayout;
+        screen.SeatCount = input.SeatCount;
         screen.CreatedAt = _gmt7Clock.Gmt7Now;
         screen.TenantId = CurrentTenant.Id;
 
@@ -108,19 +92,19 @@ public class ScreenAppService : ApplicationService, IAdminScreenAppService
         {
             throw new UserFriendlyException($"Screen create failed: {ex.GetBaseException().Message}");
         }
-        return ToOutputDto(screen, seatMap);
+        return ToOutputDto(screen);
     }
 
     public async Task<ScreenOutputDto> UpdateScreenAsync(Guid id, UpdateScreenInputDto input)
     {
         var screen = await _screenRepository.GetAsync(id);
-        var seatMap = await ValidateAndGetSeatMapAsync(screen.CinemaId, input.SeatMapId);
-        await ValidateScreenInputAsync(screen.CinemaId, input.ScreenNumber, input.ScreenType, seatMap.SeatCount, input.Status, id);
+        ValidateSeatLayoutInput(input.SeatLayout, input.SeatCount);
+        await ValidateScreenInputAsync(screen.CinemaId, input.ScreenNumber, input.ScreenType, input.SeatCount, input.Status, id);
 
         ObjectMapper.Map(input, screen);
         screen.UpdatedAt = _gmt7Clock.Gmt7Now;
-        screen.SeatMapId = seatMap.Id;
-        screen.SeatCount = seatMap.SeatCount;
+        screen.SeatLayout = input.SeatLayout;
+        screen.SeatCount = input.SeatCount;
 
         try
         {
@@ -131,64 +115,39 @@ public class ScreenAppService : ApplicationService, IAdminScreenAppService
             throw new UserFriendlyException($"Screen update failed: {ex.GetBaseException().Message}");
         }
 
-        return ToOutputDto(screen, seatMap);
+        return ToOutputDto(screen);
     }
 
     public async Task DeleteScreenAsync(Guid id)
     {
-        var screen = await _screenRepository.GetAsync(id);
-        var seatMapId = screen.SeatMapId;
-
         await _screenRepository.DeleteAsync(id, autoSave: true);
-
     }
 
-    private ScreenOutputDto ToOutputDto(Screen screen, SeatMap? seatMap)
+    private ScreenOutputDto ToOutputDto(Screen screen)
     {
-        var dto = ObjectMapper.Map<Screen, ScreenOutputDto>(screen);
-        dto.SeatMapName = seatMap?.Name;
-        dto.SeatMapDescription = seatMap?.Description;
-        dto.SeatLayout = seatMap?.SeatLayout;
-        dto.SeatCount = seatMap?.SeatCount ?? 0;
-        return dto;
+        return ObjectMapper.Map<Screen, ScreenOutputDto>(screen);
     }
 
-    private async Task<SeatMap> ValidateAndGetSeatMapAsync(Guid cinemaId, Guid seatMapId)
+    private static void ValidateSeatLayoutInput(string? seatLayout, int seatCount)
     {
-        if (seatMapId == Guid.Empty)
+        if (string.IsNullOrWhiteSpace(seatLayout))
         {
-            throw new UserFriendlyException("Seat map is required.");
+            throw new UserFriendlyException("Seat layout is required.");
         }
 
-        var seatMap = await _seatMapRepository.FindAsync(seatMapId);
-        if (seatMap == null)
+        try
         {
-            throw new UserFriendlyException("Seat map not found.");
+            _ = JsonDocument.Parse(seatLayout);
+        }
+        catch
+        {
+            throw new UserFriendlyException("Seat layout JSON is invalid.");
         }
 
-        if (seatMap.CinemaId != cinemaId)
+        if (seatCount <= 0)
         {
-            throw new UserFriendlyException("Selected seat map does not belong to this cinema.");
+            throw new UserFriendlyException("Seat count must be a positive value.");
         }
-
-        if (seatMap.SeatCount <= 0)
-        {
-            throw new UserFriendlyException("Seat map seat count must be a positive value.");
-        }
-
-        if (!string.IsNullOrWhiteSpace(seatMap.SeatLayout))
-        {
-            try
-            {
-                _ = JsonDocument.Parse(seatMap.SeatLayout);
-            }
-            catch
-            {
-                throw new UserFriendlyException("Seat map layout JSON is invalid.");
-            }
-        }
-
-        return seatMap;
     }
 
     private async Task ValidateScreenInputAsync(

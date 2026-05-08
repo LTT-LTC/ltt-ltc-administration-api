@@ -5,7 +5,9 @@ using Volo.Abp.MultiTenancy;
 namespace LTC.AdministrationService.Entities;
 
 /// <summary>
-/// Seat layout payload for a screen; referenced by <see cref="Screen.SeatMapId"/>.
+/// Reusable seat layout template for a cinema. The chosen template's
+/// <see cref="SeatLayout"/> is snapshotted into <see cref="Screen.SeatLayout"/>
+/// at create/update time.
 /// </summary>
 public class SeatMap : Entity<Guid>, IMultiTenant
 {

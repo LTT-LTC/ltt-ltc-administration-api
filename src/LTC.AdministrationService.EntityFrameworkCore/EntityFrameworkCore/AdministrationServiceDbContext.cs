@@ -137,10 +137,7 @@ public class AdministrationServiceDbContext :
         {
             b.ToTable("Screens");
             b.ConfigureByConvention();
-            b.HasOne(x => x.SeatMap)
-                .WithMany()
-                .HasForeignKey(x => x.SeatMapId)
-                .IsRequired(false);
+            b.Property(x => x.SeatLayout).HasColumnType("nvarchar(max)");
         });
 
         builder.Entity<SeatType>(b =>
