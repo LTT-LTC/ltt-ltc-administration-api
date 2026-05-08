@@ -41,20 +41,23 @@ namespace LTC.AdministrationService.Movies
             _logger = logger;
         }
 
-        public async Task<MovieLookupDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<MovieLookupDto?> GetByIdAsync(
+            Guid id,
+            Guid? tenantId = null,
+            CancellationToken cancellationToken = default)
         {
             if (id == Guid.Empty)
             {
                 return null;
             }
 
-            var cacheKey = BuildCacheKey(id);
+            var cacheKey = BuildCacheKey(id, tenantId);
             if (_memoryCache.TryGetValue<MovieLookupDto>(cacheKey, out var cached))
             {
                 return cached;
             }
 
-            var movie = await FetchMovieAsync(id, cancellationToken);
+            var movie = await FetchMovieAsync(id, tenantId, cancellationToken);
             if (movie != null)
             {
                 _memoryCache.Set(cacheKey, movie, new MemoryCacheEntryOptions
@@ -68,6 +71,7 @@ namespace LTC.AdministrationService.Movies
 
         public async Task<IReadOnlyDictionary<Guid, MovieLookupDto>> GetByIdsAsync(
             IEnumerable<Guid> ids,
+            Guid? tenantId = null,
             CancellationToken cancellationToken = default)
         {
             var distinct = ids
@@ -84,7 +88,7 @@ namespace LTC.AdministrationService.Movies
             var pendingIds = new List<Guid>(distinct.Count);
             foreach (var id in distinct)
             {
-                if (_memoryCache.TryGetValue<MovieLookupDto>(BuildCacheKey(id), out var cached) && cached != null)
+                if (_memoryCache.TryGetValue<MovieLookupDto>(BuildCacheKey(id, tenantId), out var cached) && cached != null)
                 {
                     result[id] = cached;
                 }
@@ -105,10 +109,10 @@ namespace LTC.AdministrationService.Movies
                 await gate.WaitAsync(cancellationToken);
                 try
                 {
-                    var movie = await FetchMovieAsync(id, cancellationToken);
+                    var movie = await FetchMovieAsync(id, tenantId, cancellationToken);
                     if (movie != null)
                     {
-                        _memoryCache.Set(BuildCacheKey(id), movie, new MemoryCacheEntryOptions
+                        _memoryCache.Set(BuildCacheKey(id, tenantId), movie, new MemoryCacheEntryOptions
                         {
                             AbsoluteExpirationRelativeToNow = CacheDuration
                         });
@@ -125,7 +129,10 @@ namespace LTC.AdministrationService.Movies
             return result;
         }
 
-        private async Task<MovieLookupDto?> FetchMovieAsync(Guid id, CancellationToken cancellationToken)
+        private async Task<MovieLookupDto?> FetchMovieAsync(
+            Guid id,
+            Guid? tenantId,
+            CancellationToken cancellationToken)
         {
             HttpClient client;
             try
@@ -141,7 +148,13 @@ namespace LTC.AdministrationService.Movies
             try
             {
                 var requestUri = string.Format(MoviePathTemplate, id);
-                using var response = await client.GetAsync(requestUri, cancellationToken);
+                using var request = new HttpRequestMessage(HttpMethod.Get, requestUri);
+                if (tenantId.HasValue)
+                {
+                    request.Headers.TryAddWithoutValidation("X-Tenant", tenantId.Value.ToString());
+                }
+
+                using var response = await client.SendAsync(request, cancellationToken);
 
                 if (response.StatusCode == HttpStatusCode.NotFound)
                 {
@@ -170,6 +183,6 @@ namespace LTC.AdministrationService.Movies
             }
         }
 
-        private static string BuildCacheKey(Guid id) => $"movie-lookup:{id}";
+        private static string BuildCacheKey(Guid id, Guid? tenantId) => $"movie-lookup:{tenantId?.ToString() ?? "host"}:{id}";
     }
 }
