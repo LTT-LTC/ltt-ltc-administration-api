@@ -1,33 +1,31 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using LTC.AdministrationService.Showtimes;
-using LTC.AdministrationService.Showtimes.Dtos;
+using LTC.AdministrationService.Customer.Showtimes;
+using LTC.AdministrationService.Customer.Showtimes.Dtos.Input;
+using LTC.AdministrationService.Customer.Showtimes.Dtos.Output;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Volo.Abp.Application.Dtos;
 
 namespace LTC.AdministrationService.Controllers.Customer
 {
     [Route(AdministrationServiceSettingNames.DefaultRoute + "/customer/showtimes")]
+    [AllowAnonymous]
     public class ShowtimeCustomerController : CustomerControllerBase
     {
-        private readonly IShowtimeAppService _showtimeAppService;
+        private readonly IShowtimeCustomerAppService _showtimeCustomerAppService;
 
-        public ShowtimeCustomerController(IShowtimeAppService showtimeAppService)
+        public ShowtimeCustomerController(IShowtimeCustomerAppService showtimeCustomerAppService)
         {
-            _showtimeAppService = showtimeAppService;
+            _showtimeCustomerAppService = showtimeCustomerAppService;
         }
 
-        [HttpGet("movie/{movieId}")]
-        public async Task<PagedResultDto<ShowtimeOutputDto>> GetShowtimeListByMovieAsync(Guid movieId, Guid? cinemaId = null, int skipCount = 0, int maxResultCount = 10)
-        {
-            return await _showtimeAppService.GetShowtimeListAsync(movieId, cinemaId, skipCount, maxResultCount);
-        }
+        [HttpGet]
+        public virtual Task<List<ShowtimeCustomerOutputDto>> GetShowtimeListAsync([FromQuery] GetShowtimeCustomerListInputDto input)
+            => _showtimeCustomerAppService.GetListAsync(input ?? new GetShowtimeCustomerListInputDto());
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetShowtimeAsync(Guid id)
-        {
-            var result = await _showtimeAppService.GetShowtimeAsync(id);
-            return Ok(result);
-        }
+        public virtual Task<ShowtimeCustomerOutputDto> GetShowtimeAsync(Guid id)
+            => _showtimeCustomerAppService.GetAsync(id);
     }
 }
