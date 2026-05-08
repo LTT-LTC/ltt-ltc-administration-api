@@ -67,7 +67,17 @@ namespace LTC.AdministrationService.Showtimes
                 var showtimes = await query.OrderBy(x => x.ShowDate).ThenBy(x => x.StartTime).ToListAsync();
 
                 var screenNameById = await GetScreenNameMapAsync(showtimes);
-                var movieById = await _movieLookupClient.GetByIdsAsync(showtimes.Select(x => x.MovieId));
+                var movieById = new Dictionary<Guid, MovieLookupDto>();
+                foreach (var group in showtimes.GroupBy(x => x.TenantId))
+                {
+                    var mapped = await _movieLookupClient.GetByIdsAsync(
+                        group.Select(x => x.MovieId),
+                        group.Key);
+                    foreach (var pair in mapped)
+                    {
+                        movieById[pair.Key] = pair.Value;
+                    }
+                }
 
                 return showtimes.Select(x => MapToDto(x, screenNameById, movieById)).ToList();
             }
@@ -82,7 +92,7 @@ namespace LTC.AdministrationService.Showtimes
                     ?? throw new BusinessException("AdministrationService:ShowtimeNotFound").WithData("ShowtimeId", id);
 
                 var screenNameById = await GetScreenNameMapAsync(new[] { showtime });
-                var movie = await _movieLookupClient.GetByIdAsync(showtime.MovieId);
+                var movie = await _movieLookupClient.GetByIdAsync(showtime.MovieId, showtime.TenantId);
                 var movieById = movie != null
                     ? new Dictionary<Guid, MovieLookupDto> { [showtime.MovieId] = movie }
                     : (IReadOnlyDictionary<Guid, MovieLookupDto>)new Dictionary<Guid, MovieLookupDto>();

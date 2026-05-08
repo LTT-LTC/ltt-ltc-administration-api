@@ -46,7 +46,9 @@ namespace LTC.AdministrationService.Showtimes
             var total = await query.CountAsync();
             var items = await query.Skip(skipCount).Take(maxResultCount).ToListAsync();
 
-            var movieLookup = await _movieLookupClient.GetByIdsAsync(items.Select(x => x.MovieId));
+            var movieLookup = await _movieLookupClient.GetByIdsAsync(
+                items.Select(x => x.MovieId),
+                CurrentTenant.Id);
 
             var mappedItems = new List<ShowtimeOutputDto>(items.Count);
             foreach (var item in items)
@@ -63,7 +65,7 @@ namespace LTC.AdministrationService.Showtimes
         public async Task<ShowtimeOutputDto> GetShowtimeAsync(Guid id)
         {
             var entity = await _repository.GetAsync(id);
-            var movie = await _movieLookupClient.GetByIdAsync(entity.MovieId);
+            var movie = await _movieLookupClient.GetByIdAsync(entity.MovieId, entity.TenantId);
             return MapToOutputDto(entity, movie);
         }
 
@@ -89,7 +91,7 @@ namespace LTC.AdministrationService.Showtimes
             };
 
             await _repository.InsertAsync(entity, true);
-            var movie = await _movieLookupClient.GetByIdAsync(entity.MovieId);
+            var movie = await _movieLookupClient.GetByIdAsync(entity.MovieId, entity.TenantId);
             return MapToOutputDto(entity, movie);
         }
 
@@ -112,7 +114,7 @@ namespace LTC.AdministrationService.Showtimes
             entity.UpdatedAt = Clock.Now;
 
             await _repository.UpdateAsync(entity, true);
-            var movie = await _movieLookupClient.GetByIdAsync(entity.MovieId);
+            var movie = await _movieLookupClient.GetByIdAsync(entity.MovieId, entity.TenantId);
             return MapToOutputDto(entity, movie);
         }
 

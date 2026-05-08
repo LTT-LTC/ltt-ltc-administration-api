@@ -13,10 +13,14 @@ namespace LTC.AdministrationService.Movies
     /// </summary>
     public interface IMovieLookupClient
     {
-        Task<MovieLookupDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+        Task<MovieLookupDto?> GetByIdAsync(
+            Guid id,
+            Guid? tenantId = null,
+            CancellationToken cancellationToken = default);
 
         Task<IReadOnlyDictionary<Guid, MovieLookupDto>> GetByIdsAsync(
             IEnumerable<Guid> ids,
+            Guid? tenantId = null,
             CancellationToken cancellationToken = default);
     }
 }
