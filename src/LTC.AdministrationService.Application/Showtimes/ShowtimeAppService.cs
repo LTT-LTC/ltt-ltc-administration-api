@@ -46,9 +46,17 @@ namespace LTC.AdministrationService.Showtimes
             var total = await query.CountAsync();
             var items = await query.Skip(skipCount).Take(maxResultCount).ToListAsync();
 
-            var movieLookup = await _movieLookupClient.GetByIdsAsync(
-                items.Select(x => x.MovieId),
-                CurrentTenant.Id);
+            var movieLookup = new Dictionary<Guid, MovieLookupDto>();
+            foreach (var group in items.GroupBy(x => x.TenantId ?? CurrentTenant.Id))
+            {
+                var mapped = await _movieLookupClient.GetByIdsAsync(
+                    group.Select(x => x.MovieId),
+                    group.Key);
+                foreach (var pair in mapped)
+                {
+                    movieLookup[pair.Key] = pair.Value;
+                }
+            }
 
             var mappedItems = new List<ShowtimeOutputDto>(items.Count);
             foreach (var item in items)
@@ -65,7 +73,7 @@ namespace LTC.AdministrationService.Showtimes
         public async Task<ShowtimeOutputDto> GetShowtimeAsync(Guid id)
         {
             var entity = await _repository.GetAsync(id);
-            var movie = await _movieLookupClient.GetByIdAsync(entity.MovieId, entity.TenantId);
+            var movie = await _movieLookupClient.GetByIdAsync(entity.MovieId, entity.TenantId ?? CurrentTenant.Id);
             return MapToOutputDto(entity, movie);
         }
 
@@ -91,7 +99,7 @@ namespace LTC.AdministrationService.Showtimes
             };
 
             await _repository.InsertAsync(entity, true);
-            var movie = await _movieLookupClient.GetByIdAsync(entity.MovieId, entity.TenantId);
+            var movie = await _movieLookupClient.GetByIdAsync(entity.MovieId, entity.TenantId ?? CurrentTenant.Id);
             return MapToOutputDto(entity, movie);
         }
 
@@ -114,7 +122,7 @@ namespace LTC.AdministrationService.Showtimes
             entity.UpdatedAt = Clock.Now;
 
             await _repository.UpdateAsync(entity, true);
-            var movie = await _movieLookupClient.GetByIdAsync(entity.MovieId, entity.TenantId);
+            var movie = await _movieLookupClient.GetByIdAsync(entity.MovieId, entity.TenantId ?? CurrentTenant.Id);
             return MapToOutputDto(entity, movie);
         }
 

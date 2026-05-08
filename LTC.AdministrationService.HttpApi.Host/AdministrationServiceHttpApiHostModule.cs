@@ -160,6 +160,21 @@ public class AdministrationServiceHttpApiHostModule : AbpModule
         {
             ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
         });
+
+        // Fallback client via API gateway (same route style used by manager FE).
+        var appSelfUrl = configuration["App:SelfUrl"];
+        if (!string.IsNullOrWhiteSpace(appSelfUrl))
+        {
+            context.Services.AddHttpClient(MovieLookupClient.GatewayHttpClientName, client =>
+            {
+                client.BaseAddress = new Uri(appSelfUrl.TrimEnd('/') + "/");
+                client.Timeout = TimeSpan.FromSeconds(5);
+            })
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+            });
+        }
     }
 
     private void ConfigureAuthentication(ServiceConfigurationContext context)
