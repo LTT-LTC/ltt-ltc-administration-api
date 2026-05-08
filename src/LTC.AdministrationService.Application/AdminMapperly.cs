@@ -13,6 +13,7 @@ using LTC.AdministrationService.Employee.Dtos.Output;
 using LTC.AdministrationService.Employee.Dtos.Input;
 using LTC.AdministrationService.NewsAndOffers.Dtos.Input;
 using LTC.AdministrationService.NewsAndOffers.Dtos.Output;
+using LTC.AdministrationService.Customer.Cinemas.Dtos.Output;
 
 namespace LTC.AdministrationService;
 
@@ -21,6 +22,14 @@ public partial class CinemaOutputMapper : IObjectMapper<Entities.Cinema, Cinemas
 {
     public partial CinemasOutputDto Map(Entities.Cinema source);
     public CinemasOutputDto Map(Entities.Cinema source, CinemasOutputDto destination) => Map(source);
+}
+
+[Mapper]
+public partial class CinemaCustomerOutputMapper : IObjectMapper<Entities.Cinema, CinemaCustomerOutputDto>, ITransientDependency
+{
+    [MapProperty(nameof(Entities.Cinema.ServiceNumber), nameof(CinemaCustomerOutputDto.PhoneNumber))]
+    public partial CinemaCustomerOutputDto Map(Entities.Cinema source);
+    public CinemaCustomerOutputDto Map(Entities.Cinema source, CinemaCustomerOutputDto destination) => Map(source);
 }
 
 [Mapper]
