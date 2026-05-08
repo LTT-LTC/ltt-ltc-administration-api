@@ -403,12 +403,31 @@ namespace LTC.AdministrationService.Auth
                 }
             }
 
-            var normalizedRoles = roles.Select(r => r.Trim().ToLowerInvariant()).ToList();
+            var normalizedRoles = roles
+                .Where(r => !string.IsNullOrWhiteSpace(r))
+                .Select(r => r.Trim().ToLowerInvariant())
+                .Distinct()
+                .ToList();
+
+            var roleClaims = claims
+                .Where(c =>
+                    c.Type == ClaimTypes.Role ||
+                    c.Type == "role" ||
+                    c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")
+                .Select(c => c.Value?.Trim().ToLowerInvariant())
+                .Where(v => !string.IsNullOrWhiteSpace(v))
+                .Distinct()
+                .ToList();
+
+            var effectiveRoles = normalizedRoles
+                .Concat(roleClaims)
+                .Distinct()
+                .ToList();
             string? cinemaIdClaim = null;
 
             using (_dataFilter.Disable<IMultiTenant>())
             {
-                if (normalizedRoles.Contains("manager"))
+                if (effectiveRoles.Contains("manager"))
                 {
                     var cinemaQueryable = await _cinemaRepository.GetQueryableAsync();
                     var managerCinemaId = await cinemaQueryable
@@ -429,7 +448,7 @@ namespace LTC.AdministrationService.Auth
                         cinemaIdClaim = fallbackCinemaId?.ToString();
                     }
                 }
-                else if (normalizedRoles.Contains("staff") || normalizedRoles.Contains("pos"))
+                else if (effectiveRoles.Contains("staff") || effectiveRoles.Contains("pos"))
                 {
                     var employeeQueryable = await _employeeRepository.GetQueryableAsync();
                     var staffCinemaId = await employeeQueryable
@@ -441,8 +460,21 @@ namespace LTC.AdministrationService.Auth
                 }
             }
 
-            if (!string.IsNullOrWhiteSpace(cinemaIdClaim) && !claims.Any(c => c.Type == "cinemaId"))
+            if (!string.IsNullOrWhiteSpace(cinemaIdClaim))
             {
+                var existingCinemaClaims = claims
+                    .Where(c =>
+                        c.Type == "cinemaId" ||
+                        c.Type == "CinemaId" ||
+                        c.Type == "cinemaID" ||
+                        c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/cinemaId")
+                    .ToList();
+
+                foreach (var existingClaim in existingCinemaClaims)
+                {
+                    claims.Remove(existingClaim);
+                }
+
                 claims.Add(new Claim("cinemaId", cinemaIdClaim));
             }
 
