@@ -110,7 +110,10 @@ namespace LTC.AdministrationService.Showtimes
 
             var screenIds = showtimes.Select(x => x.ScreenId).Distinct().ToList();
             var screenQueryable = await _screenRepository.GetQueryableAsync();
-            var screens = await screenQueryable.Where(x => screenIds.Contains(x.Id)).ToListAsync();
+            var screens = await screenQueryable
+                .Where(x => screenIds.Contains(x.Id))
+                .Select(x => new { x.Id, x.ScreenNumber })
+                .ToListAsync();
 
             return screens.ToDictionary(
                 x => x.Id,
