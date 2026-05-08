@@ -18,7 +18,14 @@ namespace LTC.AdministrationService.Movies
     public class MovieLookupClient : IMovieLookupClient, ITransientDependency
     {
         public const string HttpClientName = "MovieService";
-        private const string MoviePathTemplate = "movie/{0}";
+        public const string GatewayHttpClientName = "MovieServiceGateway";
+        private static readonly string[] MoviePathTemplates =
+        {
+            "movie/{0}",
+            "/ltc/movie-service/movie/{0}",
+            "/movie-service/movie/{0}",
+            "/movie/{0}"
+        };
         private const int MaxParallelism = 8;
         private static readonly TimeSpan CacheDuration = TimeSpan.FromSeconds(60);
 
@@ -134,53 +141,70 @@ namespace LTC.AdministrationService.Movies
             Guid? tenantId,
             CancellationToken cancellationToken)
         {
-            HttpClient client;
-            try
+            var clientNames = new[] { HttpClientName, GatewayHttpClientName };
+            foreach (var clientName in clientNames)
             {
-                client = _httpClientFactory.CreateClient(HttpClientName);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Movie lookup client could not be created; returning null for {MovieId}.", id);
-                return null;
-            }
-
-            try
-            {
-                var requestUri = string.Format(MoviePathTemplate, id);
-                using var request = new HttpRequestMessage(HttpMethod.Get, requestUri);
-                if (tenantId.HasValue)
+                HttpClient client;
+                try
                 {
-                    request.Headers.TryAddWithoutValidation("X-Tenant", tenantId.Value.ToString());
+                    client = _httpClientFactory.CreateClient(clientName);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Movie lookup client {ClientName} could not be created for {MovieId}.", clientName, id);
+                    continue;
                 }
 
-                using var response = await client.SendAsync(request, cancellationToken);
-
-                if (response.StatusCode == HttpStatusCode.NotFound)
+                try
                 {
-                    return null;
-                }
+                    foreach (var template in MoviePathTemplates)
+                    {
+                        var requestUri = string.Format(template, id);
+                        using var request = new HttpRequestMessage(HttpMethod.Get, requestUri);
+                        if (tenantId.HasValue)
+                        {
+                            var tenant = tenantId.Value.ToString();
+                            request.Headers.TryAddWithoutValidation("X-Tenant", tenant);
+                            request.Headers.TryAddWithoutValidation("__tenant", tenant);
+                        }
 
-                if (!response.IsSuccessStatusCode)
+                        using var response = await client.SendAsync(request, cancellationToken);
+
+                        if (response.StatusCode == HttpStatusCode.NotFound)
+                        {
+                            // Try the next URL shape/client before giving up.
+                            continue;
+                        }
+
+                        if (!response.IsSuccessStatusCode)
+                        {
+                            _logger.LogWarning(
+                                "Movie lookup for {MovieId} via {ClientName}:{RequestUri} failed with status {StatusCode}.",
+                                id,
+                                clientName,
+                                requestUri,
+                                (int)response.StatusCode);
+                            continue;
+                        }
+
+                        var payload = await response.Content.ReadFromJsonAsync<MovieLookupDto>(JsonOptions, cancellationToken);
+                        if (payload != null)
+                        {
+                            return payload;
+                        }
+                    }
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                 {
-                    _logger.LogWarning(
-                        "Movie lookup for {MovieId} failed with status {StatusCode}.",
-                        id,
-                        (int)response.StatusCode);
-                    return null;
+                    throw;
                 }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Movie lookup for {MovieId} failed via client {ClientName}.", id, clientName);
+                }
+            }
 
-                return await response.Content.ReadFromJsonAsync<MovieLookupDto>(JsonOptions, cancellationToken);
-            }
-            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Movie lookup for {MovieId} failed; returning null.", id);
-                return null;
-            }
+            return null;
         }
 
         private static string BuildCacheKey(Guid id, Guid? tenantId) => $"movie-lookup:{tenantId?.ToString() ?? "host"}:{id}";
