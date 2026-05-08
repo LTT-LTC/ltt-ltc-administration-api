@@ -1,4 +1,3 @@
-using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace LTC.AdministrationService.Admin.Screens.Dtos.Input
@@ -11,8 +10,9 @@ namespace LTC.AdministrationService.Admin.Screens.Dtos.Input
         public string? ScreenType { get; set; }
         
         public int SeatCount { get; set; }
-        
-        public Guid SeatMapId { get; set; }
+
+        /// <summary>JSON snapshot of the seat layout used by the booking process.</summary>
+        public string? SeatLayout { get; set; }
         
         [MaxLength(64)]
         public string? Status { get; set; }

@@ -12,10 +12,11 @@ namespace LTC.AdministrationService.Entities
         public string? ScreenType { get; set; }
         public int SeatCount { get; set; }
         /// <summary>
-        /// FK to <see cref="SeatMap"/> holding <see cref="SeatMap.SeatLayout"/> and <see cref="SeatMap.SeatCount"/>.
+        /// JSON snapshot of the seat layout used by the booking process to determine
+        /// seat type, selection state, exits, and entrances. Sourced from a chosen
+        /// <see cref="SeatMap"/> template at create/update time.
         /// </summary>
-        public Guid? SeatMapId { get; set; }
-        public SeatMap? SeatMap { get; set; }
+        public string? SeatLayout { get; set; }
         public string? Status { get; set;}
         public DateTime? CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
