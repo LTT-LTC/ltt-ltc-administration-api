@@ -47,6 +47,8 @@ message ShowtimeMessage {
   double ticketPrice = 7;
   string formatId = 8;
   string status = 9;
+  string movieFormat = 10;
+  string screenName = 11;
 }
 
 message ShowtimesResponse {

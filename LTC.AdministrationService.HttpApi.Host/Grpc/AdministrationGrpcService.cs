@@ -13,15 +13,18 @@ public class AdministrationGrpcService : AdministrationGrpc.AdministrationGrpcBa
 {
     private readonly IRepository<Entities.Cinema, Guid> _cinemaRepository;
     private readonly IRepository<Entities.Showtime, Guid> _showtimeRepository;
+    private readonly IRepository<Entities.Screen, Guid> _screenRepository;
     private readonly IRepository<Entities.GiftCode, Guid> _giftCodeRepository;
 
     public AdministrationGrpcService(
         IRepository<Entities.Cinema, Guid> cinemaRepository,
         IRepository<Entities.Showtime, Guid> showtimeRepository,
+        IRepository<Entities.Screen, Guid> screenRepository,
         IRepository<Entities.GiftCode, Guid> giftCodeRepository)
     {
         _cinemaRepository = cinemaRepository;
         _showtimeRepository = showtimeRepository;
+        _screenRepository = screenRepository;
         _giftCodeRepository = giftCodeRepository;
     }
 
@@ -84,9 +87,18 @@ public class AdministrationGrpcService : AdministrationGrpc.AdministrationGrpcBa
         }
 
         var showtimes = await queryable.OrderBy(x => x.StartTime).ToListAsync();
+        var screenIds = showtimes.Select(x => x.ScreenId).Distinct().ToList();
+        var screens = screenIds.Count > 0
+            ? await _screenRepository.GetListAsync(x => screenIds.Contains(x.Id))
+            : new List<Entities.Screen>();
+        var screenNameById = screens.ToDictionary(
+            x => x.Id,
+            x => x.ScreenNumber > 0 ? $"Screen {x.ScreenNumber}" : "Screen"
+        );
         var response = new ShowtimesResponse();
         foreach (var showtime in showtimes)
         {
+            screenNameById.TryGetValue(showtime.ScreenId, out var screenName);
             response.Items.Add(new ShowtimeMessage
             {
                 Id = showtime.Id.ToString(),
@@ -97,7 +109,9 @@ public class AdministrationGrpcService : AdministrationGrpc.AdministrationGrpcBa
                 EndTime = showtime.ShowDate.Date.Add(showtime.EndTime).ToString("o"),
                 TicketPrice = (double)showtime.BasePrice,
                 FormatId = Guid.Empty.ToString(),
-                Status = showtime.Status ?? string.Empty
+                Status = showtime.Status ?? string.Empty,
+                MovieFormat = showtime.MovieFormat ?? string.Empty,
+                ScreenName = screenName ?? string.Empty
             });
         }
         return response;
@@ -111,6 +125,7 @@ public class AdministrationGrpcService : AdministrationGrpc.AdministrationGrpcBa
         }
 
         var showtime = await _showtimeRepository.GetAsync(id);
+        var screen = await _screenRepository.FirstOrDefaultAsync(x => x.Id == showtime.ScreenId);
         return new ShowtimeMessage
         {
             Id = showtime.Id.ToString(),
@@ -121,7 +136,9 @@ public class AdministrationGrpcService : AdministrationGrpc.AdministrationGrpcBa
             EndTime = showtime.ShowDate.Date.Add(showtime.EndTime).ToString("o"),
             TicketPrice = (double)showtime.BasePrice,
             FormatId = Guid.Empty.ToString(),
-            Status = showtime.Status ?? string.Empty
+            Status = showtime.Status ?? string.Empty,
+            MovieFormat = showtime.MovieFormat ?? string.Empty,
+            ScreenName = screen != null && screen.ScreenNumber > 0 ? $"Screen {screen.ScreenNumber}" : string.Empty
         };
     }
 
