@@ -3,6 +3,7 @@ using Hangfire.RecurringJobAdmin;
 using Hangfire.Redis.StackExchange;
 using Medallion.Threading;
 using Medallion.Threading.Redis;
+using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
@@ -11,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using StackExchange.Redis;
 using Volo.Abp;
 using Volo.Abp.AspNetCore.Authentication.JwtBearer;
+using Volo.Abp.AspNetCore.MultiTenancy;
 using Volo.Abp.BackgroundJobs;
 using Volo.Abp.BackgroundJobs.Hangfire;
 using Volo.Abp.BackgroundWorkers;
@@ -20,6 +22,7 @@ using Volo.Abp.Caching.StackExchangeRedis;
 using Volo.Abp.DistributedLocking;
 using Volo.Abp.Guids;
 using Volo.Abp.Modularity;
+using Volo.Abp.MultiTenancy;
 
 using LTC.Shared.Hosting.Microservices.MultiTenancy;
 using Microsoft.AspNetCore.Mvc;
@@ -28,6 +31,7 @@ namespace LTC.Shared.Hosting.Microservices
 {
     [DependsOn(
         typeof(AbpAspNetCoreAuthenticationJwtBearerModule),
+        typeof(AbpAspNetCoreMultiTenancyModule),
         typeof(AbpCachingStackExchangeRedisModule),
         //typeof(AdministrationServiceEntityFrameworkCoreModule),
         typeof(AbpDistributedLockingModule)
@@ -58,6 +62,25 @@ namespace LTC.Shared.Hosting.Microservices
 
             ConfigureHangfire(context, configuration, environment, connectionMultiplexer);
 
+            ConfigureSharedTenantResolution();
+        }
+
+        /// <summary>
+        /// Ensures header/cookie tenant resolution runs before JWT current-user claims across all microservices.
+        /// </summary>
+        private void ConfigureSharedTenantResolution()
+        {
+            Configure<AbpTenantResolveOptions>(options =>
+            {
+                var currentUserResolver = options.TenantResolvers
+                    .FirstOrDefault(resolver => resolver.Name == "CurrentUser");
+
+                if (currentUserResolver != null)
+                {
+                    options.TenantResolvers.Remove(currentUserResolver);
+                    options.TenantResolvers.Add(currentUserResolver);
+                }
+            });
         }
 
         private void ConfigureHangfire(ServiceConfigurationContext context, IConfiguration configuration, IWebHostEnvironment environment, IConnectionMultiplexer connectionMultiplexer, string prefix = "Hangfire:")
