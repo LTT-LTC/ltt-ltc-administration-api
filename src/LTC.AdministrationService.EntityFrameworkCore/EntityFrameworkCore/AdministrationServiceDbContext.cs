@@ -144,6 +144,7 @@ public class AdministrationServiceDbContext :
         {
             b.ToTable("SeatTypes");
             b.ConfigureByConvention();
+            b.Property(x => x.SeatColor).HasMaxLength(7);
         });
 
         builder.Entity<Showtime>(b =>
