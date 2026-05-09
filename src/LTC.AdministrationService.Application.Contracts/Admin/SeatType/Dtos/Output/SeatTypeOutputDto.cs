@@ -10,6 +10,7 @@ namespace LTC.AdministrationService.Admin.SeatTypes.Dtos.Output
         public int NumberOfSeat { get; set; }
         public string? DisplayDirection { get; set; }
         public decimal PriceMultiplier { get; set; }
+        public string? SeatColor { get; set; }
         public DateTime? UpdatedAt { get; set; }
     }
 }

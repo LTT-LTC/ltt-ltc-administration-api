@@ -17,5 +17,10 @@ namespace LTC.AdministrationService.Admin.SeatTypes.Dtos.Input
         public string? DisplayDirection { get; set; }
         
         public decimal PriceMultiplier { get; set; }
+
+        /// <summary>#RRGGBB hex color for seat map rendering (optional).</summary>
+        [RegularExpression(@"^(#[0-9A-Fa-f]{6})?$")]
+        [MaxLength(7)]
+        public string? SeatColor { get; set; }
     }
 }

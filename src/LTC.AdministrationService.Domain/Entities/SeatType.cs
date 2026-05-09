@@ -12,6 +12,8 @@ namespace LTC.AdministrationService.Entities
         public int NumberOfSeat { get; set; }
         public string? DisplayDirection { get; set; }
         public decimal PriceMultiplier { get; set; }
+        /// <summary>Seat fill color as #RRGGBB hex (optional).</summary>
+        public string? SeatColor { get; set; }
         public DateTime? UpdatedAt { get; set; }
     }
 }
