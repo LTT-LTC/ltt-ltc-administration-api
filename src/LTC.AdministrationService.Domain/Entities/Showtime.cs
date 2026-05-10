@@ -16,6 +16,16 @@ namespace LTC.AdministrationService.Entities
         public Guid DistributionId { get; set; }
         public string? MovieFormat { get; set; }
         public Guid ScreenId { get; set; }
+
+        /// <summary>Seat map template used when this showtime was scheduled (audit).</summary>
+        public Guid? SeatMapId { get; set; }
+
+        /// <summary>
+        /// JSON snapshot of seat geometry + statuses (<c>seatBookingStatus</c>) at scheduling time;
+        /// updated after successful payments with sold seats.
+        /// </summary>
+        public string? SeatLayout { get; set; }
+
         public DateTime ShowDate { get; set; }
         public TimeSpan StartTime { get; set; }
         public TimeSpan EndTime { get; set; }

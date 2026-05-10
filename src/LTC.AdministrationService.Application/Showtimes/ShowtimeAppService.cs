@@ -19,17 +19,20 @@ namespace LTC.AdministrationService.Showtimes
         private readonly IRepository<Showtime, Guid> _repository;
         private readonly IRepository<Screen, Guid> _screenRepository;
         private readonly IRepository<Cinema, Guid> _cinemaRepository;
+        private readonly IRepository<SeatMap, Guid> _seatMapRepository;
         private readonly IMovieLookupClient _movieLookupClient;
 
         public ShowtimeAppService(
             IRepository<Showtime, Guid> repository,
             IRepository<Screen, Guid> screenRepository,
             IRepository<Cinema, Guid> cinemaRepository,
+            IRepository<SeatMap, Guid> seatMapRepository,
             IMovieLookupClient movieLookupClient)
         {
             _repository = repository;
             _screenRepository = screenRepository;
             _cinemaRepository = cinemaRepository;
+            _seatMapRepository = seatMapRepository;
             _movieLookupClient = movieLookupClient;
         }
 
@@ -80,6 +83,7 @@ namespace LTC.AdministrationService.Showtimes
         public async Task<ShowtimeOutputDto> CreateShowtimeAsync(CreateShowtimeDto input)
         {
             var duration = await ValidateCreateOrUpdateAsync(input, null);
+            var (seatMapId, seatLayoutSnapshot) = await ResolveSeatLayoutSnapshotAsync(input);
 
             var entity = new Showtime(GuidGenerator.Create())
             {
@@ -88,6 +92,8 @@ namespace LTC.AdministrationService.Showtimes
                 DistributionId = input.DistributionId,
                 MovieFormat = input.MovieFormat,
                 ScreenId = input.ScreenId,
+                SeatMapId = seatMapId,
+                SeatLayout = seatLayoutSnapshot,
                 ShowDate = input.ShowDate,
                 StartTime = input.StartTime,
                 EndTime = input.EndTime,
@@ -108,11 +114,14 @@ namespace LTC.AdministrationService.Showtimes
             var duration = await ValidateCreateOrUpdateAsync(input, id);
 
             var entity = await _repository.GetAsync(id);
+            var (seatMapId, seatLayoutSnapshot) = await ResolveSeatLayoutSnapshotAsync(input);
             entity.MovieId = input.MovieId;
             entity.CinemaId = input.CinemaId;
             entity.DistributionId = input.DistributionId;
             entity.MovieFormat = input.MovieFormat;
             entity.ScreenId = input.ScreenId;
+            entity.SeatMapId = seatMapId;
+            entity.SeatLayout = seatLayoutSnapshot;
             entity.ShowDate = input.ShowDate;
             entity.StartTime = input.StartTime;
             entity.EndTime = input.EndTime;
@@ -153,6 +162,62 @@ namespace LTC.AdministrationService.Showtimes
         public async Task DeleteShowtimeAsync(Guid id)
         {
             await _repository.DeleteAsync(id);
+        }
+
+        /// <summary>
+        /// Prefers FE-supplied layout JSON, then <see cref="Screen.SeatLayout"/>, then legacy <see cref="SeatMap"/>.
+        /// </summary>
+        private async Task<(Guid? SeatMapId, string? SeatLayout)> ResolveSeatLayoutSnapshotAsync(CreateShowtimeDto input)
+        {
+            if (!string.IsNullOrWhiteSpace(input.SeatLayout))
+            {
+                ValidateSeatLayoutJson(input.SeatLayout);
+                return (null, input.SeatLayout.Trim());
+            }
+
+            var screen = await _screenRepository.FindAsync(input.ScreenId)
+                ?? throw new UserFriendlyException("Screen not found.");
+            if (!string.IsNullOrWhiteSpace(screen.SeatLayout))
+            {
+                ValidateSeatLayoutJson(screen.SeatLayout);
+                return (null, screen.SeatLayout.Trim());
+            }
+
+            if (!input.SeatMapId.HasValue || input.SeatMapId.Value == Guid.Empty)
+            {
+                throw new UserFriendlyException("Seat layout is missing on the selected screen; configure the screen map or provide a seat map.");
+            }
+
+            var seatMap = await _seatMapRepository.FindAsync(input.SeatMapId.Value)
+                ?? throw new UserFriendlyException("Seat map not found.");
+
+            if (seatMap.CinemaId != input.CinemaId)
+            {
+                throw new UserFriendlyException("Seat map does not belong to the selected cinema.");
+            }
+
+            return (seatMap.Id, string.IsNullOrWhiteSpace(seatMap.SeatLayout) ? null : seatMap.SeatLayout.Trim());
+        }
+
+        private static void ValidateSeatLayoutJson(string raw)
+        {
+            try
+            {
+                using var doc = JsonDocument.Parse(raw);
+                if (doc.RootElement.ValueKind != JsonValueKind.Object)
+                {
+                    throw new UserFriendlyException("Seat layout must be a JSON object.");
+                }
+
+                if (!doc.RootElement.TryGetProperty("rows", out var rows) || rows.ValueKind != JsonValueKind.Array)
+                {
+                    throw new UserFriendlyException("Seat layout JSON must contain a \"rows\" array.");
+                }
+            }
+            catch (JsonException ex)
+            {
+                throw new UserFriendlyException("Seat layout is not valid JSON: " + ex.Message);
+            }
         }
 
         private async Task<int> ValidateCreateOrUpdateAsync(CreateShowtimeDto input, Guid? editingId)

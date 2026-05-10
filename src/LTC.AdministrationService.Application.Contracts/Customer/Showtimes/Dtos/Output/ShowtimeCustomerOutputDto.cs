@@ -27,6 +27,14 @@ namespace LTC.AdministrationService.Customer.Showtimes.Dtos.Output
         // null if the upstream lookup failed; callers should degrade gracefully.
         public MovieLookupDto? Movie { get; set; }
 
+        /// <summary>Snapshot JSON persisted on the showtime (same shape as screen seat layout).</summary>
+        public string? SeatLayout { get; set; }
+
+        /// <summary>
+        /// Seat codes marked sold in the persisted layout JSON (<c>bookingStatus: sold</c>), uppercase for UI blocking.
+        /// </summary>
+        public List<string> SoldSeatCodes { get; set; } = new();
+
         /// <summary>Seat codes currently held in Redis (temporary locks), normalized uppercase.</summary>
         public List<string> HeldSeatCodes { get; set; } = new();
     }
