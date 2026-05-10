@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using StackExchange.Redis;
@@ -79,10 +80,44 @@ public class ShowtimeSeatHoldStore
             return (false, seat);
         }
 
+        // Same session changed seat set: drop Redis keys for seats no longer selected (manifest was not updated yet).
+        var manifestKey = ManifestKey(showtimeId, sessionKey);
+        var previousRaw = await Db.StringGetAsync(manifestKey);
+        if (previousRaw.HasValue)
+        {
+            try
+            {
+                var previous = JsonSerializer.Deserialize<List<string>>(previousRaw.ToString());
+                if (previous is { Count: > 0 })
+                {
+                    var keep = new HashSet<string>(distinct, StringComparer.OrdinalIgnoreCase);
+                    foreach (var prevSeat in previous)
+                    {
+                        var n = NormalizeSeat(prevSeat);
+                        if (keep.Contains(n))
+                        {
+                            continue;
+                        }
+
+                        var key = SeatKey(showtimeId, n);
+                        var val = await Db.StringGetAsync(key);
+                        if (val.HasValue && val.ToString() == sessionKey)
+                        {
+                            await Db.KeyDeleteAsync(key);
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // Best-effort cleanup; hold loop already succeeded for the new set.
+            }
+        }
+
         var manifest = JsonSerializer.Serialize(distinct);
         try
         {
-            await Db.StringSetAsync(ManifestKey(showtimeId, sessionKey), manifest, ttl);
+            await Db.StringSetAsync(manifestKey, manifest, ttl);
         }
         catch
         {
@@ -141,5 +176,50 @@ public class ShowtimeSeatHoldStore
         }
 
         return released;
+    }
+
+    /// <summary>
+    /// Returns all seat codes that currently have a non-empty hold value in Redis for this showtime.
+    /// Uses SCAN per server endpoint; suitable for customer GET showtime (not high-frequency hot path).
+    /// </summary>
+    public async Task<IReadOnlyList<string>> GetHeldSeatCodesAsync(Guid showtimeId, CancellationToken cancellationToken = default)
+    {
+        var pattern = $"{_keyPrefix}st:{showtimeId:N}:seat:*";
+        var result = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var endpoint in _mux.GetEndPoints())
+        {
+            var server = _mux.GetServer(endpoint);
+            if (!server.IsConnected)
+            {
+                continue;
+            }
+
+            await foreach (var key in server.KeysAsync(Db.Database, pattern).ConfigureAwait(false))
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var val = await Db.StringGetAsync(key).ConfigureAwait(false);
+                if (!val.HasValue)
+                {
+                    continue;
+                }
+
+                var keyStr = key.ToString();
+                const string marker = ":seat:";
+                var idx = keyStr.LastIndexOf(marker, StringComparison.Ordinal);
+                if (idx < 0)
+                {
+                    continue;
+                }
+
+                var code = keyStr[(idx + marker.Length)..];
+                if (!string.IsNullOrWhiteSpace(code))
+                {
+                    result.Add(NormalizeSeat(code));
+                }
+            }
+        }
+
+        return result.ToList();
     }
 }

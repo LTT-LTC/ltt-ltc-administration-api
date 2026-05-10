@@ -25,17 +25,20 @@ namespace LTC.AdministrationService.Showtimes
         private readonly IRepository<Screen, Guid> _screenRepository;
         private readonly IDataFilter _dataFilter;
         private readonly IMovieLookupClient _movieLookupClient;
+        private readonly ShowtimeSeatHoldStore _seatHoldStore;
 
         public ShowtimeCustomerAppService(
             IRepository<Showtime, Guid> showtimeRepository,
             IRepository<Screen, Guid> screenRepository,
             IDataFilter dataFilter,
-            IMovieLookupClient movieLookupClient)
+            IMovieLookupClient movieLookupClient,
+            ShowtimeSeatHoldStore seatHoldStore)
         {
             _showtimeRepository = showtimeRepository;
             _screenRepository = screenRepository;
             _dataFilter = dataFilter;
             _movieLookupClient = movieLookupClient;
+            _seatHoldStore = seatHoldStore;
         }
 
         public async Task<List<ShowtimeCustomerOutputDto>> GetListAsync(GetShowtimeCustomerListInputDto input)
@@ -97,7 +100,8 @@ namespace LTC.AdministrationService.Showtimes
                     ? new Dictionary<Guid, MovieLookupDto> { [showtime.MovieId] = movie }
                     : (IReadOnlyDictionary<Guid, MovieLookupDto>)new Dictionary<Guid, MovieLookupDto>();
 
-                return MapToDto(showtime, screenNameById, movieById);
+                var heldSeatCodes = await _seatHoldStore.GetHeldSeatCodesAsync(id);
+                return MapToDto(showtime, screenNameById, movieById, heldSeatCodes);
             }
         }
 
@@ -123,7 +127,8 @@ namespace LTC.AdministrationService.Showtimes
         private static ShowtimeCustomerOutputDto MapToDto(
             Showtime entity,
             IReadOnlyDictionary<Guid, string> screenNameById,
-            IReadOnlyDictionary<Guid, MovieLookupDto> movieById)
+            IReadOnlyDictionary<Guid, MovieLookupDto> movieById,
+            IReadOnlyList<string>? heldSeatCodes = null)
         {
             // Compose ISO 8601 strings so the FE can `dayjs()` them directly.
             var startInstant = entity.ShowDate.Date.Add(entity.StartTime);
@@ -147,7 +152,8 @@ namespace LTC.AdministrationService.Showtimes
                 MovieFormat = ExtractMovieFormatString(entity.MovieFormat),
                 ScreenName = screenName,
                 DurationMins = entity.Duration > 0 ? entity.Duration : movie?.DurationMins,
-                Movie = movie
+                Movie = movie,
+                HeldSeatCodes = heldSeatCodes != null ? new List<string>(heldSeatCodes) : new List<string>()
             };
         }
 

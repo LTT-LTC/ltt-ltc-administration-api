@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using LTC.AdministrationService.Showtimes.Dtos;
 
 namespace LTC.AdministrationService.Customer.Showtimes.Dtos.Output
@@ -25,5 +26,8 @@ namespace LTC.AdministrationService.Customer.Showtimes.Dtos.Output
         // Virtual object enriched at read time from the movie microservice. May be
         // null if the upstream lookup failed; callers should degrade gracefully.
         public MovieLookupDto? Movie { get; set; }
+
+        /// <summary>Seat codes currently held in Redis (temporary locks), normalized uppercase.</summary>
+        public List<string> HeldSeatCodes { get; set; } = new();
     }
 }
