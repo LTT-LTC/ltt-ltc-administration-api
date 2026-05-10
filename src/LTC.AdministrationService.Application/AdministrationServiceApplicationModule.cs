@@ -9,6 +9,7 @@ using Volo.Abp.SettingManagement;
 using Volo.Abp.TenantManagement;
 using Microsoft.Extensions.DependencyInjection;
 using LTC.AdministrationService.Customer.Showtimes;
+using LTC.AdministrationService.Options;
 using Microsoft.Extensions.Configuration;
 using LTC.AdministrationService.Admin.Cinemas;
 using LTC.AdministrationService.Admin.Screens;
@@ -18,7 +19,6 @@ using LTC.AdministrationService.Cinemas;
 using LTC.AdministrationService.Screens;
 using LTC.AdministrationService.SeatTypes;
 using LTC.AdministrationService.SeatMaps;
-using LTC.AdministrationService.Customer.Showtimes;
 using LTC.AdministrationService.Showtimes;
 
 namespace LTC.AdministrationService;
@@ -40,6 +40,7 @@ public class AdministrationServiceApplicationModule : AbpModule
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
         var configuration = context.Services.GetConfiguration();
+        Configure<InternalApiOptions>(configuration.GetSection(InternalApiOptions.SectionName));
         Configure<SeatHoldOptions>(configuration.GetSection(SeatHoldOptions.SectionName));
         context.Services.AddTransient<ISeatHoldRealtimeNotifier, NullSeatHoldRealtimeNotifier>();
 
@@ -53,5 +54,6 @@ public class AdministrationServiceApplicationModule : AbpModule
 
         context.Services.AddSingleton<ShowtimeSeatHoldStore>();
         context.Services.AddTransient<IShowtimeSeatHoldAppService, ShowtimeSeatHoldAppService>();
+        context.Services.AddTransient<IShowtimeSeatLayoutMergeAppService, ShowtimeSeatLayoutMergeAppService>();
     }
 }

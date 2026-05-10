@@ -10,6 +10,11 @@ namespace LTC.AdministrationService.Showtimes.Dtos
         public Guid DistributionId { get; set; }
         public string? MovieFormat { get; set; }
         public Guid ScreenId { get; set; }
+
+        public Guid? SeatMapId { get; set; }
+
+        /// <summary>JSON seat layout snapshot for this showtime instance.</summary>
+        public string? SeatLayout { get; set; }
         public DateTime ShowDate { get; set; }
         public TimeSpan StartTime { get; set; }
         public TimeSpan EndTime { get; set; }

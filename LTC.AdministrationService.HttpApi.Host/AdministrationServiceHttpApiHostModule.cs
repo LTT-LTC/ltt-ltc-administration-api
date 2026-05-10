@@ -1,5 +1,6 @@
 using CloudinaryDotNet;
 using LTC.AdministrationService.EntityFrameworkCore;
+using LTC.AdministrationService.Messaging;
 using LTC.AdministrationService.Grpc;
 using LTC.AdministrationService.Hubs;
 using LTC.AdministrationService.Movies;
@@ -103,6 +104,7 @@ public class AdministrationServiceHttpApiHostModule : AbpModule
         Configure<Volo.Abp.AspNetCore.Mvc.AntiForgery.AbpAntiForgeryOptions>(options => { options.AutoValidate = false; });
         context.Services.AddGrpc();
         context.Services.AddGrpcReflection();
+        context.Services.AddHostedService<ShowtimeSeatMergeRequestedConsumer>();
         Configure<AbpAuditingOptions>(options => { options.IsEnabled = false; });
         //Configure<AbpMvcLibsOptions>(options =>
         //{

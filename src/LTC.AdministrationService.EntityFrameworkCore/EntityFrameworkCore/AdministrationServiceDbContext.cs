@@ -151,6 +151,7 @@ public class AdministrationServiceDbContext :
         {
             b.ToTable("Showtimes");
             b.ConfigureByConvention();
+            b.Property(x => x.SeatLayout).HasColumnType("nvarchar(max)");
         });
 
         builder.Entity<PricingRule>(b =>

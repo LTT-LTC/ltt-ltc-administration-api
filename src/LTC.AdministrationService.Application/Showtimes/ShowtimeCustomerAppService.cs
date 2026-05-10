@@ -137,6 +137,8 @@ namespace LTC.AdministrationService.Showtimes
             screenNameById.TryGetValue(entity.ScreenId, out var screenName);
             movieById.TryGetValue(entity.MovieId, out var movie);
 
+            var soldSeatCodes = ExtractSoldSeatCodesFromLayout(entity.SeatLayout);
+
             return new ShowtimeCustomerOutputDto
             {
                 Id = entity.Id,
@@ -153,8 +155,78 @@ namespace LTC.AdministrationService.Showtimes
                 ScreenName = screenName,
                 DurationMins = entity.Duration > 0 ? entity.Duration : movie?.DurationMins,
                 Movie = movie,
+                SeatLayout = entity.SeatLayout,
+                SoldSeatCodes = soldSeatCodes,
                 HeldSeatCodes = heldSeatCodes != null ? new List<string>(heldSeatCodes) : new List<string>()
             };
+        }
+
+        private static List<string> ExtractSoldSeatCodesFromLayout(string? layoutJson)
+        {
+            var result = new List<string>();
+            if (string.IsNullOrWhiteSpace(layoutJson))
+            {
+                return result;
+            }
+
+            try
+            {
+                using var doc = JsonDocument.Parse(layoutJson);
+                if (!doc.RootElement.TryGetProperty("rows", out var rows) || rows.ValueKind != JsonValueKind.Array)
+                {
+                    return result;
+                }
+
+                foreach (var row in rows.EnumerateArray())
+                {
+                    if (!row.TryGetProperty("seats", out var seats) || seats.ValueKind != JsonValueKind.Array)
+                    {
+                        continue;
+                    }
+
+                    foreach (var seat in seats.EnumerateArray())
+                    {
+                        if (seat.ValueKind != JsonValueKind.Object)
+                        {
+                            continue;
+                        }
+
+                        var isSold = false;
+                        if (seat.TryGetProperty("bookingStatus", out var status) &&
+                            status.ValueKind == JsonValueKind.String &&
+                            string.Equals(status.GetString(), "sold", StringComparison.OrdinalIgnoreCase))
+                        {
+                            isSold = true;
+                        }
+
+                        if (seat.TryGetProperty("sold", out var soldFlag) && soldFlag.ValueKind == JsonValueKind.True)
+                        {
+                            isSold = true;
+                        }
+
+                        if (!isSold ||
+                            !seat.TryGetProperty("seatCode", out var codeEl) ||
+                            codeEl.ValueKind != JsonValueKind.String)
+                        {
+                            continue;
+                        }
+
+                        var code = codeEl.GetString();
+                        if (string.IsNullOrWhiteSpace(code))
+                        {
+                            continue;
+                        }
+
+                        result.Add(code.Trim().ToUpperInvariant());
+                    }
+                }
+            }
+            catch (JsonException)
+            {
+                return result;
+            }
+
+            return result.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         }
 
         private static string? ExtractMovieFormatString(string? movieFormatJson)
