@@ -1,6 +1,7 @@
 using CloudinaryDotNet;
 using LTC.AdministrationService.EntityFrameworkCore;
 using LTC.AdministrationService.Grpc;
+using LTC.AdministrationService.Hubs;
 using LTC.AdministrationService.Movies;
 using LTC.AdministrationService.MultiTenancy;
 using LTC.CustomerManagement.HealthChecks;
@@ -432,6 +433,9 @@ public class AdministrationServiceHttpApiHostModule : AbpModule
         {
             // Enable gRPC reflection
             endpoints.MapGrpcReflectionService();
+
+            // SignalR: must match FE `showtimeSeatSignalr.ts` (NEXT_PUBLIC_API_URL + /administration-service/... = .../ltc/administration-service/... when base ends with /ltc)
+            endpoints.MapHub<ShowtimeSeatHub>($"{AdministrationServiceSettingNames.DefaultRoute}/hubs/showtime-seats");
         });
     }
 }

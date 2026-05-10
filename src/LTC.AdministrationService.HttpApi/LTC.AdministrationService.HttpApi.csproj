@@ -9,6 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\shared\LTC.Shared.Hosting.Microservices\LTC.Shared.Hosting.Microservices.csproj" />
     <ProjectReference Include="..\LTC.AdministrationService.Application.Contracts\LTC.AdministrationService.Application.Contracts.csproj" />
     <ProjectReference Include="..\LTC.AdministrationService.Application\LTC.AdministrationService.Application.csproj" />

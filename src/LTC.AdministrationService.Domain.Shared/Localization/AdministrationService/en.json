@@ -39,6 +39,8 @@
     "PasswordResetFailed": "Password reset failed.",
     "PasswordCannotBeSameAsOld": "New password cannot be the same as the old password.",
     "InvalidTenantForUser": "The account does not belong to this tenant.",
-    "TenantNotFound": "Tenant not found."
+    "TenantNotFound": "Tenant not found.",
+
+    "SeatHoldConflict": "Sorry, seat {0} was just held by another customer. Please choose another seat."
   }
 }
