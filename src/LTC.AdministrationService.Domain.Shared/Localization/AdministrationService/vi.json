@@ -44,6 +44,8 @@
     "DeletedFailed": "Xóa dữ liệu không thành công.",
     "OutOfSize": "Kí tự không được vượt quá {0}.",
     "InvalidTenantForUser": "Tài khoản không thuộc về hệ thống này.",
-    "TenantNotFound": "Hệ thống không tồn tại."
+    "TenantNotFound": "Hệ thống không tồn tại.",
+
+    "SeatHoldConflict": "Rất tiếc, ghế {0} vừa có người khác giữ mất rồi. Vui lòng chọn ghế khác."
   }
 }

@@ -1,6 +1,7 @@
-﻿using Hangfire;
+using Hangfire;
 using Hangfire.RecurringJobAdmin;
 using Hangfire.Redis.StackExchange;
+using LTC.Shared.Hosting.Microservices.Messaging;
 using Medallion.Threading;
 using Medallion.Threading.Redis;
 using System.Linq;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 using Volo.Abp;
 using Volo.Abp.AspNetCore.Authentication.JwtBearer;
@@ -23,7 +25,6 @@ using Volo.Abp.DistributedLocking;
 using Volo.Abp.Guids;
 using Volo.Abp.Modularity;
 using Volo.Abp.MultiTenancy;
-
 using LTC.Shared.Hosting.Microservices.MultiTenancy;
 using Microsoft.AspNetCore.Mvc;
 
@@ -62,7 +63,25 @@ namespace LTC.Shared.Hosting.Microservices
 
             ConfigureHangfire(context, configuration, environment, connectionMultiplexer);
 
+            ConfigureRabbitMq(context, configuration);
+
             ConfigureSharedTenantResolution();
+        }
+
+        private static void ConfigureRabbitMq(ServiceConfigurationContext context, IConfiguration configuration)
+        {
+            context.Services.Configure<RabbitMqOptions>(configuration.GetSection(RabbitMqOptions.SectionName));
+
+            var section = configuration.GetSection(RabbitMqOptions.SectionName);
+            var enabled = section.GetValue<bool?>("Enabled") ?? true;
+            var hostName = section["HostName"] ?? string.Empty;
+            if (!enabled || string.IsNullOrWhiteSpace(hostName))
+            {
+                context.Services.AddSingleton<IMessagePublisher, NullMessagePublisher>();
+                return;
+            }
+
+            context.Services.AddSingleton<IMessagePublisher, RabbitMqMessagePublisher>();
         }
 
         /// <summary>

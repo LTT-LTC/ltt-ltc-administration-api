@@ -14,10 +14,14 @@ namespace LTC.AdministrationService.Controllers.Customer
     public class ShowtimeCustomerController : CustomerControllerBase
     {
         private readonly IShowtimeCustomerAppService _showtimeCustomerAppService;
+        private readonly IShowtimeSeatHoldAppService _showtimeSeatHoldAppService;
 
-        public ShowtimeCustomerController(IShowtimeCustomerAppService showtimeCustomerAppService)
+        public ShowtimeCustomerController(
+            IShowtimeCustomerAppService showtimeCustomerAppService,
+            IShowtimeSeatHoldAppService showtimeSeatHoldAppService)
         {
             _showtimeCustomerAppService = showtimeCustomerAppService;
+            _showtimeSeatHoldAppService = showtimeSeatHoldAppService;
         }
 
         [HttpGet]
@@ -27,5 +31,13 @@ namespace LTC.AdministrationService.Controllers.Customer
         [HttpGet("{id}")]
         public virtual Task<ShowtimeCustomerOutputDto> GetShowtimeAsync(Guid id)
             => _showtimeCustomerAppService.GetAsync(id);
+
+        [HttpPost("seat-hold")]
+        public virtual Task<HoldSeatsOutputDto> HoldSeatsAsync([FromBody] HoldSeatsInputDto input)
+            => _showtimeSeatHoldAppService.HoldAsync(input);
+
+        [HttpDelete("seat-hold")]
+        public virtual Task ReleaseSeatHoldAsync([FromQuery] Guid showtimeId, [FromQuery] string sessionKey)
+            => _showtimeSeatHoldAppService.ReleaseAsync(showtimeId, sessionKey);
     }
 }
