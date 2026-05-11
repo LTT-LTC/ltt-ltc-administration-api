@@ -4,7 +4,6 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Hangfire;
 using LTC.AdministrationService.Customer.Showtimes;
 using LTC.AdministrationService.Showtimes;
 using LTC.AdministrationService.Showtimes.Dtos;
@@ -28,20 +27,17 @@ public class ShowtimeSeatMergeRequestedConsumer : BackgroundService
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly RabbitMqOptions _options;
     private readonly IConnectionMultiplexer _redis;
-    private readonly IBackgroundJobClient _jobClient;
     private readonly ILogger<ShowtimeSeatMergeRequestedConsumer> _logger;
 
     public ShowtimeSeatMergeRequestedConsumer(
         IServiceScopeFactory scopeFactory,
         IOptions<RabbitMqOptions> options,
         IConnectionMultiplexer redis,
-        IBackgroundJobClient jobClient,
         ILogger<ShowtimeSeatMergeRequestedConsumer> logger)
     {
         _scopeFactory = scopeFactory;
         _options = options.Value;
         _redis = redis;
-        _jobClient = jobClient;
         _logger = logger;
     }
 
@@ -221,14 +217,29 @@ public class ShowtimeSeatMergeRequestedConsumer : BackgroundService
 
                     if (retryCount < MaxRetryCount)
                     {
-                        // Schedule Hangfire re-publish with incremented counter after delay
-                        _jobClient.Schedule<ShowtimeSeatMergeDlqRetryJob>(
-                            job => job.ExecuteAsync(json, messageId, retryCount + 1),
-                            TimeSpan.FromSeconds(RetryDelaySeconds));
+                        // Fire-and-forget: wait RetryDelaySeconds then re-publish with incremented retry counter
+                        var capturedJson = json;
+                        var capturedMessageId = messageId;
+                        var capturedRetry = retryCount + 1;
+                        _ = Task.Run(async () =>
+                        {
+                            try
+                            {
+                                await Task.Delay(TimeSpan.FromSeconds(RetryDelaySeconds));
+                                RepublishToMainQueue(capturedJson, capturedMessageId, capturedRetry);
+                            }
+                            catch (Exception retryEx)
+                            {
+                                _logger.LogError(
+                                    retryEx,
+                                    "Background retry failed for ShowtimeSeatMergeRequested MessageId={MessageId}",
+                                    capturedMessageId);
+                            }
+                        });
                         _logger.LogWarning(
                             "Scheduled retry {NextRetry}/{Max} for MessageId={MessageId} in {Delay}s",
                             retryCount + 1, MaxRetryCount, messageId, RetryDelaySeconds);
-                        // Ack the original so it's removed; the retry job re-publishes it
+                        // Ack the original so it's removed; the retry task re-publishes it
                         try { channel.BasicAck(ea.DeliveryTag, false); } catch { /* channel may be closing */ }
                     }
                     else
@@ -267,6 +278,46 @@ public class ShowtimeSeatMergeRequestedConsumer : BackgroundService
                 // shutdown
             }
         }
+    }
+
+    private void RepublishToMainQueue(string messageJson, string messageId, int retryCount)
+    {
+        var factory = new global::RabbitMQ.Client.ConnectionFactory
+        {
+            HostName = _options.HostName,
+            Port = _options.Port > 0 ? _options.Port : 5672,
+            VirtualHost = string.IsNullOrEmpty(_options.VirtualHost) ? "/" : _options.VirtualHost,
+            UserName = string.IsNullOrEmpty(_options.UserName) ? "guest" : _options.UserName,
+            Password = _options.Password ?? "guest",
+        };
+
+        using var connection = factory.CreateConnection();
+        using var channel = connection.CreateModel();
+
+        channel.ExchangeDeclare(
+            exchange: _options.Exchange,
+            type: global::RabbitMQ.Client.ExchangeType.Topic,
+            durable: true,
+            autoDelete: false,
+            arguments: null);
+
+        var body = System.Text.Encoding.UTF8.GetBytes(messageJson);
+        var props = channel.CreateBasicProperties();
+        props.Persistent = true;
+        props.MessageId = messageId;
+        props.Headers = new Dictionary<string, object> { ["x-retry-count"] = retryCount };
+
+        channel.BasicPublish(
+            exchange: _options.Exchange,
+            routingKey: _options.RoutingKeys.ShowtimeSeatMergeRequested,
+            mandatory: false,
+            basicProperties: props,
+            body: body);
+
+        _logger.LogInformation(
+            "RepublishToMainQueue: re-published MessageId={MessageId} RetryCount={RetryCount}",
+            messageId,
+            retryCount);
     }
 
     private static int GetRetryCount(global::RabbitMQ.Client.IBasicProperties? props)
