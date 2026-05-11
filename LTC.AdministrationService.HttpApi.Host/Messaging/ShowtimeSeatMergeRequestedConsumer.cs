@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using LTC.AdministrationService.Customer.Showtimes;
 using LTC.AdministrationService.Showtimes;
 using LTC.AdministrationService.Showtimes.Dtos;
 using LTC.Shared.Hosting.Microservices.Messaging;
@@ -129,6 +130,31 @@ public class ShowtimeSeatMergeRequestedConsumer : BackgroundService
                             await merge.MergePaidSeatsAsync(
                                 payload.ShowtimeId,
                                 new MergePaidShowtimeSeatsInputDto { SeatCodes = payload.SeatCodes ?? [] });
+                        }
+
+                        // Release Redis seat holds if session key is provided
+                        if (!string.IsNullOrWhiteSpace(payload.SessionKey))
+                        {
+                            try
+                            {
+                                var seatHoldStore = scope.ServiceProvider.GetRequiredService<ShowtimeSeatHoldStore>();
+                                var released = await seatHoldStore.ReleaseAsync(payload.ShowtimeId, payload.SessionKey);
+                                if (released.Count > 0)
+                                {
+                                    _logger.LogInformation(
+                                        "Released {Count} Redis seat holds for booking {BookingId}: {Seats}",
+                                        released.Count,
+                                        payload.BookingId,
+                                        string.Join(",", released));
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogWarning(
+                                    ex,
+                                    "Failed to release Redis seat holds for booking {BookingId}; seats will expire naturally",
+                                    payload.BookingId);
+                            }
                         }
 
                         _logger.LogInformation(
