@@ -34,6 +34,9 @@ public class RabbitMqRoutingKeys
     public string SeatHoldEvents { get; set; } = "ltc.seat.holds";
 
     public string ShowtimeSeatMergeRequested { get; set; } = "ltc.showtime.seat.merge.requested";
+
+    /// <summary>Routing key for persisting seat holds in showtime database when user confirms selection.</summary>
+    public string ShowtimeSeatHoldRequested { get; set; } = "ltc.showtime.seat.hold.requested";
 }
 
 public class RabbitMqConsumerOptions
@@ -41,6 +44,18 @@ public class RabbitMqConsumerOptions
     /// <summary>Queue for payment service to consume booking requests (bound to <see cref="RabbitMqRoutingKeys.BookingRequested"/>).</summary>
     public string BookingRequestedQueue { get; set; } = "ltc.payment.booking.requested";
 
+    /// <summary>Dead-letter queue for failed BookingRequested messages after max retries.</summary>
+    public string BookingRequestedDlqQueue { get; set; } = "ltc.payment.booking.requested.dlq";
+
     /// <summary>Queue for administration service to merge paid seats into showtime layout JSON.</summary>
     public string ShowtimeSeatMergeRequestedQueue { get; set; } = "ltc.administration.showtime.seat.merge";
+
+    /// <summary>Dead-letter queue for failed ShowtimeSeatMergeRequested messages after max retries.</summary>
+    public string ShowtimeSeatMergeDlqQueue { get; set; } = "ltc.administration.showtime.seat.merge.dlq";
+
+    /// <summary>Queue for administration service to persist seat holds when user confirms selection.</summary>
+    public string ShowtimeSeatHoldRequestedQueue { get; set; } = "ltc.administration.showtime.seat.hold";
+
+    /// <summary>Dead-letter queue for failed ShowtimeSeatHoldRequested messages after max retries.</summary>
+    public string ShowtimeSeatHoldDlqQueue { get; set; } = "ltc.administration.showtime.seat.hold.dlq";
 }
