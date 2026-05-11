@@ -55,9 +55,11 @@ public class ScreenAppService : ApplicationService, IAdminScreenAppService
         }
 
         var totalCount = await query.CountAsync();
+        // Use long arithmetic to prevent integer overflow with large page numbers
+        var skipCount = (long)(input.Page - 1) * input.Fetch;
         var page = await query
             .OrderBy(x => x.ScreenNumber)
-            .Skip((input.Page - 1) * input.Fetch)
+            .Skip((int)skipCount)
             .Take(input.Fetch)
             .ToListAsync();
 

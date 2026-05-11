@@ -35,9 +35,11 @@ namespace LTC.AdministrationService.SeatTypes
             }
 
             var totalCount = await queryable.CountAsync();
+            // Use long arithmetic to prevent integer overflow with large page numbers
+            var skipCount = (long)(input.Page - 1) * input.Fetch;
             var items = await queryable
                 .OrderBy(x => x.Name)
-                .Skip((input.Page - 1) * input.Fetch)
+                .Skip((int)skipCount)
                 .Take(input.Fetch)
                 .ToListAsync();
 
