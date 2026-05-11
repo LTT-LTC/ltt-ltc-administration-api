@@ -101,10 +101,12 @@ namespace LTC.AdministrationService.Admin
                 }
 
                 var totalCount = await queryable.CountAsync();
+                // Use long arithmetic to prevent integer overflow with large page numbers
+                var skipCount = (long)(input.Page - 1) * input.Fetch;
                 var items = await queryable
                     .OrderByDescending(x => x.StartDate ?? DateTime.MinValue)
                     .ThenByDescending(x => x.CreatedAt ?? DateTime.MinValue)
-                    .Skip((input.Page - 1) * input.Fetch)
+                    .Skip((int)skipCount)
                     .Take(input.Fetch)
                     .ToListAsync();
 
