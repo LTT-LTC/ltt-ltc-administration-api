@@ -105,6 +105,7 @@ public class AdministrationServiceHttpApiHostModule : AbpModule
         context.Services.AddGrpc();
         context.Services.AddGrpcReflection();
         context.Services.AddHostedService<ShowtimeSeatMergeRequestedConsumer>();
+        context.Services.AddHostedService<ShowtimeSeatHoldRequestedConsumer>();
         Configure<AbpAuditingOptions>(options => { options.IsEnabled = false; });
         //Configure<AbpMvcLibsOptions>(options =>
         //{

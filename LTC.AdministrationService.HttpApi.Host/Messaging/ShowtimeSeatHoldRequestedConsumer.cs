@@ -13,30 +13,35 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using RabbitMQ.Client;
 using StackExchange.Redis;
 using Volo.Abp.Uow;
 
 namespace LTC.AdministrationService.Messaging;
 
-public class ShowtimeSeatMergeRequestedConsumer : BackgroundService
+/// <summary>
+/// Background consumer that persists seat holds into the showtime database when users confirm seat selection.
+/// This provides durable seat locking beyond the Redis TTL period.
+/// </summary>
+public class ShowtimeSeatHoldRequestedConsumer : BackgroundService
 {
     private const int MaxRetryCount = 3;
     private const int RetryDelaySeconds = 30;
-    private const string DedupKeyPrefix = "dedup:showtime-seat-merge:";
+    private const string DedupKeyPrefix = "dedup:showtime-seat-hold:";
     private static readonly JsonSerializerOptions JsonSerializerOptions = new(JsonSerializerDefaults.Web);
 
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly RabbitMqOptions _options;
     private readonly IConnectionMultiplexer _redis;
     private readonly IBackgroundJobClient _jobClient;
-    private readonly ILogger<ShowtimeSeatMergeRequestedConsumer> _logger;
+    private readonly ILogger<ShowtimeSeatHoldRequestedConsumer> _logger;
 
-    public ShowtimeSeatMergeRequestedConsumer(
+    public ShowtimeSeatHoldRequestedConsumer(
         IServiceScopeFactory scopeFactory,
         IOptions<RabbitMqOptions> options,
         IConnectionMultiplexer redis,
         IBackgroundJobClient jobClient,
-        ILogger<ShowtimeSeatMergeRequestedConsumer> logger)
+        ILogger<ShowtimeSeatHoldRequestedConsumer> logger)
     {
         _scopeFactory = scopeFactory;
         _options = options.Value;
@@ -50,14 +55,14 @@ public class ShowtimeSeatMergeRequestedConsumer : BackgroundService
         if (!_options.Enabled || string.IsNullOrWhiteSpace(_options.HostName))
         {
             _logger.LogWarning(
-                "ShowtimeSeatMergeRequested consumer skipped (RabbitMq:Enabled=false or HostName empty).");
+                "ShowtimeSeatHoldRequested consumer skipped (RabbitMq:Enabled=false or HostName empty).");
             return;
         }
 
         _logger.LogInformation(
-            "ShowtimeSeatMergeRequested consumer starting with HostName={HostName} Queue={Queue}",
+            "ShowtimeSeatHoldRequested consumer starting with HostName={HostName} Queue={Queue}",
             _options.HostName,
-            _options.Consumer.ShowtimeSeatMergeRequestedQueue);
+            _options.Consumer.ShowtimeSeatHoldRequestedQueue);
 
         var factory = new global::RabbitMQ.Client.ConnectionFactory
         {
@@ -77,7 +82,7 @@ public class ShowtimeSeatMergeRequestedConsumer : BackgroundService
         {
             _logger.LogError(
                 ex,
-                "ShowtimeSeatMergeRequested consumer cannot connect to RabbitMQ at {HostName}:{Port}; administration API continues without consuming merge messages.",
+                "ShowtimeSeatHoldRequested consumer cannot connect to RabbitMQ at {HostName}:{Port}; administration API continues without consuming hold messages.",
                 _options.HostName,
                 _options.Port > 0 ? _options.Port : 5672);
             return;
@@ -93,35 +98,36 @@ public class ShowtimeSeatMergeRequestedConsumer : BackgroundService
                 durable: true,
                 autoDelete: false,
                 arguments: null);
+
             // Main queue — wired to DLX so messages that exhaust retries route to DLQ automatically
             var mainQueueArgs = new Dictionary<string, object>
             {
                 ["x-dead-letter-exchange"] = _options.Exchange,
-                ["x-dead-letter-routing-key"] = _options.RoutingKeys.ShowtimeSeatMergeRequested + ".dlq",
+                ["x-dead-letter-routing-key"] = _options.RoutingKeys.ShowtimeSeatHoldRequested + ".dlq",
             };
             channel.QueueDeclare(
-                queue: _options.Consumer.ShowtimeSeatMergeRequestedQueue,
+                queue: _options.Consumer.ShowtimeSeatHoldRequestedQueue,
                 durable: true,
                 exclusive: false,
                 autoDelete: false,
                 arguments: mainQueueArgs);
             channel.QueueBind(
-                queue: _options.Consumer.ShowtimeSeatMergeRequestedQueue,
+                queue: _options.Consumer.ShowtimeSeatHoldRequestedQueue,
                 exchange: _options.Exchange,
-                routingKey: _options.RoutingKeys.ShowtimeSeatMergeRequested,
+                routingKey: _options.RoutingKeys.ShowtimeSeatHoldRequested,
                 arguments: null);
 
             // DLQ — terminal; no further routing
             channel.QueueDeclare(
-                queue: _options.Consumer.ShowtimeSeatMergeDlqQueue,
+                queue: _options.Consumer.ShowtimeSeatHoldDlqQueue,
                 durable: true,
                 exclusive: false,
                 autoDelete: false,
                 arguments: null);
             channel.QueueBind(
-                queue: _options.Consumer.ShowtimeSeatMergeDlqQueue,
+                queue: _options.Consumer.ShowtimeSeatHoldDlqQueue,
                 exchange: _options.Exchange,
-                routingKey: _options.RoutingKeys.ShowtimeSeatMergeRequested + ".dlq",
+                routingKey: _options.RoutingKeys.ShowtimeSeatHoldRequested + ".dlq",
                 arguments: null);
 
             channel.BasicQos(0, 1, false);
@@ -132,13 +138,13 @@ public class ShowtimeSeatMergeRequestedConsumer : BackgroundService
                 var json = Encoding.UTF8.GetString(ea.Body.ToArray());
                 var messageId = ea.BasicProperties?.MessageId ?? Guid.NewGuid().ToString("N");
                 var retryCount = GetRetryCount(ea.BasicProperties);
-                ShowtimeSeatMergeRequestedEvent? payload = null;
+                ShowtimeSeatHoldRequestedEvent? payload = null;
                 try
                 {
-                    payload = JsonSerializer.Deserialize<ShowtimeSeatMergeRequestedEvent>(json, JsonSerializerOptions);
+                    payload = JsonSerializer.Deserialize<ShowtimeSeatHoldRequestedEvent>(json, JsonSerializerOptions);
                     if (payload is null)
                     {
-                        _logger.LogWarning("Skip invalid ShowtimeSeatMergeRequested payload");
+                        _logger.LogWarning("Skip invalid ShowtimeSeatHoldRequested payload");
                         channel.BasicAck(ea.DeliveryTag, false);
                         return;
                     }
@@ -150,7 +156,7 @@ public class ShowtimeSeatMergeRequestedConsumer : BackgroundService
                     if (!isNew)
                     {
                         _logger.LogInformation(
-                            "Skip duplicate ShowtimeSeatMergeRequested for booking {BookingId}",
+                            "Skip duplicate ShowtimeSeatHoldRequested for booking {BookingId}",
                             payload.BookingId);
                         channel.BasicAck(ea.DeliveryTag, false);
                         return;
@@ -162,41 +168,21 @@ public class ShowtimeSeatMergeRequestedConsumer : BackgroundService
                         var uowManager = scope.ServiceProvider.GetRequiredService<IUnitOfWorkManager>();
                         using (var uow = uowManager.Begin())
                         {
-                            var merge = scope.ServiceProvider.GetRequiredService<IShowtimeSeatLayoutMergeAppService>();
-                            await merge.MergePaidSeatsAsync(
+                            var holdService = scope.ServiceProvider.GetRequiredService<IShowtimeSeatLayoutMergeAppService>();
+                            await holdService.HoldSeatsAsync(
                                 payload.ShowtimeId,
-                                new MergePaidShowtimeSeatsInputDto { SeatCodes = payload.SeatCodes ?? [] });
-                        }
-
-                        // Release Redis seat holds if session key is provided
-                        if (!string.IsNullOrWhiteSpace(payload.SessionKey))
-                        {
-                            try
-                            {
-                                var seatHoldStore = scope.ServiceProvider.GetRequiredService<ShowtimeSeatHoldStore>();
-                                var released = await seatHoldStore.ReleaseAsync(payload.ShowtimeId, payload.SessionKey);
-                                if (released.Count > 0)
+                                new HoldShowtimeSeatsInputDto
                                 {
-                                    _logger.LogInformation(
-                                        "Released {Count} Redis seat holds for booking {BookingId}: {Seats}",
-                                        released.Count,
-                                        payload.BookingId,
-                                        string.Join(",", released));
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.LogWarning(
-                                    ex,
-                                    "Failed to release Redis seat holds for booking {BookingId}; seats will expire naturally",
-                                    payload.BookingId);
-                            }
+                                    SeatCodes = payload.SeatCodes ?? [],
+                                    HoldExpiresAt = payload.HoldExpiresAt
+                                });
                         }
 
                         _logger.LogInformation(
-                            "ShowtimeSeatMergeRequested applied. BookingId={BookingId}, ShowtimeId={ShowtimeId}",
+                            "ShowtimeSeatHoldRequested applied. BookingId={BookingId}, ShowtimeId={ShowtimeId}, Seats={SeatCount}",
                             payload.BookingId,
-                            payload.ShowtimeId);
+                            payload.ShowtimeId,
+                            payload.SeatCodes?.Count ?? 0);
 
                         channel.BasicAck(ea.DeliveryTag, false);
                     }
@@ -215,14 +201,14 @@ public class ShowtimeSeatMergeRequestedConsumer : BackgroundService
                 {
                     _logger.LogError(
                         ex,
-                        "RabbitMQ consume failure for ShowtimeSeatMergeRequested. MessageId={MessageId} RetryCount={RetryCount}",
+                        "RabbitMQ consume failure for ShowtimeSeatHoldRequested. MessageId={MessageId} RetryCount={RetryCount}",
                         messageId,
                         retryCount);
 
                     if (retryCount < MaxRetryCount)
                     {
                         // Schedule Hangfire re-publish with incremented counter after delay
-                        _jobClient.Schedule<ShowtimeSeatMergeDlqRetryJob>(
+                        _jobClient.Schedule<ShowtimeSeatHoldDlqRetryJob>(
                             job => job.ExecuteAsync(json, messageId, retryCount + 1),
                             TimeSpan.FromSeconds(RetryDelaySeconds));
                         _logger.LogWarning(
@@ -235,7 +221,7 @@ public class ShowtimeSeatMergeRequestedConsumer : BackgroundService
                     {
                         // Exhausted retries — nack without requeue; DLX routes to DLQ
                         _logger.LogError(
-                            "ShowtimeSeatMergeRequested MessageId={MessageId} exhausted {Max} retries; routing to DLQ",
+                            "ShowtimeSeatHoldRequested MessageId={MessageId} exhausted {Max} retries; routing to DLQ",
                             messageId, MaxRetryCount);
                         try
                         {
@@ -250,7 +236,7 @@ public class ShowtimeSeatMergeRequestedConsumer : BackgroundService
             };
 
             channel.BasicConsume(
-                queue: _options.Consumer.ShowtimeSeatMergeRequestedQueue,
+                queue: _options.Consumer.ShowtimeSeatHoldRequestedQueue,
                 autoAck: false,
                 consumerTag: string.Empty,
                 noLocal: false,
